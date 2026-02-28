@@ -46,4 +46,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * User memiliki satu Vendor (jika role = vendor)
+     */
+    public function vendor()
+    {
+        return $this->hasOne(Vendor::class);
+    }
+
+    /**
+     * User memiliki banyak Bookings
+     */
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
 }

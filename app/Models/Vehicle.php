@@ -16,4 +16,20 @@ class Vehicle extends Model
         'image',
         'status',
     ];
+
+    /**
+     * Vehicle dimiliki oleh satu Vendor
+     */
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
+    }
+
+    /**
+     * Vehicle memiliki banyak Bookings
+     */
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
 }

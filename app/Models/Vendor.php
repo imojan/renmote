@@ -13,4 +13,28 @@ class Vendor extends Model
         'description',
         'verified',
     ];
+
+    /**
+     * Vendor dimiliki oleh satu User
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Vendor berada di satu District
+     */
+    public function district()
+    {
+        return $this->belongsTo(District::class);
+    }
+
+    /**
+     * Vendor memiliki banyak Vehicles
+     */
+    public function vehicles()
+    {
+        return $this->hasMany(Vehicle::class);
+    }
 }

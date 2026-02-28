@@ -12,4 +12,12 @@ class Payment extends Model
         'payment_type',
         'status',
     ];
+
+    /**
+     * Payment dimiliki oleh satu Booking
+     */
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class);
+    }
 }
