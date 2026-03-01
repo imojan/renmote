@@ -11,6 +11,9 @@ class Vendor extends Model
         'district_id',
         'store_name',
         'description',
+        'phone',
+        'address',
+        'status',
         'verified',
     ];
 

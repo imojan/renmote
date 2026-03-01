@@ -14,6 +14,7 @@ class Vehicle extends Model
         'year',
         'description',
         'image',
+        'stock',
         'status',
     ];
 
