@@ -27,6 +27,16 @@ class SearchController extends Controller
         $query = Vehicle::with('vendor.district')
             ->where('status', 'available');
 
+        // Filter by keyword (search by name, category, description)
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                  ->orWhere('category', 'like', "%{$keyword}%")
+                  ->orWhere('description', 'like', "%{$keyword}%");
+            });
+        }
+
         // Filter by district
         if ($request->filled('district_id')) {
             $query->whereHas('vendor', function ($q) use ($request) {
