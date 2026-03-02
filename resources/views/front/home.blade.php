@@ -2,482 +2,6 @@
 
 @section('title', 'Platform Sewa Motor Terpercaya di Kota Malang')
 
-@push('styles')
-<style>
-    /* ===== HERO ===== */
-    .hero {
-        position: relative;
-        background: linear-gradient(135deg, #0D47A1 0%, #1565C0 40%, #1976D2 70%, #2196F3 100%);
-        min-height: 420px;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-    }
-    .hero-bg {
-        position: absolute;
-        inset: 0;
-        opacity: 0.25;
-        background-size: cover;
-        background-position: center;
-        transition: opacity 0.8s ease;
-    }
-    .hero-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to right, rgba(13,71,161,0.92) 0%, rgba(13,71,161,0.6) 60%, rgba(13,71,161,0.2) 100%);
-    }
-    .hero-content {
-        position: relative;
-        z-index: 2;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 60px 20px 100px;
-        color: #fff;
-    }
-    .hero h1 {
-        font-size: clamp(28px, 4vw, 48px);
-        font-weight: 800;
-        line-height: 1.2;
-        margin-bottom: 16px;
-    }
-    .hero h1 span { color: #FF6B00; }
-    .hero p {
-        font-size: 15px;
-        opacity: .88;
-        line-height: 1.6;
-    }
-    .hero-dots {
-        display: flex;
-        gap: 6px;
-        margin-top: 20px;
-    }
-    .hero-dot {
-        width: 8px; height: 8px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.4);
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    .hero-dot.active { background: #fff; width: 24px; border-radius: 4px; }
-
-    /* ===== SEARCH WIDGET ===== */
-    .search-widget {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 8px 40px rgba(0,0,0,.15);
-        padding: 0;
-        max-width: 1160px;
-        margin: 0 auto;
-        transform: translateY(-28px);
-        position: relative;
-        z-index: 10;
-        overflow: hidden;
-    }
-    .search-tabs {
-        display: flex;
-        border-bottom: 1px solid var(--border);
-    }
-    .search-tab {
-        padding: 14px 24px;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        border-bottom: 3px solid transparent;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--muted);
-        margin-bottom: -1px;
-    }
-    .search-tab.active {
-        border-bottom-color: var(--primary);
-        color: var(--primary);
-    }
-    .search-fields {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr auto;
-        gap: 12px;
-        padding: 20px 24px;
-        align-items: end;
-    }
-    .field-group label {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: .5px;
-    }
-    .field-select {
-        display: flex;
-        align-items: center;
-        border: 1.5px solid var(--border);
-        border-radius: 10px;
-        padding: 0;
-        gap: 0;
-        cursor: pointer;
-        background: var(--bg);
-        transition: border-color .2s;
-        overflow: hidden;
-    }
-    .field-select:hover { border-color: var(--primary); }
-    .field-select i.field-icon { color: var(--primary); font-size: 16px; padding-left: 14px; }
-    .field-select select,
-    .field-select input {
-        flex: 1;
-        border: none;
-        outline: none;
-        padding: 10px 14px;
-        font-size: 13px;
-        color: var(--muted);
-        background: transparent;
-        font-family: inherit;
-        cursor: pointer;
-        -webkit-appearance: none;
-        appearance: none;
-    }
-    .field-select .chevron { color: var(--muted); font-size: 12px; padding-right: 14px; }
-    .btn-search {
-        background: var(--primary);
-        color: #fff;
-        border: none;
-        padding: 12px 32px;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: background .2s;
-        height: 46px;
-        align-self: end;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .btn-search:hover { background: var(--primary-dark); }
-
-    /* ===== SECTION COMMON ===== */
-    .section {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 8px 20px 40px;
-    }
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-    .section-title {
-        font-size: 20px;
-        font-weight: 800;
-    }
-    .see-all {
-        color: var(--primary);
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: none;
-    }
-    .see-all:hover { text-decoration: underline; }
-
-    /* ===== KATEGORI ===== */
-    .kategori-grid {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 12px;
-    }
-    .kategori-card {
-        background: #fff;
-        border: 1.5px solid var(--border);
-        border-radius: 14px;
-        padding: 20px 10px;
-        text-align: center;
-        cursor: pointer;
-        transition: all .2s;
-        text-decoration: none;
-        color: inherit;
-        display: block;
-    }
-    .kategori-card:hover {
-        border-color: var(--primary);
-        background: #EEF2FF;
-        transform: translateY(-2px);
-    }
-    .kategori-card img {
-        width: 72px;
-        height: 52px;
-        object-fit: contain;
-        margin: 0 auto 10px;
-        display: block;
-    }
-    .kategori-icon {
-        width: 72px;
-        height: 52px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 10px;
-        font-size: 26px;
-        color: var(--primary);
-    }
-    .kategori-card span {
-        font-size: 13px;
-        font-weight: 600;
-        display: block;
-    }
-
-    /* ===== MOTOR CARDS ===== */
-    .motor-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 16px;
-    }
-    .motor-card {
-        background: #fff;
-        border: 1.5px solid var(--border);
-        border-radius: 14px;
-        overflow: hidden;
-        transition: all .25s;
-        cursor: pointer;
-    }
-    .motor-card:hover {
-        box-shadow: 0 8px 24px rgba(21,101,192,.12);
-        transform: translateY(-3px);
-        border-color: var(--primary);
-    }
-    .motor-img {
-        width: 100%;
-        height: 140px;
-        object-fit: cover;
-        background: linear-gradient(135deg, #e8f4fd 0%, #b3d9f7 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-    .motor-img img {
-        width: 100%;
-        height: 140px;
-        object-fit: cover;
-    }
-    .motor-body { padding: 12px; }
-    .motor-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-    .motor-price {
-        font-size: 12px;
-        color: var(--muted);
-        margin-bottom: 4px;
-    }
-    .motor-price strong {
-        color: var(--primary);
-        font-size: 14px;
-        font-weight: 800;
-    }
-    .motor-rating {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 12px;
-        color: var(--muted);
-        margin-bottom: 4px;
-    }
-    .motor-rating i { color: #F59E0B; }
-    .motor-type {
-        font-size: 11px;
-        color: var(--muted);
-        margin-bottom: 10px;
-    }
-    .btn-lihat {
-        display: block;
-        background: var(--primary);
-        color: #fff;
-        text-align: center;
-        padding: 8px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 700;
-        text-decoration: none;
-        transition: background .2s;
-    }
-    .btn-lihat:hover { background: var(--primary-dark); }
-
-    /* ===== VENDOR ===== */
-    .vendor-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-    }
-    .vendor-card {
-        background: #fff;
-        border: 1.5px solid var(--border);
-        border-radius: 14px;
-        padding: 18px;
-        transition: all .25s;
-    }
-    .vendor-card:hover {
-        box-shadow: 0 8px 24px rgba(21,101,192,.1);
-        border-color: var(--primary);
-    }
-    .vendor-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-    .vendor-logo {
-        width: 48px; height: 48px;
-        border-radius: 12px;
-        background: #FEE2E2;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        font-weight: 800;
-        color: #DC2626;
-        flex-shrink: 0;
-    }
-    .vendor-name { font-size: 15px; font-weight: 700; }
-    .vendor-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        margin-bottom: 14px;
-    }
-    .vendor-meta-row {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        color: var(--muted);
-    }
-    .vendor-meta-row i { color: var(--primary); width: 14px; }
-    .vendor-meta-row i.fa-star { color: #F59E0B; }
-    .vendor-actions {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-    .btn-fav {
-        width: 36px; height: 36px;
-        border: 1.5px solid var(--border);
-        border-radius: 9px;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer;
-        color: var(--muted);
-        background: #fff;
-        transition: all .2s;
-        flex-shrink: 0;
-    }
-    .btn-fav:hover { border-color: #EF4444; color: #EF4444; }
-    .btn-chat {
-        flex: 1;
-        background: var(--green);
-        color: #fff;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 9px;
-        font-size: 12px;
-        font-weight: 700;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        transition: background .2s;
-        text-decoration: none;
-    }
-    .btn-chat:hover { background: #16a34a; }
-    .btn-detail {
-        flex: 1;
-        background: var(--primary);
-        color: #fff;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 9px;
-        font-size: 12px;
-        font-weight: 700;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        transition: background .2s;
-        text-decoration: none;
-    }
-    .btn-detail:hover { background: var(--primary-dark); }
-
-    /* ===== ARTIKEL ===== */
-    .artikel-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-    }
-    .artikel-card {
-        background: #fff;
-        border: 1.5px solid var(--border);
-        border-radius: 14px;
-        overflow: hidden;
-        transition: all .25s;
-    }
-    .artikel-card:hover {
-        box-shadow: 0 8px 24px rgba(0,0,0,.1);
-        transform: translateY(-2px);
-    }
-    .artikel-img {
-        position: relative;
-        height: 170px;
-        overflow: hidden;
-    }
-    .artikel-img img {
-        width: 100%; height: 100%; object-fit: cover;
-        transition: transform .3s;
-    }
-    .artikel-card:hover .artikel-img img { transform: scale(1.04); }
-    .artikel-badge {
-        position: absolute;
-        top: 10px; left: 10px;
-        background: var(--accent);
-        color: #fff;
-        font-size: 10px;
-        font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 5px;
-        text-transform: uppercase;
-        letter-spacing: .5px;
-    }
-    .artikel-body { padding: 14px; }
-    .artikel-date { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
-    .artikel-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; line-height: 1.4; }
-    .artikel-excerpt { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
-    .artikel-read {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--primary);
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        transition: gap .2s;
-    }
-    .artikel-read:hover { gap: 8px; }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 1024px) {
-        .motor-grid { grid-template-columns: repeat(4, 1fr); }
-        .kategori-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 768px) {
-        .search-fields { grid-template-columns: 1fr; }
-        .motor-grid { grid-template-columns: repeat(2, 1fr); }
-        .vendor-grid, .artikel-grid { grid-template-columns: 1fr; }
-        .kategori-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-</style>
-@endpush
-
 @section('content')
 
 {{-- ===== HERO ===== --}}
@@ -487,62 +11,83 @@
     <div class="hero-content">
         <h1>Platform Sewa Motor <span>Terpercaya</span><br>di Kota Malang</h1>
         <p>
-            Pilih dari 100+ motor terbaik &nbsp;&bull;&nbsp; Harga mulai Rp 50.000/hari<br>
+            Pilih dari 100+ motor terbaik &nbsp;&bull;&nbsp; Harga mulai Rp 50.000/hari &bull;<br>
             Booking mudah, cepat dan aman
         </p>
-        <div class="hero-dots">
-            <div class="hero-dot active" onclick="changeSlide(0)"></div>
-            <div class="hero-dot" onclick="changeSlide(1)"></div>
-        </div>
+    </div>
+    <div class="hero-dots">
+        <div class="hero-dot active" onclick="changeSlide(0)"></div>
+        <div class="hero-dot" onclick="changeSlide(1)"></div>
     </div>
 </section>
 
 {{-- ===== SEARCH WIDGET ===== --}}
-<div style="background: var(--bg); padding-bottom: 20px;">
-    <div class="search-widget" style="margin-left: 20px; margin-right: 20px;">
+<div class="search-widget-wrapper">
+    <div class="search-widget">
         <div class="search-tabs">
             <div class="search-tab active">
                 <i class="fa fa-motorcycle"></i> Cari Motor
             </div>
         </div>
         <form class="search-fields" method="GET" action="{{ route('search') }}">
+            {{-- Lokasi --}}
             <div class="field-group">
                 <label><i class="fa fa-map-marker-alt"></i> Lokasi</label>
-                <div class="field-select">
-                    <i class="fa fa-location-dot field-icon"></i>
-                    <select name="district_id">
-                        <option value="">Pilih Lokasi Terdekat</option>
+                <div class="custom-dropdown" data-name="district_id">
+                    <input type="hidden" name="district_id" value="">
+                    <div class="custom-dropdown-trigger">
+                        <i class="fa fa-location-dot field-icon"></i>
+                        <span class="custom-dropdown-text">Pilih Lokasi Terdekat</span>
+                        <i class="fa fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="custom-dropdown-menu">
+                        <div class="custom-dropdown-item selected" data-value="">Pilih Lokasi Terdekat</div>
                         @foreach($districts as $district)
-                            <option value="{{ $district->id }}">{{ $district->name }}</option>
+                            <div class="custom-dropdown-item" data-value="{{ $district->id }}">{{ $district->name }}</div>
                         @endforeach
-                    </select>
-                    <i class="fa fa-chevron-down chevron"></i>
+                    </div>
                 </div>
             </div>
-            <div class="field-group">
-                <label><i class="fa fa-calendar"></i> Tanggal</label>
-                <div class="field-select">
-                    <i class="fa fa-calendar-alt field-icon"></i>
-                    <input type="date" name="start_date" placeholder="Pilih Tanggal">
-                    <i class="fa fa-chevron-down chevron"></i>
+
+            {{-- Tanggal Mulai & Tanggal Selesai --}}
+            <div class="field-group-dates">
+                <label>
+                    <i class="fa fa-calendar"></i> Tanggal Sewa
+                </label>
+                <div class="field-dates-row">
+                    <div class="field-select">
+                        <i class="fa fa-calendar-alt field-icon"></i>
+                        <input type="date" name="start_date">
+                    </div>
+                    <div class="field-select">
+                        <i class="fa fa-calendar-check field-icon"></i>
+                        <input type="date" name="end_date">
+                    </div>
                 </div>
             </div>
+
+            {{-- Kategori --}}
             <div class="field-group">
                 <label><i class="fa fa-th"></i> Kategori</label>
-                <div class="field-select">
-                    <i class="fa fa-th-large field-icon"></i>
-                    <select name="category">
-                        <option value="">Semua Tipe</option>
-                        <option value="matic">Matic</option>
-                        <option value="bebek">Bebek</option>
-                        <option value="sport">Sport</option>
-                        <option value="trail">Trail</option>
-                        <option value="skutik_premium">Skutik Premium</option>
-                        <option value="bigbike">Bigbike</option>
-                    </select>
-                    <i class="fa fa-chevron-down chevron"></i>
+                <div class="custom-dropdown" data-name="category">
+                    <input type="hidden" name="category" value="">
+                    <div class="custom-dropdown-trigger">
+                        <i class="fa fa-th-large field-icon"></i>
+                        <span class="custom-dropdown-text">Semua Tipe</span>
+                        <i class="fa fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="custom-dropdown-menu">
+                        <div class="custom-dropdown-item selected" data-value="">Semua Tipe</div>
+                        <div class="custom-dropdown-item" data-value="matic">Matic</div>
+                        <div class="custom-dropdown-item" data-value="bebek">Bebek</div>
+                        <div class="custom-dropdown-item" data-value="sport">Sport</div>
+                        <div class="custom-dropdown-item" data-value="trail">Trail</div>
+                        <div class="custom-dropdown-item" data-value="skutik_premium">Skutik Premium</div>
+                        <div class="custom-dropdown-item" data-value="bigbike">Bigbike</div>
+                    </div>
                 </div>
             </div>
+
             <button type="submit" class="btn-search">
                 <i class="fa fa-search"></i> Cari Motor
             </button>
@@ -738,7 +283,7 @@
         heroBg.style.opacity = '0';
         setTimeout(() => {
             heroBg.style.backgroundImage = `url('${slides[currentSlide]}')`;
-            heroBg.style.opacity = '0.25';
+            heroBg.style.opacity = '1';
         }, 400);
         dots.forEach((dot, i) => {
             dot.classList.toggle('active', i === currentSlide);
@@ -748,5 +293,38 @@
     setInterval(() => {
         changeSlide((currentSlide + 1) % slides.length);
     }, 5000);
+
+    // Custom Dropdowns
+    document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
+        const trigger = dropdown.querySelector('.custom-dropdown-trigger');
+        const menu = dropdown.querySelector('.custom-dropdown-menu');
+        const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+        const textEl = dropdown.querySelector('.custom-dropdown-text');
+
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close all other dropdowns
+            document.querySelectorAll('.custom-dropdown.open').forEach(d => {
+                if (d !== dropdown) d.classList.remove('open');
+            });
+            dropdown.classList.toggle('open');
+        });
+
+        menu.querySelectorAll('.custom-dropdown-item').forEach(item => {
+            item.addEventListener('click', () => {
+                // Update selection
+                menu.querySelectorAll('.custom-dropdown-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+                hiddenInput.value = item.dataset.value;
+                textEl.textContent = item.textContent;
+                dropdown.classList.remove('open');
+            });
+        });
+    });
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-dropdown.open').forEach(d => d.classList.remove('open'));
+    });
 </script>
 @endpush

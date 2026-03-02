@@ -1,0 +1,711 @@
+/* ==========================================================================
+   RENMOTE — Front Layout Stylesheet
+   Organized by component. Imported via app.css → Vite.
+   ========================================================================== */
+
+/* ----- Design Tokens (CSS Custom Properties) ----- */
+:root {
+    --rn-blue:         #0058BC;
+    --rn-blue-dark:    #004299;
+    --rn-primary:      #1565C0;
+    --rn-primary-dark: #0D47A1;
+    --rn-accent:       #FF6B00;
+    --rn-green:        #22C55E;
+    --rn-green-dark:   #16a34a;
+    --rn-text:         #1a1a2e;
+    --rn-muted:        #6b7280;
+    --rn-border:       #e5e7eb;
+    --rn-bg:           #f8fafc;
+}
+
+
+/* ==========================================================================
+   1. BASE / RESET
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--rn-text);
+    background: #fff;
+}
+
+
+/* ==========================================================================
+   2. TOP BAR  — Navigation links row above the main navbar
+   ========================================================================== */
+
+.topbar {
+    background: var(--rn-blue);
+    padding: 10px 0;
+    font-size: 12px;
+    color: #fff;
+}
+
+.topbar-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* --- Left: page navigation links --- */
+.topbar-left {
+    display: flex;
+    gap: 0;
+    align-items: center;
+}
+
+.topbar-left a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    position: relative;
+    transition: font-weight .2s ease;
+}
+
+/* Animated underline */
+.topbar-left a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 14px;
+    right: 14px;
+    height: 2px;
+    background: #fff;
+    transform: scaleX(0);
+    transition: transform .25s ease;
+}
+
+.topbar-left a:hover {
+    font-weight: 600;
+}
+
+.topbar-left a:hover::after {
+    transform: scaleX(1);
+}
+
+.topbar-left a.active-link {
+    font-weight: 700;
+}
+
+.topbar-left a.active-link::after {
+    transform: scaleX(1);
+}
+
+/* --- Right: lang switch, vendor CTA, auth --- */
+.topbar-right {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.topbar-right a,
+.topbar-right span {
+    color: #fff;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.topbar-right a:hover {
+    opacity: .8;
+}
+
+/* Language switch */
+.lang-switch {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.lang-switch i {
+    margin-right: 4px;
+}
+
+.lang-switch span {
+    cursor: pointer;
+    font-weight: 700;
+    color: rgba(255, 255, 255, .6);
+}
+
+.lang-switch span.active {
+    color: #fff;
+}
+
+
+/* ==========================================================================
+   3. MAIN NAVBAR  — Logo + search bar + action icons
+   ========================================================================== */
+
+.main-nav {
+    background: var(--rn-blue);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+/* --- Logo --- */
+.logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.logo-box {
+    color: #fff;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: 2px;
+    font-style: italic;
+}
+
+.logo-sub {
+    font-size: 8px;
+    color: rgba(255, 255, 255, .7);
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.logo-img {
+    height: 48px;
+    width: auto;
+    filter: brightness(0) invert(1);
+}
+
+/* Mobile: show small logo, hide full logo */
+.logo-small {
+    display: none;
+}
+
+.logo-full {
+    display: block;
+}
+
+/* --- Search Bar --- */
+.search-bar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    max-width: 900px;
+    border: 2px solid #fff;
+}
+
+.search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 14px 22px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+    color: var(--rn-text);
+    letter-spacing: .3px;
+    caret-color: var(--rn-blue);
+}
+
+.search-bar input:focus {
+    text-transform: none;
+    outline: none;
+    box-shadow: none;
+}
+
+.search-bar:focus-within {
+    border-color: #fff;
+}
+
+.search-bar input::placeholder {
+    color: #999;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: .5px;
+}
+
+.search-bar button {
+    background: #0d68d0;
+    border: none;
+    border-left: 1.5px solid #e0e0e0;
+    padding: 12px 28px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: background .2s;
+}
+
+.search-bar button:hover {
+    background: #0058BC;
+    color: #fff;
+}
+
+/* --- Action Icons (heart, cart, bell) --- */
+.nav-icons {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    margin-left: auto;
+}
+
+.nav-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    font-size: 22px;
+    text-decoration: none;
+    transition: color .25s ease;
+}
+
+.nav-icon:hover {
+    color: rgba(255, 255, 255, .55);
+}
+
+
+/* ==========================================================================
+   4. CTA BANNER  — WhatsApp contact strip
+   ========================================================================== */
+
+.cta-banner {
+    background: linear-gradient(135deg, #1565C0, #0D47A1);
+    border-radius: 20px;
+    padding: 32px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    max-width: 1160px;
+    margin: 20px auto 40px;
+}
+
+.cta-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cta-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, .15);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.cta-text h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+}
+
+.cta-text p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, .8);
+    margin-top: 4px;
+}
+
+.btn-hubungi {
+    background: var(--rn-green);
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background .2s;
+}
+
+.btn-hubungi:hover {
+    background: var(--rn-green-dark);
+}
+
+
+/* ==========================================================================
+   5. FOOTER
+   ========================================================================== */
+
+.site-footer {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 48px 20px 24px;
+}
+
+.footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-brand p {
+    font-size: 12px;
+    color: rgba(255, 255, 255, .5);
+    line-height: 1.7;
+    margin-top: 10px;
+}
+
+.footer-col h4 {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: rgba(255, 255, 255, .9);
+}
+
+.footer-col ul {
+    list-style: none;
+}
+
+.footer-col ul li {
+    margin-bottom: 8px;
+}
+
+.footer-col ul li a {
+    font-size: 12px;
+    color: rgba(255, 255, 255, .5);
+    text-decoration: none;
+    transition: color .2s;
+}
+
+.footer-col ul li a:hover {
+    color: #fff;
+}
+
+.footer-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, .5);
+    margin-bottom: 8px;
+}
+
+.footer-contact-item i {
+    color: var(--rn-accent);
+    width: 16px;
+}
+
+.footer-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, .1);
+    margin-bottom: 20px;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: center;
+    font-size: 12px;
+    color: rgba(255, 255, 255, .4);
+}
+
+
+/* ==========================================================================
+   6. HAMBURGER BUTTON & MOBILE MENU
+   ========================================================================== */
+
+/* Hamburger — hidden on desktop */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+.hamburger span {
+    display: block;
+    width: 100%;
+    height: 2.5px;
+    background: #fff;
+    border-radius: 2px;
+    transition: transform .3s, opacity .3s;
+}
+
+/* Mobile menu overlay */
+.mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity .3s;
+}
+.mobile-menu-overlay.open {
+    display: block;
+    opacity: 1;
+}
+
+/* Mobile slide-in menu */
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 280px;
+    height: 100%;
+    background: var(--rn-blue);
+    z-index: 1000;
+    transition: left .3s ease;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+.mobile-menu.open {
+    left: 0;
+}
+
+.mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,.15);
+}
+
+.mobile-menu-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.mobile-menu-links {
+    padding: 12px 0;
+    flex: 1;
+}
+
+.mobile-menu-links a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    color: rgba(255,255,255,.85);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background .2s, color .2s;
+}
+
+.mobile-menu-links a:hover,
+.mobile-menu-links a.active {
+    background: rgba(255,255,255,.1);
+    color: #fff;
+    font-weight: 700;
+}
+
+.mobile-menu-links a i {
+    width: 20px;
+    text-align: center;
+    font-size: 15px;
+}
+
+.mobile-menu-links hr {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,.15);
+    margin: 8px 24px;
+}
+
+.mobile-menu-lang {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255,255,255,.15);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.mobile-menu-lang .active { font-weight: 800; }
+
+
+/* ==========================================================================
+   7. RESPONSIVE
+   ========================================================================== */
+
+/* ---- Tablet ≤ 1024px ---- */
+@media (max-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    .nav-inner {
+        padding: 14px 20px;
+        gap: 16px;
+    }
+    .topbar-inner {
+        padding: 0 20px;
+    }
+}
+
+/* ---- Mobile ≤ 768px ---- */
+@media (max-width: 768px) {
+    /* Hide topbar on mobile */
+    .topbar {
+        display: none;
+    }
+
+    /* Show hamburger */
+    .hamburger {
+        display: flex;
+    }
+
+    /* Navbar layout: hamburger | logo | search | icons */
+    .nav-inner {
+        padding: 10px 12px;
+        gap: 10px;
+        flex-wrap: nowrap;
+    }
+
+    .logo-full {
+        display: none !important;
+    }
+
+    .logo-small {
+        display: block !important;
+        height: 36px;
+    }
+
+    /* Search bar: shrink but stay visible */
+    .search-bar {
+        max-width: none;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .search-bar input {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .search-bar input::placeholder {
+        font-size: 11px;
+    }
+
+    .search-bar button {
+        padding: 10px 16px;
+        font-size: 16px;
+    }
+
+    /* Icons: smaller on mobile */
+    .nav-icons {
+        gap: 8px;
+        margin-left: 0;
+    }
+
+    .nav-icon {
+        font-size: 18px;
+        width: 32px;
+        height: 32px;
+    }
+
+    /* Footer */
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .site-footer {
+        padding: 32px 16px 20px;
+    }
+
+    /* CTA Banner */
+    .cta-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px 20px;
+        border-radius: 14px;
+    }
+
+    .cta-left {
+        flex-direction: column;
+    }
+}
+
+/* ---- Small mobile ≤ 480px ---- */
+@media (max-width: 480px) {
+    .nav-inner {
+        padding: 8px 8px;
+        gap: 6px;
+    }
+
+    .logo-small {
+        height: 30px;
+    }
+
+    .search-bar input {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .search-bar button {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .nav-icons {
+        gap: 4px;
+    }
+
+    .nav-icon {
+        font-size: 16px;
+        width: 28px;
+        height: 28px;
+    }
+}
