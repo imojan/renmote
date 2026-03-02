@@ -148,6 +148,11 @@
         }
         .search-bar input:focus {
             text-transform: none;
+            outline: none;
+            box-shadow: none;
+        }
+        .search-bar:focus-within {
+            border-color: #fff;
         }
         .search-bar input::placeholder {
             color: #999;
@@ -156,17 +161,17 @@
             letter-spacing: .5px;
         }
         .search-bar button {
-            background: #0058BC;
+            background: #fff;
             border: none;
             border-left: 1.5px solid #e0e0e0;
             padding: 14px 20px;
-            color: #ffffff;
+            color: #0058BC;
             cursor: pointer;
             font-size: 18px;
             transition: background .2s;
             flex-shrink: 0;
         }
-        .search-bar button:hover { background: #f0f4ff; }
+        .search-bar button:hover { background: #e8f0fe; color: #004299; }
 
         .nav-icons {
             display: flex;
@@ -179,14 +184,14 @@
             display: flex; align-items: center; justify-content: center;
             border-radius: 0;
             border: none;
-            color: rgba(255,255,255,.7);
+            color: #ffffff;
             cursor: pointer;
             font-size: 22px;
-            transition: all .2s;
+            transition: all .25s ease;
             text-decoration: none;
             background: transparent;
         }
-        .nav-icon:hover { color: #fff; }
+        .nav-icon:hover { color: rgba(255,255,255,.55); }
 
         /* ===== CTA BANNER ===== */
         .cta-banner {
