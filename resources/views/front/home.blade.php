@@ -52,15 +52,15 @@
             {{-- Tanggal Mulai & Tanggal Selesai --}}
             <div class="field-group-dates">
                 <label>
-                    <i class="fa fa-calendar"></i> Tanggal Sewa
+                    <i class="fa fa-calendar-days"></i> Tanggal Sewa
                 </label>
                 <div class="field-dates-row">
                     <div class="field-select">
-                        <i class="fa fa-calendar-alt field-icon"></i>
+                        <i class="fa fa-calendar-days field-icon"></i>
                         <input type="date" name="start_date">
                     </div>
                     <div class="field-select">
-                        <i class="fa fa-calendar-check field-icon"></i>
+                        <i class="fa fa-calendar-days field-icon"></i>
                         <input type="date" name="end_date">
                     </div>
                 </div>
@@ -68,7 +68,7 @@
 
             {{-- Kategori --}}
             <div class="field-group">
-                <label><i class="fa fa-th"></i> Kategori</label>
+                <label><i class="fa fa-th-large"></i> Kategori</label>
                 <div class="custom-dropdown" data-name="category">
                     <input type="hidden" name="category" value="">
                     <div class="custom-dropdown-trigger">

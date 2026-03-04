@@ -111,12 +111,13 @@
 @yield('content')
 
 {{-- ===== CTA BANNER ===== --}}
-<div style="padding: 0 20px 40px;">
-    <div class="cta-banner">
+<div class="cta-banner">
+    <div class="cta-green-accent"></div>
+    <div class="cta-inner">
         <div class="cta-left">
             <div class="cta-icon"><i class="fab fa-whatsapp"></i></div>
             <div class="cta-text">
-                <h3>Hubungi Admin!</h3>
+                <h3>HUBUNGI ADMIN!</h3>
                 <p>Jika Ada Masalah Lebih Lanjut.</p>
             </div>
         </div>
@@ -131,9 +132,9 @@
     <div class="footer-inner">
         <div class="footer-grid">
             <div class="footer-brand">
-                <img src="{{ asset('images/renmote-logo.png') }}" alt="Renmote" style="height:36px; margin-bottom:12px; filter: brightness(0) invert(1);"
+                <img src="{{ asset('images/renmote-logo.png') }}" alt="Renmote" class="footer-logo"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-                <div class="logo-box" style="display:none; margin-bottom:12px;">RENMOTE</div>
+                <div class="logo-box" style="display:none; margin-bottom:16px;">RENMOTE</div>
                 <p>Untuk Info Promo, Diskon, Cashback, Cicilan, Kredit, DP Ringan, Dan Harga Motor Baru Terbaru Atau Penawaran Menarik Lainnya, Hubungi Kontak Yang Tersedia.</p>
             </div>
             <div class="footer-col">
@@ -151,7 +152,7 @@
                 <h4>Be Part Of Us</h4>
                 <ul>
                     <li><a href="{{ route('register') }}">Jadi Vendor</a></li>
-                    <li><a href="{{ route('login') }}">Sign Up / Sign In</a></li>
+                    <li><a href="{{ route('login') }}">Sign Up/ Sign In</a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -163,20 +164,31 @@
                     <li><a href="#">Testimoni</a></li>
                 </ul>
             </div>
-            <div class="footer-col">
+            <div class="footer-col footer-col-contact">
                 <h4>Kontak Kami</h4>
-                <div class="footer-contact-item"><i class="fab fa-whatsapp"></i> 089631926343 - (24/7 Consultation)</div>
-                <div class="footer-contact-item"><i class="fab fa-tiktok"></i> @renmote</div>
-                <div class="footer-contact-item"><i class="fab fa-instagram"></i> @renmote.id</div>
-                <div class="footer-contact-item"><i class="fa fa-envelope"></i> info@renmote.com</div>
+                <div class="footer-contact-item">
+                    <span class="footer-contact-icon fc-wa"><i class="fab fa-whatsapp"></i></span>
+                    089523132567 - (24/7 Consultation)
+                </div>
+                <div class="footer-contact-item">
+                    <span class="footer-contact-icon fc-tiktok"><i class="fab fa-tiktok"></i></span>
+                    rentalmotoronline
+                </div>
+                <div class="footer-contact-item">
+                    <span class="footer-contact-icon fc-ig"><i class="fab fa-instagram"></i></span>
+                    rentalmotoronline
+                </div>
+                <div class="footer-contact-item">
+                    <span class="footer-contact-icon fc-mail"><i class="fa fa-envelope"></i></span>
+                    renmotebusiness@gmail.com
+                </div>
             </div>
-        </div>
-        <hr class="footer-divider">
-        <div class="footer-bottom">
-            <p>&copy; {{ date('Y') }} Sewa Motor Malang Support By Renmote Motorcycle Rental. All rights reserved.</p>
         </div>
     </div>
 </footer>
+<div class="footer-copyright">
+    <p>&copy; {{ date('Y') }} Sewa Motor Malang Support By <strong>Renmote Motorcycle Rental.</strong> All rights reserved.</p>
+</div>
 
 @stack('scripts')
 <script>

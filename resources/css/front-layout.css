@@ -297,71 +297,95 @@ body {
 
 
 /* ==========================================================================
-   4. CTA BANNER  — WhatsApp contact strip
+   4. CTA BANNER  — WhatsApp contact strip (full-width, attached to footer)
    ========================================================================== */
 
 .cta-banner {
-    background: linear-gradient(135deg, #1565C0, #0D47A1);
-    border-radius: 20px;
+    background: #2B415B;
+    padding: 0;
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-green-accent {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 640px;
+    height: 100%;
+    background: #00920B;
+    clip-path: polygon(25% 0, 100% 0, 100% 100%, 0% 100%);
+    z-index: 0;
+}
+
+.cta-inner {
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 32px 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    max-width: 1160px;
-    margin: 20px auto 40px;
+    position: relative;
+    z-index: 1;
 }
 
 .cta-left {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
 }
 
 .cta-icon {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     background: rgba(255, 255, 255, .15);
-    border-radius: 14px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 30px;
     color: #fff;
     flex-shrink: 0;
 }
 
 .cta-text h3 {
-    font-size: 18px;
-    font-weight: 800;
+    font-size: 24px;
+    font-weight: 600;
     color: #fff;
+    letter-spacing: .5px;
+    font-family: 'Poppins', sans-serif;
 }
 
 .cta-text p {
-    font-size: 13px;
-    color: rgba(255, 255, 255, .8);
+    font-size: 16px;
+    color: rgba(255, 255, 255, .85);
     margin-top: 4px;
+    font-family: 'Poppins', sans-serif;
 }
 
 .btn-hubungi {
-    background: var(--rn-green);
+    background: transparent;
     color: #fff;
-    border: none;
-    padding: 12px 28px;
-    border-radius: 10px;
-    font-size: 14px;
+    border: 2.5px solid #fff;
+    padding: 14px 36px;
+    border-radius: 14px;
+    font-size: 16px;
     font-weight: 700;
+    font-family: 'Poppins', sans-serif;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     white-space: nowrap;
     text-decoration: none;
-    transition: background .2s;
+    transition: all .25s;
 }
 
 .btn-hubungi:hover {
-    background: var(--rn-green-dark);
+    background: #fff;
+    color: #00920B;
 }
 
 
@@ -370,35 +394,45 @@ body {
    ========================================================================== */
 
 .site-footer {
-    background: #1a1a2e;
+    background: #1F252B;
     color: #fff;
-    padding: 48px 20px 24px;
+    padding: 60px 40px 40px;
+    font-family: 'Poppins', sans-serif;
 }
 
 .footer-inner {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
+}
+
+.footer-logo {
+    height: 56px;
+    margin-bottom: 24px;
+    filter: brightness(0) invert(1);
 }
 
 .footer-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-    gap: 40px;
-    margin-bottom: 40px;
+    grid-template-columns: 1.8fr 1fr 1fr 1fr 1.5fr;
+    gap: 48px;
 }
 
 .footer-brand p {
-    font-size: 12px;
+    font-size: 15px;
     color: rgba(255, 255, 255, .5);
-    line-height: 1.7;
-    margin-top: 10px;
+    line-height: 1.8;
+    margin-top: 0;
 }
 
 .footer-col h4 {
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 16px;
-    color: rgba(255, 255, 255, .9);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 22px;
+    color: #fff;
+    text-decoration: underline;
+    text-decoration-color: #006CE7;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 2.5px;
 }
 
 .footer-col ul {
@@ -406,11 +440,11 @@ body {
 }
 
 .footer-col ul li {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .footer-col ul li a {
-    font-size: 12px;
+    font-size: 15px;
     color: rgba(255, 255, 255, .5);
     text-decoration: none;
     transition: color .2s;
@@ -420,31 +454,45 @@ body {
     color: #fff;
 }
 
+/* Contact column with icon circles */
 .footer-contact-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: rgba(255, 255, 255, .5);
-    margin-bottom: 8px;
+    gap: 14px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, .6);
+    margin-bottom: 16px;
 }
 
-.footer-contact-item i {
-    color: var(--rn-accent);
-    width: 16px;
-}
-
-.footer-divider {
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, .1);
-    margin-bottom: 20px;
-}
-
-.footer-bottom {
+.footer-contact-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     display: flex;
+    align-items: center;
     justify-content: center;
-    font-size: 12px;
-    color: rgba(255, 255, 255, .4);
+    font-size: 16px;
+    flex-shrink: 0;
+    color: #fff;
+}
+.fc-wa { background: #25D366; }
+.fc-tiktok { background: #010101; }
+.fc-ig { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.fc-mail { background: #4a90d9; }
+
+/* Copyright bar — separate section */
+.footer-copyright {
+    background: #000000;
+    text-align: center;
+    padding: 18px 40px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, .5);
+    font-family: 'Poppins', sans-serif;
+}
+
+.footer-copyright strong {
+    color: rgba(255, 255, 255, .8);
+    font-weight: 700;
 }
 
 
@@ -666,15 +714,27 @@ body {
     }
 
     /* CTA Banner */
-    .cta-banner {
+    .cta-inner {
+        padding: 28px 16px;
         flex-direction: column;
         text-align: center;
-        padding: 24px 20px;
-        border-radius: 14px;
+    }
+
+    .cta-green-accent {
+        display: none;
     }
 
     .cta-left {
         flex-direction: column;
+    }
+
+    .site-footer {
+        padding: 40px 16px 32px;
+    }
+
+    .footer-copyright {
+        padding: 16px;
+        font-size: 12px;
     }
 }
 
