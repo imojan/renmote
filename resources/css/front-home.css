@@ -12,12 +12,25 @@
     display: flex;
     align-items: center;
 }
-.hero-bg {
+.hero-track {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    height: 100%;
+    display: flex;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+.hero-track.no-transition {
+    transition: none;
+}
+.hero-slide {
+    width: 100vw;
+    min-width: 100vw;
+    height: 100%;
     background-size: cover;
     background-position: center;
-    transition: opacity 1s ease;
+    flex-shrink: 0;
 }
 .hero-overlay {
     position: absolute;
@@ -29,6 +42,7 @@
         rgba(0,0,0,0.05) 75%,
         transparent 100%
     );
+    z-index: 1;
 }
 .hero-content {
     position: relative;
@@ -53,28 +67,26 @@
     text-shadow: 0 1px 6px rgba(0,0,0,0.3);
 }
 
-/* Slide dots — centered at bottom of hero */
-.hero-dots {
+/* Slide indicators — horizontal bars centered above search widget */
+.hero-indicators {
     position: absolute;
-    bottom: 28px;
+    bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     gap: 8px;
     z-index: 3;
 }
-.hero-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.45);
+.hero-bar {
+    width: 48px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.35);
     cursor: pointer;
-    transition: all 0.3s;
+    transition: background 0.3s ease;
 }
-.hero-dot.active {
+.hero-bar.active {
     background: #fff;
-    width: 28px;
-    border-radius: 5px;
 }
 
 
@@ -166,17 +178,10 @@
 }
 .field-select:hover { border-color: #ccc; }
 .field-select:focus-within { border-color: #e0e0e0; box-shadow: none; }
-.field-select input[type="date"]:focus {
+.field-select input:focus {
     outline: none;
     border: none;
     box-shadow: none;
-}
-.field-select input[type="date"]::-webkit-datetime-edit {
-    color: #444;
-}
-.field-select input[type="date"]::-webkit-calendar-picker-indicator {
-    opacity: 0.5;
-    cursor: pointer;
 }
 .field-select i.field-icon {
     color: var(--rn-blue);
@@ -185,7 +190,6 @@
     flex-shrink: 0;
 }
 .field-select select,
-.field-select input[type="date"],
 .field-select input {
     flex: 1;
     border: none;
@@ -200,6 +204,23 @@
     appearance: none;
     height: 100%;
     min-width: 0;
+}
+/* Flatpickr alt input inside field-select */
+.field-select input.flatpickr-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0 12px;
+    font-size: 14px;
+    color: #444;
+    background: transparent;
+    font-family: inherit;
+    cursor: pointer;
+    height: 100%;
+    min-width: 0;
+}
+.field-select input.flatpickr-input::placeholder {
+    color: #999;
 }
 .field-select .chevron {
     color: #999;

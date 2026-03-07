@@ -6,7 +6,17 @@
 
 {{-- ===== HERO ===== --}}
 <section class="hero" id="heroSection">
-    <div class="hero-bg" id="heroBg" style="background-image: url('{{ asset('images/malang-1.png') }}');"></div>
+    <div class="hero-track" id="heroTrack">
+        @php
+            $heroImages = [
+                asset('images/malang-1.png'),
+                asset('images/malang-2.png'),
+            ];
+        @endphp
+        @foreach($heroImages as $img)
+        <div class="hero-slide" style="background-image: url('{{ $img }}');"></div>
+        @endforeach
+    </div>
     <div class="hero-overlay"></div>
     <div class="hero-content">
         <h1>Platform Sewa Motor <span>Terpercaya</span><br>di Kota Malang</h1>
@@ -15,9 +25,10 @@
             Booking mudah, cepat dan aman
         </p>
     </div>
-    <div class="hero-dots">
-        <div class="hero-dot active" onclick="changeSlide(0)"></div>
-        <div class="hero-dot" onclick="changeSlide(1)"></div>
+    <div class="hero-indicators" id="heroIndicators">
+        @foreach($heroImages as $i => $img)
+        <div class="hero-bar {{ $i === 0 ? 'active' : '' }}" data-index="{{ $i }}"></div>
+        @endforeach
     </div>
 </section>
 
@@ -57,11 +68,11 @@
                 <div class="field-dates-row">
                     <div class="field-select">
                         <i class="fa fa-calendar-days field-icon"></i>
-                        <input type="date" name="start_date">
+                        <input type="text" name="start_date" id="startDate" placeholder="Mulai Sewa" readonly>
                     </div>
                     <div class="field-select">
                         <i class="fa fa-calendar-days field-icon"></i>
-                        <input type="date" name="end_date">
+                        <input type="text" name="end_date" id="endDate" placeholder="Selesai Sewa" readonly>
                     </div>
                 </div>
             </div>
@@ -269,30 +280,80 @@
 
 @push('scripts')
 <script>
-    // Hero Slider
-    const slides = [
-        '{{ asset("images/malang-1.png") }}',
-        '{{ asset("images/malang-2.png") }}'
-    ];
-    let currentSlide = 0;
-    const heroBg = document.getElementById('heroBg');
-    const dots = document.querySelectorAll('.hero-dot');
+    // Hero Carousel — infinite right-scroll
+    const heroTrack = document.getElementById('heroTrack');
+    const originalSlides = Array.from(heroTrack.querySelectorAll('.hero-slide'));
+    const heroBars = document.querySelectorAll('.hero-bar');
+    const totalOriginal = originalSlides.length;
+    let currentIndex = 0;        // logical index (0-based in original set)
+    let trackPosition = 0;       // physical position in the extended track
+    let slideInterval;
+    let isTransitioning = false;
 
-    function changeSlide(index) {
-        currentSlide = index;
-        heroBg.style.opacity = '0';
-        setTimeout(() => {
-            heroBg.style.backgroundImage = `url('${slides[currentSlide]}')`;
-            heroBg.style.opacity = '1';
-        }, 400);
-        dots.forEach((dot, i) => {
-            dot.classList.toggle('active', i === currentSlide);
+    // Clone all slides and append to create: [orig1, orig2, ...] + [clone1, clone2, ...]
+    originalSlides.forEach(slide => {
+        const clone = slide.cloneNode(true);
+        heroTrack.appendChild(clone);
+    });
+
+    const allSlides = heroTrack.querySelectorAll('.hero-slide');
+
+    function updateBars() {
+        heroBars.forEach((bar, i) => {
+            bar.classList.toggle('active', i === currentIndex);
         });
     }
 
-    setInterval(() => {
-        changeSlide((currentSlide + 1) % slides.length);
-    }, 5000);
+    function slideToPosition(pos) {
+        isTransitioning = true;
+        trackPosition = pos;
+        heroTrack.style.transform = `translateX(-${trackPosition * 100}vw)`;
+    }
+
+    function nextSlide() {
+        if (isTransitioning) return;
+        trackPosition++;
+        currentIndex = trackPosition % totalOriginal;
+        updateBars();
+        slideToPosition(trackPosition);
+    }
+
+    // When transition ends, if we're in the cloned zone, reset instantly
+    heroTrack.addEventListener('transitionend', () => {
+        isTransitioning = false;
+        if (trackPosition >= totalOriginal) {
+            heroTrack.classList.add('no-transition');
+            trackPosition = trackPosition - totalOriginal;
+            heroTrack.style.transform = `translateX(-${trackPosition * 100}vw)`;
+            // Force reflow then remove no-transition
+            heroTrack.offsetHeight;
+            heroTrack.classList.remove('no-transition');
+        }
+    });
+
+    // Click on indicator bars — go to that slide (always move right)
+    heroBars.forEach(bar => {
+        bar.addEventListener('click', () => {
+            if (isTransitioning) return;
+            const targetIndex = parseInt(bar.dataset.index);
+            // Calculate how many steps forward to reach target
+            let stepsForward = (targetIndex - currentIndex + totalOriginal) % totalOriginal;
+            if (stepsForward === 0) return;
+            trackPosition += stepsForward;
+            currentIndex = targetIndex;
+            updateBars();
+            slideToPosition(trackPosition);
+            resetAutoSlide();
+        });
+    });
+
+    function resetAutoSlide() {
+        clearInterval(slideInterval);
+        slideInterval = setInterval(nextSlide, 5000);
+    }
+
+    // Start auto-slide
+    slideInterval = setInterval(nextSlide, 5000);
 
     // Custom Dropdowns
     document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
@@ -325,6 +386,35 @@
     // Close dropdowns on outside click
     document.addEventListener('click', () => {
         document.querySelectorAll('.custom-dropdown.open').forEach(d => d.classList.remove('open'));
+    });
+
+    // Flatpickr — modern date pickers
+    const fpConfig = {
+        locale: window.flatpickrIndonesian,
+        dateFormat: 'd/m/Y',
+        altInput: true,
+        altFormat: 'j F Y',
+        disableMobile: true,
+        monthSelectorType: 'static',
+        minDate: 'today',
+        prevArrow: '<i class="fa fa-chevron-left"></i>',
+        nextArrow: '<i class="fa fa-chevron-right"></i>',
+    };
+
+    const startPicker = flatpickr('#startDate', {
+        ...fpConfig,
+        placeholder: 'Mulai Sewa',
+        onChange: function(selectedDates) {
+            if (selectedDates.length > 0) {
+                endPicker.set('minDate', selectedDates[0]);
+                endPicker.open();
+            }
+        }
+    });
+
+    const endPicker = flatpickr('#endDate', {
+        ...fpConfig,
+        placeholder: 'Selesai Sewa',
     });
 </script>
 @endpush
