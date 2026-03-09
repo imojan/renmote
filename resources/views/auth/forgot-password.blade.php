@@ -1,25 +1,48 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+    @section('title', 'Lupa Password')
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <h1 class="auth-title">Lupa password?</h1>
+    <p class="auth-subtitle">Masukkan email kamu dan kami akan kirimkan link untuk reset password.</p>
 
-    <form method="POST" action="{{ route('password.email') }}">
+    @if (session('status'))
+        <div class="auth-alert success">{{ session('status') }}</div>
+    @endif
+
+    @if ($errors->any())
+        <div class="auth-alert error">
+            @foreach ($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('password.email') }}" id="forgotForm">
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="auth-field">
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}"
+                   placeholder="nama@email.com" required autofocus>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="auth-submit-btn" id="forgotBtn">
+            <span class="btn-text">Kirim Link Reset</span>
+            <span class="spinner"></span>
+        </button>
     </form>
+
+    <div class="auth-footer">
+        <p>Ingat password kamu?</p>
+        <a href="{{ route('login') }}">Kembali ke login</a>
+    </div>
+
+    @push('scripts')
+    <script>
+        document.getElementById('forgotForm').addEventListener('submit', function() {
+            const btn = document.getElementById('forgotBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+        });
+    </script>
+    @endpush
 </x-guest-layout>

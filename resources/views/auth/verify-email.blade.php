@@ -1,31 +1,25 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
+    @section('title', 'Verifikasi Email')
+
+    <h1 class="auth-title">Verifikasi email</h1>
+    <p class="auth-subtitle">Terima kasih telah mendaftar! Silakan verifikasi email kamu dengan klik link yang telah kami kirim. Belum menerima email?</p>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-        </div>
+        <div class="auth-alert success">Link verifikasi baru telah dikirim ke email kamu.</div>
     @endif
 
-    <div class="mt-4 flex items-center justify-between">
-        <form method="POST" action="{{ route('verification.send') }}">
-            @csrf
+    <form method="POST" action="{{ route('verification.send') }}">
+        @csrf
+        <button type="submit" class="auth-submit-btn">
+            <span class="btn-text">Kirim Ulang Email Verifikasi</span>
+            <span class="spinner"></span>
+        </button>
+    </form>
 
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
-            </div>
-        </form>
-
+    <div class="auth-footer">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-
-            <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {{ __('Log Out') }}
-            </button>
+            <button type="submit" style="background:none;border:none;font-size:0.9375rem;font-weight:700;color:#1a1a2e;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-family:inherit;">Keluar</button>
         </form>
     </div>
 </x-guest-layout>

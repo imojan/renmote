@@ -3,6 +3,7 @@
 @import './flatpickr-renmote.css';
 @import './front-layout.css';
 @import './front-home.css';
+@import './auth.css';
 
 @tailwind base;
 @tailwind components;
