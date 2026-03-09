@@ -68,11 +68,13 @@
                 <div class="field-dates-row">
                     <div class="field-select">
                         <i class="fa fa-calendar-days field-icon"></i>
-                        <input type="text" name="start_date" id="startDate" placeholder="Mulai Sewa" readonly>
+                        <input type="text" name="start_date" id="startDate" placeholder="dd/mm/yyyy" autocomplete="off" maxlength="10">
+                        <button type="button" class="date-picker-btn" data-target="startDate"><i class="fa fa-calendar-days"></i></button>
                     </div>
                     <div class="field-select">
                         <i class="fa fa-calendar-days field-icon"></i>
-                        <input type="text" name="end_date" id="endDate" placeholder="Selesai Sewa" readonly>
+                        <input type="text" name="end_date" id="endDate" placeholder="dd/mm/yyyy" autocomplete="off" maxlength="10">
+                        <button type="button" class="date-picker-btn" data-target="endDate"><i class="fa fa-calendar-days"></i></button>
                     </div>
                 </div>
             </div>
@@ -390,12 +392,11 @@
 
     // Flatpickr — modern date pickers
     const fpConfig = {
-        locale: window.flatpickrIndonesian,
+        locale: 'id',
         dateFormat: 'd/m/Y',
-        altInput: true,
-        altFormat: 'j F Y',
         disableMobile: true,
-        monthSelectorType: 'static',
+        allowInput: true,
+        clickOpens: false,
         minDate: 'today',
         prevArrow: '<i class="fa fa-chevron-left"></i>',
         nextArrow: '<i class="fa fa-chevron-right"></i>',
@@ -403,7 +404,6 @@
 
     const startPicker = flatpickr('#startDate', {
         ...fpConfig,
-        placeholder: 'Mulai Sewa',
         onChange: function(selectedDates) {
             if (selectedDates.length > 0) {
                 endPicker.set('minDate', selectedDates[0]);
@@ -414,7 +414,49 @@
 
     const endPicker = flatpickr('#endDate', {
         ...fpConfig,
-        placeholder: 'Selesai Sewa',
+    });
+
+    // Calendar icon buttons open picker
+    document.querySelectorAll('.date-picker-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const targetId = btn.dataset.target;
+            if (targetId === 'startDate') startPicker.open();
+            if (targetId === 'endDate') endPicker.open();
+        });
+    });
+
+    // Block non-numeric keys, allow only digits and navigation keys
+    document.querySelectorAll('#startDate, #endDate').forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            // Allow: backspace, delete, tab, escape, enter, arrows
+            if ([8, 9, 13, 27, 37, 38, 39, 40, 46].includes(e.keyCode)) return;
+            // Allow Ctrl+A, Ctrl+C, Ctrl+V
+            if ((e.ctrlKey || e.metaKey) && [65, 67, 86].includes(e.keyCode)) return;
+            // Block non-digit keys
+            if ((e.key < '0' || e.key > '9')) {
+                e.preventDefault();
+            }
+        });
+
+        // Auto-format dd/mm/yyyy as user types
+        input.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/[^0-9]/g, '');
+            if (val.length > 8) val = val.substring(0, 8);
+            if (val.length >= 5) {
+                val = val.substring(0, 2) + '/' + val.substring(2, 4) + '/' + val.substring(4);
+            } else if (val.length >= 3) {
+                val = val.substring(0, 2) + '/' + val.substring(2);
+            }
+            e.target.value = val;
+
+            // When full date is typed, set it in Flatpickr
+            if (val.length === 10) {
+                const picker = input.id === 'startDate' ? startPicker : endPicker;
+                picker.setDate(val, true, 'd/m/Y');
+            }
+        });
     });
 </script>
 @endpush

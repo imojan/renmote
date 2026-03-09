@@ -189,6 +189,26 @@
     padding-left: 14px;
     flex-shrink: 0;
 }
+/* Calendar picker button */
+.date-picker-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-left: 1px solid #e0e0e0;
+    padding: 0 14px;
+    cursor: pointer;
+    color: var(--rn-blue);
+    font-size: 15px;
+    height: 100%;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+}
+.date-picker-btn:hover {
+    background: #f0f5ff;
+    color: #004a9e;
+}
 .field-select select,
 .field-select input {
     flex: 1;
