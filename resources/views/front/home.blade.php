@@ -66,14 +66,20 @@
                     <i class="fa fa-calendar-days"></i> Tanggal Sewa
                 </label>
                 <div class="field-dates-row">
-                    <div class="field-select">
+                    <div class="field-select date-field">
                         <i class="fa fa-calendar-days field-icon"></i>
-                        <input type="text" name="start_date" id="startDate" placeholder="dd/mm/yyyy" autocomplete="off" maxlength="10">
+                        <div class="date-input-wrap">
+                            <span class="date-mask">dd/mm/yyyy</span>
+                            <input type="text" name="start_date" id="startDate" autocomplete="off" maxlength="10">
+                        </div>
                         <button type="button" class="date-picker-btn" data-target="startDate"><i class="fa fa-calendar-days"></i></button>
                     </div>
-                    <div class="field-select">
+                    <div class="field-select date-field">
                         <i class="fa fa-calendar-days field-icon"></i>
-                        <input type="text" name="end_date" id="endDate" placeholder="dd/mm/yyyy" autocomplete="off" maxlength="10">
+                        <div class="date-input-wrap">
+                            <span class="date-mask">dd/mm/yyyy</span>
+                            <input type="text" name="end_date" id="endDate" autocomplete="off" maxlength="10">
+                        </div>
                         <button type="button" class="date-picker-btn" data-target="endDate"><i class="fa fa-calendar-days"></i></button>
                     </div>
                 </div>
@@ -402,9 +408,24 @@
         nextArrow: '<i class="fa fa-chevron-right"></i>',
     };
 
+    // Helper to update date mask for an input
+    function refreshDateMask(input) {
+        const mask = input.parentElement.querySelector('.date-mask');
+        const template = 'dd/mm/yyyy';
+        const val = input.value;
+        if (val.length === 0) {
+            mask.innerHTML = '<span class="mask-placeholder">' + template + '</span>';
+        } else if (val.length < 10) {
+            mask.innerHTML = '<span class="mask-typed">' + val + '</span><span class="mask-placeholder">' + template.substring(val.length) + '</span>';
+        } else {
+            mask.innerHTML = '<span class="mask-typed">' + val + '</span>';
+        }
+    }
+
     const startPicker = flatpickr('#startDate', {
         ...fpConfig,
         onChange: function(selectedDates) {
+            refreshDateMask(document.getElementById('startDate'));
             if (selectedDates.length > 0) {
                 endPicker.set('minDate', selectedDates[0]);
                 endPicker.open();
@@ -414,6 +435,9 @@
 
     const endPicker = flatpickr('#endDate', {
         ...fpConfig,
+        onChange: function() {
+            refreshDateMask(document.getElementById('endDate'));
+        }
     });
 
     // Calendar icon buttons open picker
@@ -429,6 +453,10 @@
 
     // Block non-numeric keys, allow only digits and navigation keys
     document.querySelectorAll('#startDate, #endDate').forEach(input => {
+
+        // Initial render
+        refreshDateMask(input);
+
         input.addEventListener('keydown', (e) => {
             // Allow: backspace, delete, tab, escape, enter, arrows
             if ([8, 9, 13, 27, 37, 38, 39, 40, 46].includes(e.keyCode)) return;
@@ -450,6 +478,7 @@
                 val = val.substring(0, 2) + '/' + val.substring(2);
             }
             e.target.value = val;
+            refreshDateMask(input);
 
             // When full date is typed, set it in Flatpickr
             if (val.length === 10) {
@@ -457,6 +486,14 @@
                 picker.setDate(val, true, 'd/m/Y');
             }
         });
+
+        // Update mask on focus/blur and when flatpickr sets value
+        input.addEventListener('focus', () => refreshDateMask(input));
+        input.addEventListener('blur', () => refreshDateMask(input));
+
+        // Watch for flatpickr programmatic value changes
+        const observer = new MutationObserver(() => refreshDateMask(input));
+        observer.observe(input, { attributes: true, attributeFilter: ['value'] });
     });
 </script>
 @endpush

@@ -22,6 +22,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'phone_number',
+        'is_phone_verified',
     ];
 
     /**
@@ -44,6 +46,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_phone_verified' => 'boolean',
         ];
     }
 
@@ -61,5 +64,13 @@ class User extends Authenticatable
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    /**
+     * User memiliki banyak Addresses
+     */
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
     }
 }

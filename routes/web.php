@@ -12,11 +12,13 @@ use App\Http\Controllers\Front\VendorController as FrontVendorController;
 // User Controllers
 use App\Http\Controllers\User\DashboardController as UserDashboardController;
 use App\Http\Controllers\User\BookingController as UserBookingController;
+use App\Http\Controllers\User\AddressController;
 
 // Vendor Controllers
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Vendor\VehicleController as VendorVehicleController;
 use App\Http\Controllers\Vendor\BookingController as VendorBookingController;
+use App\Http\Controllers\Vendor\VendorRegistrationController;
 
 // Admin Controllers
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -48,6 +50,14 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     Route::post('/bookings/{vehicle}', [UserBookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{id}', [UserBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{id}/cancel', [UserBookingController::class, 'cancel'])->name('bookings.cancel');
+
+    // Addresses
+    Route::get('/addresses', [AddressController::class, 'index'])->name('addresses.index');
+    Route::get('/addresses/create', [AddressController::class, 'create'])->name('addresses.create');
+    Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
+    Route::put('/addresses/{address}', [AddressController::class, 'update'])->name('addresses.update');
+    Route::delete('/addresses/{address}', [AddressController::class, 'destroy'])->name('addresses.destroy');
+    Route::post('/addresses/{address}/default', [AddressController::class, 'setDefault'])->name('addresses.setDefault');
 });
 
 /*
@@ -55,6 +65,9 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
 | Vendor Routes (middleware: auth + role:vendor)
 |--------------------------------------------------------------------------
 */
+// Vendor Registration (auth only, no role check — user registers as vendor)
+Route::middleware('auth')->post('/vendor/register', [VendorRegistrationController::class, 'store'])->name('vendor.register');
+
 Route::middleware(['auth', 'role:vendor'])->prefix('vendor')->name('vendor.')->group(function () {
     Route::get('/dashboard', [VendorDashboardController::class, 'index'])->name('dashboard');
     
@@ -87,6 +100,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/vendors/{vendor}/verify', [AdminVendorController::class, 'verify'])->name('vendors.verify');
     Route::post('/vendors/{vendor}/unverify', [AdminVendorController::class, 'unverify'])->name('vendors.unverify');
     Route::delete('/vendors/{vendor}', [AdminVendorController::class, 'destroy'])->name('vendors.destroy');
+
+    // Vendor Document Review (generate signed temp URL)
+    Route::get('/vendor-documents/{document}/review', [VendorRegistrationController::class, 'reviewDocument'])->name('vendor-documents.review');
     
     // Vehicles
     Route::get('/vehicles', [AdminVehicleController::class, 'index'])->name('vehicles.index');
@@ -98,6 +114,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
     Route::patch('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
 });
+
+// Signed URL route for serving vendor documents (no auth — validated by signature)
+Route::get('/vendor-documents/{document}/serve', [VendorRegistrationController::class, 'serveDocument'])
+    ->name('vendor.document.serve')
+    ->middleware('signed');
 
 /*
 |--------------------------------------------------------------------------

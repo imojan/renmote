@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\OtpController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -56,4 +57,14 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    // Phone OTP Verification
+    // Rate limit: max 5 send requests per 5 minutes, max 10 verify attempts per 5 minutes
+    Route::post('otp/send', [OtpController::class, 'send'])
+        ->middleware('throttle:5,5')
+        ->name('otp.send');
+
+    Route::post('otp/verify', [OtpController::class, 'verify'])
+        ->middleware('throttle:10,5')
+        ->name('otp.verify');
 });

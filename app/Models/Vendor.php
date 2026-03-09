@@ -13,6 +13,8 @@ class Vendor extends Model
         'description',
         'phone',
         'address',
+        'bank_name',
+        'bank_account',
         'status',
         'verified',
     ];
@@ -39,5 +41,13 @@ class Vendor extends Model
     public function vehicles()
     {
         return $this->hasMany(Vehicle::class);
+    }
+
+    /**
+     * Vendor memiliki banyak Documents
+     */
+    public function documents()
+    {
+        return $this->hasMany(VendorDocument::class);
     }
 }
