@@ -21,7 +21,7 @@
                 <!-- Logo -->
                 <div class="auth-logo">
                     <a href="/">
-                        <img src="{{ asset('images/renmote-logo.png') }}" alt="{{ config('app.name') }}">
+                        <img src="{{ asset('images/renmote-biru.png') }}" alt="{{ config('app.name') }}">
                     </a>
                 </div>
 

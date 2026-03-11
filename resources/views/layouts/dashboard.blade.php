@@ -14,60 +14,108 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100">
-        <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 transform transition-transform duration-200 ease-in-out">
-            <div class="flex items-center justify-center h-16 bg-gray-900">
-                <a href="{{ route('home') }}" class="text-xl font-bold text-white">
-                    🏍️ Renmote
+    <div class="dash-wrapper" id="dashWrapper">
+        <!-- ── Mobile Overlay ─────────────────────────────── -->
+        <div class="dash-overlay" id="dashOverlay" onclick="toggleSidebar()"></div>
+
+        <!-- ── Sidebar ────────────────────────────────────── -->
+        <aside class="dash-sidebar" id="dashSidebar">
+            <!-- Brand -->
+            <div class="dash-sidebar-brand">
+                <a href="{{ route('home') }}">
+                    <img src="{{ asset('images/renmote-biru.png') }}" alt="Renmote" class="dash-brand-logo">
                 </a>
+                <button class="dash-sidebar-close" onclick="toggleSidebar()" aria-label="Close sidebar">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
-            
-            <nav class="mt-6">
+
+            <!-- Navigation Label -->
+            <div class="dash-nav-label">MENU</div>
+
+            <!-- Navigation -->
+            <nav class="dash-nav">
                 @yield('sidebar')
             </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="dash-sidebar-footer">
+                <div class="dash-sidebar-user">
+                    <div class="dash-sidebar-avatar">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <div class="dash-sidebar-user-info">
+                        <div class="dash-sidebar-user-name">{{ auth()->user()->name }}</div>
+                        <div class="dash-sidebar-user-role">{{ ucfirst(auth()->user()->role) }}</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
-        <!-- Main Content -->
-        <div class="ml-64">
-            <!-- Top Navigation -->
-            <header class="bg-white shadow-sm">
-                <div class="flex items-center justify-between h-16 px-6">
-                    <h1 class="text-lg font-semibold text-gray-800">
-                        @yield('title', 'Dashboard')
-                    </h1>
-                    
-                    <div class="flex items-center space-x-4">
-                        <span class="text-sm text-gray-600">{{ auth()->user()->name }}</span>
-                        <span class="px-2 py-1 text-xs font-medium rounded-full 
-                            @if(auth()->user()->role === 'admin') bg-red-100 text-red-800
-                            @elseif(auth()->user()->role === 'vendor') bg-blue-100 text-blue-800
-                            @else bg-green-100 text-green-800 @endif">
-                            {{ ucfirst(auth()->user()->role) }}
-                        </span>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="text-sm text-gray-600 hover:text-gray-900">
-                                Logout
-                            </button>
-                        </form>
+        <!-- ── Main ───────────────────────────────────────── -->
+        <div class="dash-main">
+            <!-- Topbar -->
+            <header class="dash-topbar">
+                <div class="dash-topbar-left">
+                    <button class="dash-menu-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                    <h1 class="dash-page-title">@yield('title', 'Dashboard')</h1>
+                </div>
+
+                <div class="dash-topbar-right">
+                    <!-- Date -->
+                    <span class="dash-topbar-date">{{ now()->translatedFormat('l, d M Y') }}</span>
+
+                    <!-- User Dropdown -->
+                    <div class="dash-user-dropdown" id="userDropdown">
+                        <button class="dash-user-btn" onclick="toggleUserMenu()">
+                            <div class="dash-topbar-avatar">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div class="dash-dropdown-menu" id="userMenu">
+                            <div class="dash-dropdown-header">
+                                <strong>{{ auth()->user()->name }}</strong>
+                                <small>{{ auth()->user()->email }}</small>
+                            </div>
+                            <div class="dash-dropdown-divider"></div>
+                            <a href="{{ route('profile.edit') }}" class="dash-dropdown-item">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                Profil
+                            </a>
+                            <div class="dash-dropdown-divider"></div>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="dash-dropdown-item dash-dropdown-logout">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </header>
 
             <!-- Page Content -->
-            <main class="p-6">
+            <main class="dash-content">
                 <!-- Flash Messages -->
                 @if(session('success'))
-                    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                    <div class="dash-alert dash-alert-success">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         {{ session('success') }}
                     </div>
                 @endif
 
                 @if(session('error'))
-                    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <div class="dash-alert dash-alert-error">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         {{ session('error') }}
                     </div>
                 @endif
@@ -76,5 +124,22 @@
             </main>
         </div>
     </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('dashWrapper').classList.toggle('sidebar-open');
+        }
+        function toggleUserMenu() {
+            document.getElementById('userMenu').classList.toggle('show');
+        }
+        // Close dropdown on outside click
+        document.addEventListener('click', function(e) {
+            const dd = document.getElementById('userDropdown');
+            if (dd && !dd.contains(e.target)) {
+                document.getElementById('userMenu').classList.remove('show');
+            }
+        });
+    </script>
+    @stack('scripts')
 </body>
 </html>

@@ -4,6 +4,7 @@
 @import './front-layout.css';
 @import './front-home.css';
 @import './auth.css';
+@import './dashboard.css';
 
 @tailwind base;
 @tailwind components;
