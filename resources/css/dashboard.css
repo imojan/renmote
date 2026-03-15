@@ -8,6 +8,8 @@
     min-height: 100vh;
     background: #f1f5f9;
     font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 /* ── Sidebar ───────────────────────────────────────────────── */
@@ -39,13 +41,20 @@
 .dash-sidebar-brand {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 20px 20px 16px;
+    justify-content: center;
+    padding: 24px 20px 20px;
     border-bottom: 1px solid #1e293b;
+    position: relative;
+}
+
+.dash-brand-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .dash-brand-logo {
-    height: 32px;
+    height: 36px;
     width: auto;
     object-fit: contain;
     filter: brightness(0) invert(1);
@@ -58,6 +67,17 @@
     color: #94a3b8;
     cursor: pointer;
     padding: 4px;
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.dash-sidebar-close:hover {
+    background: #1e293b;
+    color: #e2e8f0;
 }
 
 /* Nav Label */
@@ -179,8 +199,8 @@
     margin-left: 260px;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-}
+    min-height: 100vh;    max-width: calc(100vw - 260px);
+    overflow-x: hidden;}
 
 /* ── Topbar ────────────────────────────────────────────────── */
 .dash-topbar {
@@ -367,10 +387,32 @@
     border: 1px solid #fecaca;
 }
 
+/* ── Welcome Banner ─────────────────────────────────────────── */
+.dash-welcome-banner {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    border-radius: 14px;
+    padding: 28px 24px;
+    margin-bottom: 24px;
+}
+
+.dash-welcome-banner h2 {
+    font-size: 1.375rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 6px;
+    font-family: 'Montserrat', 'Poppins', sans-serif;
+}
+
+.dash-welcome-banner p {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
 /* ── Stat Cards ────────────────────────────────────────────── */
 .dash-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: 20px;
     margin-bottom: 24px;
 }
@@ -491,6 +533,11 @@
 }
 
 /* ── Table ─────────────────────────────────────────────────── */
+.dash-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .dash-table {
     width: 100%;
     border-collapse: collapse;
@@ -599,8 +646,17 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.5);
     z-index: 90;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+/* ── Tablet (≤1024px) ──────────────────────────────────────── */
+@media (max-width: 1280px) {
+    .dash-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 @media (max-width: 1024px) {
@@ -614,6 +670,8 @@
 
     .dash-main {
         margin-left: 0;
+        max-width: 100vw;
+        width: 100%;
     }
 
     .dash-menu-toggle {
@@ -636,9 +694,14 @@
     .dash-topbar-date {
         display: none;
     }
+
+    .dash-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
-@media (max-width: 640px) {
+/* ── Small Tablet / Large Phone (≤768px) ───────────────────── */
+@media (max-width: 768px) {
     .dash-content {
         padding: 16px;
     }
@@ -650,9 +713,226 @@
 
     .dash-stat-card {
         padding: 14px;
+        gap: 10px;
+    }
+
+    .dash-stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+    }
+
+    .dash-stat-icon svg {
+        width: 20px;
+        height: 20px;
     }
 
     .dash-stat-value {
         font-size: 1.25rem;
+    }
+
+    .dash-stat-label {
+        font-size: 0.625rem;
+    }
+
+    .dash-stat-sub {
+        font-size: 0.6875rem;
+    }
+
+    .dash-page-title {
+        font-size: 1rem;
+    }
+
+    .dash-topbar {
+        padding: 0 16px;
+        height: 56px;
+    }
+
+    /* Card & table improvements */
+    .dash-card-header {
+        padding: 14px 16px 12px;
+    }
+
+    .dash-card-body {
+        padding: 12px 16px 16px;
+    }
+
+    /* Make tables scroll horizontally on small screens */
+    .dash-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .dash-table {
+        min-width: 420px;
+    }
+
+    .dash-table th,
+    .dash-table td {
+        padding: 10px;
+        font-size: 0.75rem;
+    }
+
+    /* Welcome banner */
+    .dash-welcome-banner {
+        padding: 20px 18px;
+    }
+
+    .dash-welcome-banner h2 {
+        font-size: 1.125rem;
+    }
+
+    .dash-welcome-banner p {
+        font-size: 0.8125rem;
+    }
+}
+
+/* ── Phone (≤480px) ────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .dash-content {
+        padding: 12px;
+    }
+
+    .dash-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .dash-stat-card {
+        flex-direction: row;
+        align-items: center;
+        padding: 12px 14px;
+        gap: 12px;
+        border-radius: 10px;
+    }
+
+    .dash-stat-icon {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        border-radius: 10px;
+    }
+
+    .dash-stat-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .dash-stat-value {
+        font-size: 1.125rem;
+    }
+
+    .dash-stat-label {
+        font-size: 0.5625rem;
+    }
+
+    .dash-stat-sub {
+        font-size: 0.625rem;
+    }
+
+    .dash-page-title {
+        font-size: 0.9375rem;
+    }
+
+    .dash-topbar {
+        padding: 0 12px;
+        height: 52px;
+    }
+
+    .dash-user-btn {
+        padding: 3px 8px 3px 3px;
+    }
+
+    .dash-topbar-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.6875rem;
+    }
+
+    .dash-card {
+        border-radius: 10px;
+    }
+
+    .dash-card-title {
+        font-size: 0.8125rem;
+    }
+
+    .dash-card-action {
+        font-size: 0.75rem;
+    }
+
+    .dash-card-header {
+        padding: 12px 14px 10px;
+    }
+
+    .dash-card-body {
+        padding: 10px 14px 14px;
+    }
+
+    .dash-action-item {
+        padding: 10px 12px;
+        font-size: 0.8125rem;
+        gap: 10px;
+    }
+
+    .dash-action-item svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .dash-sidebar {
+        width: 280px;
+    }
+
+    .dash-welcome-banner {
+        padding: 18px 16px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+    }
+
+    .dash-welcome-banner h2 {
+        font-size: 1rem;
+    }
+
+    .dash-welcome-banner p {
+        font-size: 0.75rem;
+    }
+
+    .dash-empty {
+        padding: 24px 12px;
+    }
+
+    .dash-empty svg {
+        width: 40px;
+        height: 40px;
+    }
+
+    .dash-empty p {
+        font-size: 0.8125rem;
+    }
+
+    .dash-alert {
+        font-size: 0.75rem;
+        padding: 10px 12px;
+        gap: 8px;
+        border-radius: 8px;
+    }
+
+    .dash-badge {
+        font-size: 0.625rem;
+        padding: 2px 8px;
+    }
+
+    .dash-dropdown-menu {
+        min-width: 200px;
+        right: -8px;
+    }
+
+    .dash-grid {
+        gap: 12px;
+    }
+
+    .dash-table {
+        min-width: 380px;
     }
 }

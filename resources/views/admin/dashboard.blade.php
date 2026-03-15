@@ -45,15 +45,9 @@
 
 @section('content')
     {{-- ── Welcome Banner ──────────────────────────────────── --}}
-    <div class="dash-card" style="margin-bottom: 24px; background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); border: none;">
-        <div class="dash-card-body" style="padding: 28px 24px;">
-            <h2 style="font-size: 1.375rem; font-weight: 800; color: #fff; margin: 0 0 6px; font-family: 'Montserrat', sans-serif;">
-                Selamat datang, {{ auth()->user()->name }}! 👋
-            </h2>
-            <p style="font-size: 0.875rem; color: #94a3b8; margin: 0;">
-                Berikut ringkasan sistem Renmote hari ini.
-            </p>
-        </div>
+    <div class="dash-welcome-banner">
+        <h2>Selamat datang, {{ auth()->user()->name }}! 👋</h2>
+        <p>Berikut ringkasan sistem Renmote hari ini.</p>
     </div>
 
     {{-- ── Stat Cards ──────────────────────────────────────── --}}
@@ -140,6 +134,7 @@
             </div>
             <div class="dash-card-body" style="padding: 0;">
                 @if($pendingVendorList->count() > 0)
+                  <div class="dash-table-wrap">
                     <table class="dash-table">
                         <thead>
                             <tr>
@@ -163,6 +158,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                  </div>
                 @else
                     <div class="dash-empty">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
@@ -222,6 +218,7 @@
         </div>
         <div class="dash-card-body" style="padding: 0;">
             @if($recentUsers->count() > 0)
+              <div class="dash-table-wrap">
                 <table class="dash-table">
                     <thead>
                         <tr>
@@ -253,6 +250,7 @@
                         @endforeach
                     </tbody>
                 </table>
+              </div>
             @else
                 <div class="dash-empty">
                     <p>Belum ada user terdaftar</p>
@@ -269,6 +267,7 @@
         </div>
         <div class="dash-card-body" style="padding: 0;">
             @if($recentBookings->count() > 0)
+              <div class="dash-table-wrap">
                 <table class="dash-table">
                     <thead>
                         <tr>
@@ -303,6 +302,7 @@
                         @endforeach
                     </tbody>
                 </table>
+              </div>
             @else
                 <div class="dash-empty">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">

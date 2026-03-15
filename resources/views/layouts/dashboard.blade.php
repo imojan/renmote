@@ -25,8 +25,8 @@
         <aside class="dash-sidebar" id="dashSidebar">
             <!-- Brand -->
             <div class="dash-sidebar-brand">
-                <a href="{{ route('home') }}">
-                    <img src="{{ asset('images/renmote-biru.png') }}" alt="Renmote" class="dash-brand-logo">
+                <a href="{{ route('home') }}" class="dash-brand-link">
+                    <img src="{{ asset('images/renmote-logo.png') }}" alt="Renmote" class="dash-brand-logo">
                 </a>
                 <button class="dash-sidebar-close" onclick="toggleSidebar()" aria-label="Close sidebar">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>

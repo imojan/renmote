@@ -66,7 +66,8 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
 |--------------------------------------------------------------------------
 */
 // Vendor Registration (auth only, no role check — user registers as vendor)
-Route::middleware('auth')->post('/vendor/register', [VendorRegistrationController::class, 'store'])->name('vendor.register');
+Route::middleware('auth')->get('/vendor/register', [VendorRegistrationController::class, 'create'])->name('vendor.register');
+Route::middleware('auth')->post('/vendor/register', [VendorRegistrationController::class, 'store'])->name('vendor.register.store');
 
 Route::middleware(['auth', 'role:vendor'])->prefix('vendor')->name('vendor.')->group(function () {
     Route::get('/dashboard', [VendorDashboardController::class, 'index'])->name('dashboard');

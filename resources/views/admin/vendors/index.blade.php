@@ -45,8 +45,8 @@
                class="px-3 py-1 rounded-lg {{ request('status') == 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Pending
             </a>
-            <a href="{{ route('admin.vendors.index', ['status' => 'approved']) }}" 
-               class="px-3 py-1 rounded-lg {{ request('status') == 'approved' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                <a href="{{ route('admin.vendors.index', ['status' => 'verified']) }}" 
+                    class="px-3 py-1 rounded-lg {{ request('status') == 'verified' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Approved
             </a>
         </div>
@@ -101,11 +101,11 @@
                                     <a href="{{ route('admin.vendors.show', $vendor) }}" class="text-blue-600 hover:text-blue-900">Detail</a>
                                     
                                     @if($vendor->status === 'pending')
-                                        <form action="{{ route('admin.vendors.approve', $vendor) }}" method="POST" class="inline">
+                                        <form action="{{ route('admin.vendors.verify', $vendor) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" class="text-green-600 hover:text-green-900">Approve</button>
                                         </form>
-                                        <form action="{{ route('admin.vendors.reject', $vendor) }}" method="POST" class="inline">
+                                        <form action="{{ route('admin.vendors.unverify', $vendor) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" class="text-red-600 hover:text-red-900">Reject</button>
                                         </form>

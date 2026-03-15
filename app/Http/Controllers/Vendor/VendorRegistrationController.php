@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Vendor\VendorRegistrationRequest;
+use App\Models\District;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Models\VendorDocument;
@@ -18,6 +19,23 @@ use Illuminate\Support\Str;
 class VendorRegistrationController extends Controller
 {
     /**
+     * Show vendor registration form.
+     */
+    public function create()
+    {
+        $user = auth()->user();
+
+        if ($user->vendor) {
+            return redirect()->route('vendor.dashboard')
+                ->with('success', 'Akun vendor Anda sudah terdaftar.');
+        }
+
+        $districts = District::orderBy('name')->get();
+
+        return view('vendor.register', compact('districts'));
+    }
+
+    /**
      * Store a newly created vendor registration.
      */
     public function store(VendorRegistrationRequest $request)
@@ -26,10 +44,15 @@ class VendorRegistrationController extends Controller
 
         // Pastikan user belum punya vendor
         if ($user->vendor) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda sudah terdaftar sebagai vendor.',
-            ], 422);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah terdaftar sebagai vendor.',
+                ], 422);
+            }
+
+            return redirect()->route('vendor.dashboard')
+                ->with('error', 'Anda sudah terdaftar sebagai vendor.');
         }
 
         DB::beginTransaction();
@@ -79,24 +102,35 @@ class VendorRegistrationController extends Controller
                 $admin->notify(new NewVendorRegistration($vendor));
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pendaftaran vendor berhasil! Menunggu verifikasi admin.',
-                'data'    => [
-                    'vendor_id'  => $vendor->id,
-                    'store_name' => $vendor->store_name,
-                    'status'     => $vendor->status,
-                ],
-            ], 201);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pendaftaran vendor berhasil! Menunggu verifikasi admin.',
+                    'data'    => [
+                        'vendor_id'  => $vendor->id,
+                        'store_name' => $vendor->store_name,
+                        'status'     => $vendor->status,
+                    ],
+                ], 201);
+            }
+
+            return redirect()->route('vendor.dashboard')
+                ->with('success', 'Pendaftaran vendor berhasil! Menunggu verifikasi admin.');
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mendaftar vendor.',
-                'error'   => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat mendaftar vendor.',
+                    'error'   => config('app.debug') ? $e->getMessage() : null,
+                ], 500);
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat mendaftar vendor. Silakan coba lagi.');
         }
     }
 
