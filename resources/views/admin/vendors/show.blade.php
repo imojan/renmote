@@ -123,19 +123,33 @@
             <!-- Actions -->
             @if($vendor->status === 'pending')
                 <div class="flex space-x-4">
-                    <form action="{{ route('admin.vendors.approve', $vendor) }}" method="POST" class="flex-1">
+                    <form action="{{ route('admin.vendors.verify', $vendor) }}" method="POST" class="flex-1">
                         @csrf
                         <button type="submit" class="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700">
                             Approve Vendor
                         </button>
                     </form>
-                    <form action="{{ route('admin.vendors.reject', $vendor) }}" method="POST" class="flex-1">
+                    <form action="{{ route('admin.vendors.unverify', $vendor) }}" method="POST" class="flex-1 space-y-2">
                         @csrf
+                        <textarea
+                            name="reason"
+                            rows="3"
+                            required
+                            class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                            placeholder="Tuliskan alasan penolakan supaya vendor bisa memperbaiki datanya"
+                        >{{ old('reason') }}</textarea>
                         <button type="submit" class="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700"
                                 onclick="return confirm('Yakin ingin menolak vendor ini?')">
                             Reject Vendor
                         </button>
                     </form>
+                </div>
+            @endif
+
+            @if($vendor->status === 'rejected' && $vendor->rejection_reason)
+                <div class="mt-6 p-4 rounded-lg bg-red-50 border border-red-100">
+                    <p class="text-sm text-red-700 font-semibold mb-1">Alasan penolakan terakhir:</p>
+                    <p class="text-sm text-red-700">{{ $vendor->rejection_reason }}</p>
                 </div>
             @endif
         </div>

@@ -21,11 +21,20 @@
 @section('content')
     <div class="dash-card" style="max-width: 920px; margin: 0 auto;">
         <div class="dash-card-header">
-            <h3 class="dash-card-title">Lengkapi Pendaftaran Vendor</h3>
+            <h3 class="dash-card-title">
+                {{ isset($vendor) && $vendor ? 'Ajukan Ulang Vendor' : 'Lengkapi Pendaftaran Vendor' }}
+            </h3>
             <span class="dash-badge warning">Wajib isi data toko</span>
         </div>
 
         <div class="dash-card-body">
+            @if (isset($vendor) && $vendor && $vendor->status === 'rejected')
+                <div class="dash-alert dash-alert-error" style="margin-bottom: 16px;">
+                    <strong>Pengajuan sebelumnya ditolak.</strong><br>
+                    <span>{{ $vendor->rejection_reason ?: 'Silakan lengkapi kembali data dan dokumen Anda.' }}</span>
+                </div>
+            @endif
+
             @if (session('error'))
                 <div class="dash-alert dash-alert-error" style="margin-bottom: 16px;">
                     {{ session('error') }}
@@ -50,12 +59,12 @@
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Nama Toko <span class="text-red-500">*</span></label>
-                    <input type="text" name="store_name" value="{{ old('store_name') }}" required class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Contoh: Renmote Rental Jogja">
+                    <input type="text" name="store_name" value="{{ old('store_name', $vendor->store_name ?? '') }}" required class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Contoh: Renmote Rental Jogja">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Nomor Telepon <span class="text-red-500">*</span></label>
-                    <input type="text" name="phone" value="{{ old('phone', auth()->user()->phone_number) }}" required class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="08xxxxxxxxxx">
+                    <input type="text" name="phone" value="{{ old('phone', $vendor->phone ?? auth()->user()->phone_number) }}" required class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="08xxxxxxxxxx">
                 </div>
 
                 <div>
@@ -63,29 +72,29 @@
                     <select name="district_id" required class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         <option value="">Pilih kecamatan</option>
                         @foreach ($districts as $district)
-                            <option value="{{ $district->id }}" @selected(old('district_id') == $district->id)>{{ $district->name }}</option>
+                            <option value="{{ $district->id }}" @selected(old('district_id', $vendor->district_id ?? null) == $district->id)>{{ $district->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Alamat Toko</label>
-                    <textarea name="address" rows="3" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Alamat lengkap toko">{{ old('address') }}</textarea>
+                    <textarea name="address" rows="3" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Alamat lengkap toko">{{ old('address', $vendor->address ?? '') }}</textarea>
                 </div>
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Deskripsi Toko</label>
-                    <textarea name="description" rows="3" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Ceritakan singkat tentang toko Anda">{{ old('description') }}</textarea>
+                    <textarea name="description" rows="3" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Ceritakan singkat tentang toko Anda">{{ old('description', $vendor->description ?? '') }}</textarea>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Nama Bank</label>
-                    <input type="text" name="bank_name" value="{{ old('bank_name') }}" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="BCA / BRI / Mandiri">
+                    <input type="text" name="bank_name" value="{{ old('bank_name', $vendor->bank_name ?? '') }}" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="BCA / BRI / Mandiri">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Nomor Rekening</label>
-                    <input type="text" name="bank_account" value="{{ old('bank_account') }}" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Nomor rekening">
+                    <input type="text" name="bank_account" value="{{ old('bank_account', $vendor->bank_account ?? '') }}" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Nomor rekening">
                 </div>
 
                 <div>
@@ -108,7 +117,7 @@
 
                 <div class="md:col-span-2 flex items-center gap-3 pt-2">
                     <button type="submit" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors">
-                        Kirim Pendaftaran Vendor
+                        {{ isset($vendor) && $vendor ? 'Ajukan Ulang Vendor' : 'Kirim Pendaftaran Vendor' }}
                     </button>
                     <a href="{{ route('user.dashboard') }}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors">
                         Nanti Saja

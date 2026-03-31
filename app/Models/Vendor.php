@@ -17,6 +17,7 @@ class Vendor extends Model
         'bank_account',
         'status',
         'verified',
+        'rejection_reason',
     ];
 
     /**

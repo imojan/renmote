@@ -24,15 +24,19 @@ class VendorRegistrationController extends Controller
     public function create()
     {
         $user = auth()->user();
+        $existingVendor = $user->vendor;
 
-        if ($user->vendor) {
+        if ($existingVendor && $existingVendor->status !== 'rejected') {
             return redirect()->route('vendor.dashboard')
                 ->with('success', 'Akun vendor Anda sudah terdaftar.');
         }
 
         $districts = District::orderBy('name')->get();
 
-        return view('vendor.register', compact('districts'));
+        return view('vendor.register', [
+            'districts' => $districts,
+            'vendor' => $existingVendor,
+        ]);
     }
 
     /**
@@ -41,9 +45,10 @@ class VendorRegistrationController extends Controller
     public function store(VendorRegistrationRequest $request)
     {
         $user = $request->user();
+        $existingVendor = $user->vendor;
 
-        // Pastikan user belum punya vendor
-        if ($user->vendor) {
+        // Block submit kalau vendor sudah approved/pending
+        if ($existingVendor && $existingVendor->status !== 'rejected') {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -58,19 +63,36 @@ class VendorRegistrationController extends Controller
         DB::beginTransaction();
 
         try {
-            // Create vendor record
-            $vendor = Vendor::create([
-                'user_id'      => $user->id,
-                'district_id'  => $request->district_id,
-                'store_name'   => $request->store_name,
-                'description'  => $request->description,
-                'phone'        => $request->phone,
-                'address'      => $request->address,
-                'bank_name'    => $request->bank_name,
-                'bank_account' => $request->bank_account,
-                'verified'     => false,
-                'status'       => 'pending',
-            ]);
+            if ($existingVendor && $existingVendor->status === 'rejected') {
+                $existingVendor->update([
+                    'district_id'  => $request->district_id,
+                    'store_name'   => $request->store_name,
+                    'description'  => $request->description,
+                    'phone'        => $request->phone,
+                    'address'      => $request->address,
+                    'bank_name'    => $request->bank_name,
+                    'bank_account' => $request->bank_account,
+                    'verified'     => false,
+                    'status'       => 'pending',
+                    'rejection_reason' => null,
+                ]);
+
+                $vendor = $existingVendor;
+            } else {
+                // Create vendor record
+                $vendor = Vendor::create([
+                    'user_id'      => $user->id,
+                    'district_id'  => $request->district_id,
+                    'store_name'   => $request->store_name,
+                    'description'  => $request->description,
+                    'phone'        => $request->phone,
+                    'address'      => $request->address,
+                    'bank_name'    => $request->bank_name,
+                    'bank_account' => $request->bank_account,
+                    'verified'     => false,
+                    'status'       => 'pending',
+                ]);
+            }
 
             // Handle file uploads → storage/app/private/vendor_documents/{vendor_id}/
             $documentTypes = ['ktp', 'permit', 'photo'];
@@ -79,12 +101,26 @@ class VendorRegistrationController extends Controller
                 if ($request->hasFile($type)) {
                     $path = $this->storeDocument($request->file($type), $type, $vendor->id);
 
-                    VendorDocument::create([
-                        'vendor_id' => $vendor->id,
-                        'type'      => $type,
-                        'file_path' => $path,
-                        'status'    => 'pending',
-                    ]);
+                    $document = VendorDocument::where('vendor_id', $vendor->id)
+                        ->where('type', $type)
+                        ->first();
+
+                    if ($document) {
+                        Storage::disk('local')->delete($document->file_path);
+
+                        $document->update([
+                            'file_path' => $path,
+                            'status'    => 'pending',
+                            'notes'     => null,
+                        ]);
+                    } else {
+                        VendorDocument::create([
+                            'vendor_id' => $vendor->id,
+                            'type'      => $type,
+                            'file_path' => $path,
+                            'status'    => 'pending',
+                        ]);
+                    }
                 }
             }
 

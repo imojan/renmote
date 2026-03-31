@@ -45,10 +45,14 @@
                class="px-3 py-1 rounded-lg {{ request('status') == 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Pending
             </a>
-                <a href="{{ route('admin.vendors.index', ['status' => 'verified']) }}" 
-                    class="px-3 py-1 rounded-lg {{ request('status') == 'verified' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                <a href="{{ route('admin.vendors.index', ['status' => 'approved']) }}" 
+                    class="px-3 py-1 rounded-lg {{ request('status') == 'approved' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Approved
             </a>
+                <a href="{{ route('admin.vendors.index', ['status' => 'rejected']) }}" 
+                   class="px-3 py-1 rounded-lg {{ request('status') == 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    Rejected
+                </a>
         </div>
     </div>
 
@@ -105,8 +109,9 @@
                                             @csrf
                                             <button type="submit" class="text-green-600 hover:text-green-900">Approve</button>
                                         </form>
-                                        <form action="{{ route('admin.vendors.unverify', $vendor) }}" method="POST" class="inline">
+                                            <form action="{{ route('admin.vendors.unverify', $vendor) }}" method="POST" class="inline" onsubmit="return submitRejectReason(this)">
                                             @csrf
+                                                <input type="hidden" name="reason" value="">
                                             <button type="submit" class="text-red-600 hover:text-red-900">Reject</button>
                                         </form>
                                     @endif
@@ -122,4 +127,22 @@
             </div>
         @endif
     </div>
+
+    <script>
+        function submitRejectReason(form) {
+            const reason = window.prompt('Tulis alasan penolakan vendor:');
+
+            if (reason === null) {
+                return false;
+            }
+
+            if (!reason.trim()) {
+                window.alert('Alasan penolakan wajib diisi.');
+                return false;
+            }
+
+            form.querySelector('input[name="reason"]').value = reason.trim();
+            return true;
+        }
+    </script>
 @endsection

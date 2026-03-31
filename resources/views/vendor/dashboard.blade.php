@@ -41,9 +41,13 @@
                 <p class="text-gray-500">{{ $vendor->district->name }}</p>
             </div>
             <div>
-                @if($vendor->verified)
+                @if($vendor->status === 'approved')
                     <span class="px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full">
                         ✓ Terverifikasi
+                    </span>
+                @elseif($vendor->status === 'rejected')
+                    <span class="px-3 py-1 text-sm font-medium bg-red-100 text-red-800 rounded-full">
+                        Ditolak
                     </span>
                 @else
                     <span class="px-3 py-1 text-sm font-medium bg-yellow-100 text-yellow-800 rounded-full">
@@ -52,6 +56,18 @@
                 @endif
             </div>
         </div>
+
+        @if($vendor->status === 'rejected')
+            <div class="mt-4 p-4 rounded-lg bg-red-50 border border-red-100">
+                <p class="text-sm font-semibold text-red-700 mb-1">Pengajuan ditolak</p>
+                <p class="text-sm text-red-700">
+                    {{ $vendor->rejection_reason ?: 'Admin belum menuliskan alasan penolakan.' }}
+                </p>
+                <a href="{{ route('vendor.register') }}" class="inline-flex mt-3 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700">
+                    Perbaiki Data & Ajukan Ulang
+                </a>
+            </div>
+        @endif
     </div>
 
     <!-- Stats -->

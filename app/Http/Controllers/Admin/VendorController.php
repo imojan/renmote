@@ -18,11 +18,9 @@ class VendorController extends Controller
     {
         $query = Vendor::with('user', 'district', 'documents');
 
-        // Filter berdasarkan status verifikasi
-        if ($request->status === 'pending') {
-            $query->where('verified', false);
-        } elseif ($request->status === 'verified') {
-            $query->where('verified', true);
+        // Filter berdasarkan status vendor
+        if (in_array($request->status, ['pending', 'approved', 'rejected'], true)) {
+            $query->where('status', $request->status);
         }
 
         $vendors = $query->latest()->get();
@@ -30,8 +28,9 @@ class VendorController extends Controller
         // Hitung statistik
         $stats = [
             'total'    => Vendor::count(),
-            'pending'  => Vendor::where('verified', false)->count(),
-            'verified' => Vendor::where('verified', true)->count(),
+            'pending'  => Vendor::where('status', 'pending')->count(),
+            'approved' => Vendor::where('status', 'approved')->count(),
+            'rejected' => Vendor::where('status', 'rejected')->count(),
         ];
 
         return view('admin.vendors.index', compact('vendors', 'stats'));
@@ -55,6 +54,7 @@ class VendorController extends Controller
         $vendor->update([
             'verified' => true,
             'status'   => 'approved',
+            'rejection_reason' => null,
         ]);
 
         // Kirim notifikasi ke user pemilik vendor
@@ -68,17 +68,22 @@ class VendorController extends Controller
      */
     public function unverify(Vendor $vendor, Request $request)
     {
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+        ]);
+
         $vendor->update([
             'verified' => false,
             'status'   => 'rejected',
+            'rejection_reason' => $validated['reason'],
         ]);
 
-        $reason = $request->input('reason', '');
+        $reason = $validated['reason'];
 
         // Kirim notifikasi penolakan ke user pemilik vendor
         $vendor->user->notify(new VendorRejected($vendor, $reason));
 
-        return back()->with('success', "Verifikasi vendor '{$vendor->store_name}' dicabut.");
+        return back()->with('success', "Vendor '{$vendor->store_name}' berhasil ditolak.");
     }
 
     /**
