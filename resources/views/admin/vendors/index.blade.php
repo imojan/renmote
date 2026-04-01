@@ -62,6 +62,12 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-4">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
     <div class="bg-white rounded-lg shadow">
         @if($vendors->count() > 0)
             <div class="overflow-x-auto">
@@ -109,11 +115,15 @@
                                             @csrf
                                             <button type="submit" class="text-green-600 hover:text-green-900">Approve</button>
                                         </form>
-                                            <form action="{{ route('admin.vendors.unverify', $vendor) }}" method="POST" class="inline" onsubmit="return submitRejectReason(this)">
-                                            @csrf
-                                                <input type="hidden" name="reason" value="">
-                                            <button type="submit" class="text-red-600 hover:text-red-900">Reject</button>
-                                        </form>
+                                        <button
+                                            type="button"
+                                            class="text-red-600 hover:text-red-900"
+                                            data-reject-trigger="true"
+                                            data-vendor-name="{{ $vendor->store_name }}"
+                                            data-action-url="{{ route('admin.vendors.unverify', $vendor) }}"
+                                        >
+                                            Reject
+                                        </button>
                                     @endif
                                 </td>
                             </tr>
@@ -128,21 +138,98 @@
         @endif
     </div>
 
+    <div id="rejectModal" class="fixed inset-0 z-50 hidden">
+        <div id="rejectModalOverlay" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+
+        <div class="relative min-h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl border border-slate-200 bg-white">
+                <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                    <h3 class="text-2xl font-bold text-slate-800">Tolak Pengajuan Vendor</h3>
+                    <button id="closeRejectModalBtn" type="button" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+                </div>
+
+                <form id="rejectModalForm" method="POST" class="px-6 py-6 space-y-5">
+                    @csrf
+
+                    <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                        <p class="text-sm text-amber-800">
+                            Anda akan menolak pengajuan toko:
+                            <span id="rejectVendorName" class="font-semibold text-amber-900"></span>
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="rejectReasonInput" class="block text-sm font-semibold text-slate-700 mb-2">
+                            Alasan Penolakan <span class="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            id="rejectReasonInput"
+                            name="reason"
+                            rows="4"
+                            required
+                            maxlength="1000"
+                            class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="Contoh: Dokumen KTP kurang jelas. Silakan upload ulang dengan resolusi yang lebih baik."
+                        ></textarea>
+                        <p id="rejectReasonError" class="text-sm text-red-600 mt-2 hidden">Alasan penolakan wajib diisi.</p>
+                    </div>
+
+                    <div class="flex justify-end items-center gap-3 pt-2">
+                        <button id="cancelRejectModalBtn" type="button" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Batal</button>
+                        <button type="submit" class="px-5 py-2.5 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700">Kirim Penolakan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
-        function submitRejectReason(form) {
-            const reason = window.prompt('Tulis alasan penolakan vendor:');
+        const rejectModal = document.getElementById('rejectModal');
+        const rejectModalOverlay = document.getElementById('rejectModalOverlay');
+        const closeRejectModalBtn = document.getElementById('closeRejectModalBtn');
+        const cancelRejectModalBtn = document.getElementById('cancelRejectModalBtn');
+        const rejectModalForm = document.getElementById('rejectModalForm');
+        const rejectVendorName = document.getElementById('rejectVendorName');
+        const rejectReasonInput = document.getElementById('rejectReasonInput');
+        const rejectReasonError = document.getElementById('rejectReasonError');
 
-            if (reason === null) {
-                return false;
-            }
-
-            if (!reason.trim()) {
-                window.alert('Alasan penolakan wajib diisi.');
-                return false;
-            }
-
-            form.querySelector('input[name="reason"]').value = reason.trim();
-            return true;
+        function openRejectModal(actionUrl, vendorName) {
+            rejectModalForm.action = actionUrl;
+            rejectVendorName.textContent = vendorName;
+            rejectReasonInput.value = '';
+            rejectReasonError.classList.add('hidden');
+            rejectModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            rejectReasonInput.focus();
         }
+
+        function closeRejectModal() {
+            rejectModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        document.querySelectorAll('[data-reject-trigger="true"]').forEach((button) => {
+            button.addEventListener('click', () => {
+                openRejectModal(button.dataset.actionUrl, button.dataset.vendorName);
+            });
+        });
+
+        closeRejectModalBtn.addEventListener('click', closeRejectModal);
+        cancelRejectModalBtn.addEventListener('click', closeRejectModal);
+        rejectModalOverlay.addEventListener('click', closeRejectModal);
+
+        rejectModalForm.addEventListener('submit', (event) => {
+            if (!rejectReasonInput.value.trim()) {
+                event.preventDefault();
+                rejectReasonError.classList.remove('hidden');
+                rejectReasonInput.focus();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !rejectModal.classList.contains('hidden')) {
+                closeRejectModal();
+            }
+        });
     </script>
 @endsection

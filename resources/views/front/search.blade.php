@@ -8,6 +8,7 @@
         
         <!-- Search Filters -->
         <div class="bg-white rounded-lg shadow p-6 mb-8">
+            @php($activeCategorySlug = $selectedCategorySlug ?? (request()->filled('category') ? \Illuminate\Support\Str::of((string) request('category'))->lower()->replace('_', '-')->replace(' ', '-')->slug('-')->toString() : null))
             <form action="{{ route('search') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
@@ -25,10 +26,10 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                     <select name="category" class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Semua Kategori</option>
-                        <option value="Matic" {{ request('category') == 'Matic' ? 'selected' : '' }}>Matic</option>
-                        <option value="Sport" {{ request('category') == 'Sport' ? 'selected' : '' }}>Sport</option>
-                        <option value="Bebek" {{ request('category') == 'Bebek' ? 'selected' : '' }}>Bebek</option>
-                        <option value="Trail" {{ request('category') == 'Trail' ? 'selected' : '' }}>Trail</option>
+                        <option value="matic" {{ $activeCategorySlug === 'matic' ? 'selected' : '' }}>Matic</option>
+                        <option value="sport" {{ $activeCategorySlug === 'sport' ? 'selected' : '' }}>Sport</option>
+                        <option value="bebek" {{ $activeCategorySlug === 'bebek' ? 'selected' : '' }}>Bebek</option>
+                        <option value="trail" {{ $activeCategorySlug === 'trail' ? 'selected' : '' }}>Trail</option>
                     </select>
                 </div>
                 

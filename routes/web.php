@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/kategori/{categorySlug}', [SearchController::class, 'index'])->name('search.category');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 Route::get('/vehicles/{vehicle}', [FrontVehicleController::class, 'show'])->name('vehicles.show');
 Route::get('/vendors/{vendor}', [FrontVendorController::class, 'show'])->name('vendors.show');

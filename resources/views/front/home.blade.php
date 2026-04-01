@@ -131,7 +131,7 @@
         ];
         @endphp
         @foreach($categories as $cat)
-        <a href="{{ route('search', ['category' => $cat['slug']]) }}" class="kategori-card">
+        <a href="{{ route('search.category', ['categorySlug' => str_replace('_', '-', $cat['slug'])]) }}" class="kategori-card">
             <img src="{{ asset('images/' . $cat['image']) }}" alt="{{ $cat['label'] }}"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="kategori-icon" style="display:none; background:{{ $cat['color'] }};">
