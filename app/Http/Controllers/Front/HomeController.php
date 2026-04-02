@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
+use App\Models\Article;
 use App\Models\Vehicle;
 use App\Models\District;
 use App\Models\Vendor;
-use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
@@ -32,6 +32,11 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
-        return view('front.home', compact('districts', 'popularVehicles', 'vendors'));
+        $articles = Article::published()
+            ->latest('published_at')
+            ->take(3)
+            ->get();
+
+        return view('front.home', compact('districts', 'popularVehicles', 'vendors', 'articles'));
     }
 }

@@ -20,6 +20,7 @@
     <div class="topbar-inner">
         <div class="topbar-left">
             <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active-link' : '' }}">Beranda</a>
+            <a href="{{ route('articles.index') }}" class="{{ request()->routeIs('articles.*') ? 'active-link' : '' }}">Artikel</a>
             <a href="#">Cara Sewa</a>
             <a href="#">S&K Sewa</a>
             <a href="#">Tentang Kami</a>
@@ -88,6 +89,7 @@
     </div>
     <div class="mobile-menu-links">
         <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}"><i class="fa fa-home"></i> Beranda</a>
+        <a href="{{ route('articles.index') }}" class="{{ request()->routeIs('articles.*') ? 'active' : '' }}"><i class="fa fa-newspaper"></i> Artikel</a>
         <a href="#"><i class="fa fa-book-open"></i> Cara Sewa</a>
         <a href="#"><i class="fa fa-file-contract"></i> S&K Sewa</a>
         <a href="#"><i class="fa fa-info-circle"></i> Tentang Kami</a>
@@ -145,6 +147,7 @@
                 <h4>Our Menu</h4>
                 <ul>
                     <li><a href="{{ route('home') }}">Beranda</a></li>
+                    <li><a href="{{ route('articles.index') }}">Artikel</a></li>
                     <li><a href="#">Cara Sewa</a></li>
                     <li><a href="#">S&K Sewa</a></li>
                     <li><a href="#">Tentang Kami</a></li>
@@ -164,7 +167,7 @@
                 <ul>
                     <li><a href="{{ route('search') }}">Motor Populer</a></li>
                     <li><a href="{{ route('search') }}">Vendor Andalan</a></li>
-                    <li><a href="#">Artikel & Rekomendasi</a></li>
+                    <li><a href="{{ route('articles.index') }}">Artikel & Rekomendasi</a></li>
                     <li><a href="#">Testimoni</a></li>
                 </ul>
             </div>

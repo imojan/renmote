@@ -167,7 +167,13 @@
                     <strong>4.8</strong>
                     <span>({{ rand(50, 200) }})</span>
                 </div>
-                <div class="motor-type">{{ ucfirst(str_replace('_', ' ', $vehicle->category)) }} &bull; {{ $vehicle->year }}cc</div>
+                <div class="motor-type">
+                    {{ ucfirst(str_replace('_', ' ', $vehicle->category)) }}
+                    @if($vehicle->engine_cc)
+                        &bull; {{ $vehicle->engine_cc }}cc
+                    @endif
+                    &bull; {{ $vehicle->year }}
+                </div>
                 <a href="{{ route('search', ['keyword' => $vehicle->name]) }}" class="btn-lihat">Lihat Pilihan</a>
             </div>
         </div>
@@ -257,30 +263,32 @@
 <div class="section">
     <div class="section-header">
         <h2 class="section-title">Artikel dan Rekomendasi</h2>
-        <a href="#" class="see-all">Lihat Semua <i class="fa fa-arrow-right"></i></a>
+        <a href="{{ route('articles.index') }}" class="see-all">Lihat Semua <i class="fa fa-arrow-right"></i></a>
     </div>
     <div class="artikel-grid">
-        @php
-        $demoArticles = [
-            ['title' => '10 Rekomendasi Trip Tempat Wisata Terbaik Di Malang Dan Sekitarnya!', 'date' => '12 November 2025 20:08', 'desc' => 'Jakarta (ANTARA) – Gabungan Industri Kendaraan Bermotor Indonesia (Gaikindo) Telah Mengeluarkan Rekapan Data Penjualan Untuk Bulan Oktober 2025...'],
-            ['title' => '10 Rekomendasi Trip Tempat Wisata Terbaik Di Malang Dan Sekitarnya!', 'date' => '12 November 2025 21:58', 'desc' => 'Jakarta (ANTARA) – Gabungan Industri Kendaraan Bermotor Indonesia (Gaikindo) Telah Mengeluarkan Rekapan Data Penjualan Untuk Bulan Oktober 2025...'],
-            ['title' => 'Penjualan Wholesales Isuzu MU-X Tercatat Nihil Pada Oktober 2025', 'date' => '12 November 2025 20:05', 'desc' => 'Jakarta (ANTARA) – Gabungan Industri Kendaraan Bermotor Indonesia (Gaikindo) Telah Mengeluarkan Rekapan Data Penjualan Untuk Bulan Oktober 2025...'],
-        ];
-        @endphp
-        @foreach($demoArticles as $article)
-        <div class="artikel-card">
+        @forelse($articles as $article)
+        <a href="{{ route('articles.show', $article) }}" class="artikel-card artikel-card-link">
             <div class="artikel-img">
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" alt="Artikel">
-                <span class="artikel-badge">Rekomendasi Wisata</span>
+                <img src="{{ $article->cover_image ? Storage::url($article->cover_image) : asset('images/malang-1.png') }}" alt="{{ $article->title }}">
+                <span class="artikel-badge">Artikel Renmote</span>
             </div>
             <div class="artikel-body">
-                <div class="artikel-date">{{ $article['date'] }}</div>
-                <div class="artikel-title">{{ $article['title'] }}</div>
-                <div class="artikel-excerpt">{{ $article['desc'] }}</div>
-                <a href="#" class="artikel-read">Lihat Selengkapnya <i class="fa fa-arrow-right"></i></a>
+                <div class="artikel-head-meta">
+                    <div class="artikel-date">{{ optional($article->published_at)->translatedFormat('d F Y') }}</div>
+                </div>
+                <div class="artikel-title">{{ $article->title }}</div>
+                <div class="artikel-excerpt">{{ $article->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($article->content), 140) }}</div>
+                <div class="artikel-read-wrap">
+                    <span class="artikel-read">Lihat Selengkapnya <i class="fa fa-arrow-right"></i></span>
+                </div>
             </div>
-        </div>
-        @endforeach
+        </a>
+        @empty
+            <div class="artikel-empty-state">
+                <p class="artikel-empty-title">Saat ini belum ada artikel dipublikasikan.</p>
+                <span class="artikel-empty-subtitle">Silakan cek kembali beberapa saat lagi.</span>
+            </div>
+        @endforelse
     </div>
 </div>
 

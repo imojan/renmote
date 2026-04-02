@@ -45,7 +45,13 @@
                             <div class="flex items-start justify-between">
                                 <div>
                                     <h3 class="font-semibold text-gray-900">{{ $vehicle->name }}</h3>
-                                    <p class="text-sm text-gray-500">{{ $vehicle->category }} • {{ $vehicle->year }}</p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ ucfirst($vehicle->category) }}
+                                        @if($vehicle->engine_cc)
+                                            • {{ $vehicle->engine_cc }}cc
+                                        @endif
+                                        • {{ $vehicle->year }}
+                                    </p>
                                 </div>
                                 <span class="px-2 py-1 text-xs rounded-full
                                     {{ $vehicle->status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">

@@ -7,6 +7,7 @@
 
     <title>{{ config('app.name', 'Renmote') }} - @yield('title', 'Dashboard')</title>
     <link rel="icon" type="image/png" href="{{ asset('images/renmote-icon.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -38,7 +39,13 @@
 
             <!-- Navigation -->
             <nav class="dash-nav">
-                @yield('sidebar')
+                @if(auth()->user()->role === 'admin')
+                    @include('layouts.sidebars.admin')
+                @elseif(auth()->user()->role === 'vendor')
+                    @include('layouts.sidebars.vendor')
+                @else
+                    @include('layouts.sidebars.user')
+                @endif
             </nav>
 
             <!-- Sidebar Footer -->

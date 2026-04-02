@@ -12,6 +12,7 @@ class Vehicle extends Model
         'category',
         'price_per_day',
         'year',
+        'engine_cc',
         'description',
         'image',
         'stock',

@@ -46,7 +46,7 @@
                         @enderror
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                             <select name="category" required
@@ -56,6 +56,16 @@
                                 <option value="sport" {{ old('category', $vehicle->category) == 'sport' ? 'selected' : '' }}>Sport</option>
                             </select>
                             @error('category')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">CC Mesin</label>
+                            <input type="number" name="engine_cc" value="{{ old('engine_cc', $vehicle->engine_cc) }}" required min="50" max="3000"
+                                   class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('engine_cc') border-red-500 @enderror"
+                                   placeholder="125">
+                            @error('engine_cc')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>

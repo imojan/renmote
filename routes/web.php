@@ -8,6 +8,7 @@ use App\Http\Controllers\Front\HomeController;
 use App\Http\Controllers\Front\SearchController;
 use App\Http\Controllers\Front\VehicleController as FrontVehicleController;
 use App\Http\Controllers\Front\VendorController as FrontVendorController;
+use App\Http\Controllers\Front\ArticleController as FrontArticleController;
 
 // User Controllers
 use App\Http\Controllers\User\DashboardController as UserDashboardController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\VendorController as AdminVendorController;
 use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +38,8 @@ Route::get('/kategori/{categorySlug}', [SearchController::class, 'index'])->name
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 Route::get('/vehicles/{vehicle}', [FrontVehicleController::class, 'show'])->name('vehicles.show');
 Route::get('/vendors/{vendor}', [FrontVendorController::class, 'show'])->name('vendors.show');
+Route::get('/articles', [FrontArticleController::class, 'index'])->name('articles.index');
+Route::get('/articles/{article:slug}', [FrontArticleController::class, 'show'])->name('articles.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -115,6 +119,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
     Route::patch('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
+
+    // Articles
+    Route::resource('articles', AdminArticleController::class)->except(['show']);
+
+    // Settings (dummy page)
+    Route::view('/settings', 'admin.settings.index')->name('settings.index');
 });
 
 // Signed URL route for serving vendor documents (no auth — validated by signature)

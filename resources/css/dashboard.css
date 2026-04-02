@@ -138,9 +138,28 @@
     transition: color 0.15s;
 }
 
+.dash-nav a i,
+.dash-nav-item i {
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+    color: #64748b;
+    transition: color 0.15s;
+}
+
 .dash-nav a:hover svg,
 .dash-nav-item:hover svg {
     color: #e2e8f0;
+}
+
+.dash-nav a:hover i,
+.dash-nav-item:hover i {
+    color: #e2e8f0;
+}
+
+.dash-nav a.active i,
+.dash-nav-item.active i {
+    color: #fff;
 }
 
 /* Badge on nav item */
