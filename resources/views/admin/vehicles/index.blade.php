@@ -77,7 +77,12 @@
                                         </div>
                                         <div>
                                             <div class="font-medium text-gray-900">{{ $vehicle->name }}</div>
-                                            <div class="text-sm text-gray-500">{{ $vehicle->year }}</div>
+                                            <div class="text-sm text-gray-500">
+                                                @if($vehicle->engine_cc)
+                                                    {{ $vehicle->engine_cc }}cc •
+                                                @endif
+                                                {{ $vehicle->year }}
+                                            </div>
                                         </div>
                                     </div>
                                 </td>

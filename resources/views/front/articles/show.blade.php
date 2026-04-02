@@ -4,7 +4,7 @@
 
 @section('content')
 <section class="article-detail-wrap">
-    <article class="article-detail-card">
+    <article class="article-detail-main">
         <img src="{{ $article->cover_image ? Storage::url($article->cover_image) : asset('images/malang-2.png') }}" alt="{{ $article->title }}" class="article-detail-cover">
 
         <div class="article-detail-body">
@@ -14,6 +14,10 @@
             <div class="article-detail-content">
                 {!! nl2br(e($article->content)) !!}
             </div>
+
+            <a href="{{ route('articles.index') }}" class="article-back-link">
+                <i class="fa fa-arrow-left"></i> Kembali ke daftar artikel
+            </a>
         </div>
     </article>
 
