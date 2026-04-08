@@ -37,7 +37,7 @@
                     @elseif($booking->status === 'confirmed') bg-green-100 text-green-800
                     @elseif($booking->status === 'completed') bg-blue-100 text-blue-800
                     @else bg-red-100 text-red-800 @endif">
-                    {{ ucfirst($booking->status) }}
+                    {{ $booking->status === 'cancelled' ? 'Declined' : ucfirst($booking->status) }}
                 </span>
             </div>
 
@@ -132,7 +132,7 @@
                             Konfirmasi Pesanan
                         </button>
                     </form>
-                    <form action="{{ route('vendor.bookings.reject', $booking->id) }}" method="POST" class="flex-1">
+                    <form action="{{ route('vendor.bookings.reject', $booking) }}" method="POST" class="flex-1">
                         @csrf
                         <button type="submit" class="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700"
                                 onclick="return confirm('Yakin ingin menolak pesanan ini?')">
@@ -142,7 +142,7 @@
                 @endif
                 
                 @if($booking->status === 'confirmed')
-                    <form action="{{ route('vendor.bookings.complete', $booking->id) }}" method="POST" class="flex-1">
+                    <form action="{{ route('vendor.bookings.complete', $booking) }}" method="POST" class="flex-1">
                         @csrf
                         <button type="submit" class="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">
                             Selesaikan Pesanan

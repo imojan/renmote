@@ -6,7 +6,7 @@
 <section class="article-page-wrap">
     <div class="article-page-head">
         <div>
-            <h1>Artikel</h1>
+            <h4 class="article-page-title">Artikel</h4>
             <p>Kumpulan berita dan rekomendasi terbaru dari Renmote.</p>
         </div>
         <form method="GET" action="{{ route('articles.index') }}" class="article-search-form">
@@ -25,9 +25,9 @@
                     <div class="article-meta-row">
                         <div class="article-date">{{ optional($article->published_at)->translatedFormat('d M Y') }}</div>
                     </div>
-                    <h2>
+                    <h5 class="article-card-title">
                         {{ $article->title }}
-                    </h2>
+                    </h5>
                     <p>{{ $article->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($article->content), 130) }}</p>
                     <div class="article-action-row">
                         <span class="article-read">Lihat Selengkapnya <i class="fa fa-arrow-right"></i></span>

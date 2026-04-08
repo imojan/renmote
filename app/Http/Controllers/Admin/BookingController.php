@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Exports\AdminBookingsExport;
 use App\Models\Booking;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BookingController extends Controller
 {
@@ -19,11 +21,29 @@ class BookingController extends Controller
     /**
      * Daftar semua bookings
      */
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = Booking::with('user', 'vehicle.vendor', 'payment')->latest()->get();
+        $normalizedStatus = $this->normalizeStatus($request->query('status'));
+
+        $bookings = Booking::with('user', 'vehicle.vendor', 'payment')
+            ->when($normalizedStatus, function ($query) use ($normalizedStatus) {
+                $query->where('status', $normalizedStatus);
+            })
+            ->latest()
+            ->get();
 
         return view('admin.bookings.index', compact('bookings'));
+    }
+
+    /**
+     * Export booking admin ke file Excel.
+     */
+    public function export(Request $request)
+    {
+        $status = $request->query('status');
+        $filename = 'booking-admin-' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new AdminBookingsExport($status), $filename);
     }
 
     /**
@@ -42,11 +62,23 @@ class BookingController extends Controller
     public function updateStatus(Request $request, Booking $booking)
     {
         $request->validate([
-            'status' => 'required|in:pending,confirmed,cancelled,completed',
+            'status' => 'required|in:pending,confirmed,cancelled,completed,declined',
         ]);
 
-        $this->bookingService->updateBookingStatus($booking, $request->status);
+        $this->bookingService->updateBookingStatus(
+            $booking,
+            $this->normalizeStatus($request->status) ?? $request->status
+        );
 
         return back()->with('success', 'Status booking berhasil diupdate.');
+    }
+
+    private function normalizeStatus(?string $status): ?string
+    {
+        if (!$status) {
+            return null;
+        }
+
+        return $status === 'declined' ? 'cancelled' : $status;
     }
 }

@@ -45,11 +45,14 @@
             <!-- Booking Form -->
             <form action="{{ route('user.bookings.store', $vehicle) }}" method="POST">
                 @csrf
+
+                <div id="bookingAvailabilityWarning" class="hidden mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+                <div id="bookingAvailabilitySuccess" class="hidden mb-4 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"></div>
                 
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
-                        <input type="date" name="start_date" value="{{ old('start_date') }}" min="{{ date('Y-m-d') }}"
+                        <input type="date" id="startDateInput" name="start_date" value="{{ old('start_date') }}" min="{{ date('Y-m-d') }}"
                                class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('start_date') border-red-500 @enderror">
                         @error('start_date')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -58,7 +61,7 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</label>
-                        <input type="date" name="end_date" value="{{ old('end_date') }}" min="{{ date('Y-m-d') }}"
+                        <input type="date" id="endDateInput" name="end_date" value="{{ old('end_date') }}" min="{{ date('Y-m-d') }}"
                                class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('end_date') border-red-500 @enderror">
                         @error('end_date')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -76,7 +79,7 @@
                 </div>
 
                 <div class="flex space-x-4">
-                    <button type="submit" class="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">
+                    <button id="bookingSubmitBtn" type="submit" class="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400">
                         Konfirmasi Booking
                     </button>
                     <a href="{{ route('vehicles.show', $vehicle) }}" class="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300">
@@ -87,3 +90,92 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    const startDateInput = document.getElementById('startDateInput');
+    const endDateInput = document.getElementById('endDateInput');
+    const warningBox = document.getElementById('bookingAvailabilityWarning');
+    const successBox = document.getElementById('bookingAvailabilitySuccess');
+    const submitBtn = document.getElementById('bookingSubmitBtn');
+    const checkUrl = "{{ route('user.bookings.checkAvailability', $vehicle) }}";
+
+    let debounceTimer = null;
+
+    function hideMessages() {
+        warningBox.classList.add('hidden');
+        successBox.classList.add('hidden');
+        warningBox.textContent = '';
+        successBox.textContent = '';
+    }
+
+    function setSubmitDisabled(disabled) {
+        submitBtn.disabled = disabled;
+    }
+
+    function formatRangeText(overlaps) {
+        if (!overlaps || overlaps.length === 0) {
+            return '';
+        }
+
+        const formatted = overlaps.map((item) => `${item.start_date} s/d ${item.end_date}`);
+        return ` Rentang terisi: ${formatted.join(', ')}`;
+    }
+
+    async function checkAvailability() {
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+
+        if (!startDate && !endDate) {
+            hideMessages();
+            setSubmitDisabled(false);
+            return;
+        }
+
+        try {
+            const params = new URLSearchParams();
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+
+            const response = await fetch(`${checkUrl}?${params.toString()}`, {
+                headers: {
+                    'Accept': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            hideMessages();
+
+            if (data.available) {
+                successBox.textContent = data.message;
+                successBox.classList.remove('hidden');
+                setSubmitDisabled(false);
+            } else {
+                warningBox.textContent = data.message + formatRangeText(data.overlaps);
+                warningBox.classList.remove('hidden');
+                setSubmitDisabled(true);
+            }
+        } catch (error) {
+            // Keep form usable if availability API call fails.
+            setSubmitDisabled(false);
+        }
+    }
+
+    function scheduleCheck() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(checkAvailability, 250);
+    }
+
+    startDateInput.addEventListener('change', scheduleCheck);
+    endDateInput.addEventListener('change', scheduleCheck);
+
+    if (startDateInput.value || endDateInput.value) {
+        checkAvailability();
+    }
+</script>
+@endpush

@@ -52,6 +52,7 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     // Bookings
     Route::get('/bookings', [UserBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/create/{vehicle}', [UserBookingController::class, 'create'])->name('bookings.create');
+    Route::get('/bookings/check-availability/{vehicle}', [UserBookingController::class, 'checkAvailability'])->name('bookings.checkAvailability');
     Route::post('/bookings/{vehicle}', [UserBookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{id}', [UserBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{id}/cancel', [UserBookingController::class, 'cancel'])->name('bookings.cancel');
@@ -87,8 +88,10 @@ Route::middleware(['auth', 'role:vendor'])->prefix('vendor')->name('vendor.')->g
     
     // Bookings
     Route::get('/bookings', [VendorBookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/export', [VendorBookingController::class, 'export'])->name('bookings.export');
     Route::get('/bookings/{booking}', [VendorBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{booking}/confirm', [VendorBookingController::class, 'confirm'])->name('bookings.confirm');
+    Route::post('/bookings/{booking}/reject', [VendorBookingController::class, 'reject'])->name('bookings.reject');
     Route::post('/bookings/{booking}/complete', [VendorBookingController::class, 'complete'])->name('bookings.complete');
 });
 
@@ -117,6 +120,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Bookings
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/export', [AdminBookingController::class, 'export'])->name('bookings.export');
     Route::get('/bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
     Route::patch('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
 

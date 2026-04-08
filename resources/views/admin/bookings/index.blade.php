@@ -33,10 +33,14 @@
 @endsection
 
 @section('content')
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
         <h2 class="text-xl font-semibold text-gray-800">Semua Booking</h2>
-        
-        <div class="flex space-x-2">
+
+        <div class="flex items-center gap-2">
+            <a href="{{ route('admin.bookings.export', request()->only('status')) }}"
+               class="px-3 py-1 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700">
+                Export XLSX
+            </a>
             <a href="{{ route('admin.bookings.index') }}" 
                class="px-3 py-1 rounded-lg text-sm {{ !request('status') ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Semua
@@ -49,6 +53,10 @@
                class="px-3 py-1 rounded-lg text-sm {{ request('status') == 'confirmed' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Confirmed
             </a>
+                <a href="{{ route('admin.bookings.index', ['status' => 'declined']) }}" 
+                    class="px-3 py-1 rounded-lg text-sm {{ request('status') == 'declined' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                     Declined
+                </a>
             <a href="{{ route('admin.bookings.index', ['status' => 'completed']) }}" 
                class="px-3 py-1 rounded-lg text-sm {{ request('status') == 'completed' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Completed
@@ -101,7 +109,7 @@
                                         @elseif($booking->status === 'confirmed') bg-green-100 text-green-800
                                         @elseif($booking->status === 'completed') bg-blue-100 text-blue-800
                                         @else bg-red-100 text-red-800 @endif">
-                                        {{ ucfirst($booking->status) }}
+                                        {{ $booking->status === 'cancelled' ? 'Declined' : ucfirst($booking->status) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">

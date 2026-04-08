@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
-use App\Models\Payment;
-use Illuminate\Http\Request;
+use App\Models\Booking;
 
 class DashboardController extends Controller
 {
@@ -39,10 +38,11 @@ class DashboardController extends Controller
             ->flatten()
             ->count();
 
-        // Revenue (sum dari payments yang sudah paid)
-        $revenue = Payment::whereHas('booking.vehicle', function ($q) use ($vendor) {
+        // Revenue dari booking yang sudah confirmed/completed.
+        $revenue = Booking::whereHas('vehicle', function ($q) use ($vendor) {
             $q->where('vendor_id', $vendor->id);
-        })->where('status', 'paid')->sum('amount');
+        })->whereIn('status', ['confirmed', 'completed'])
+            ->sum('total_price');
 
         return view('vendor.dashboard', compact(
             'vendor',

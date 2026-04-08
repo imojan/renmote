@@ -26,10 +26,14 @@
 @endsection
 
 @section('content')
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
         <h2 class="text-xl font-semibold text-gray-800">Daftar Pesanan</h2>
-        
-        <div class="flex space-x-2">
+
+        <div class="flex items-center gap-2">
+            <a href="{{ route('vendor.bookings.export', request()->only('status')) }}"
+               class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-sm hover:bg-emerald-700">
+                Export XLSX
+            </a>
             <a href="{{ route('vendor.bookings.index') }}" 
                class="px-3 py-1 rounded-lg {{ !request('status') ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Semua
@@ -41,6 +45,10 @@
             <a href="{{ route('vendor.bookings.index', ['status' => 'confirmed']) }}" 
                class="px-3 py-1 rounded-lg {{ request('status') == 'confirmed' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Confirmed
+            </a>
+            <a href="{{ route('vendor.bookings.index', ['status' => 'declined']) }}" 
+               class="px-3 py-1 rounded-lg {{ request('status') == 'declined' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                Declined
             </a>
         </div>
     </div>
@@ -88,21 +96,25 @@
                                         @elseif($booking->status === 'confirmed') bg-green-100 text-green-800
                                         @elseif($booking->status === 'completed') bg-blue-100 text-blue-800
                                         @else bg-red-100 text-red-800 @endif">
-                                        {{ ucfirst($booking->status) }}
+                                        {{ $booking->status === 'cancelled' ? 'Declined' : ucfirst($booking->status) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                                    <a href="{{ route('vendor.bookings.show', $booking->id) }}" class="text-blue-600 hover:text-blue-900">Detail</a>
+                                    <a href="{{ route('vendor.bookings.show', $booking) }}" class="text-blue-600 hover:text-blue-900">Detail</a>
                                     
                                     @if($booking->status === 'pending')
-                                        <form action="{{ route('vendor.bookings.confirm', $booking->id) }}" method="POST" class="inline">
+                                        <form action="{{ route('vendor.bookings.confirm', $booking) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" class="text-green-600 hover:text-green-900">Konfirmasi</button>
+                                        </form>
+                                        <form action="{{ route('vendor.bookings.reject', $booking) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Yakin ingin menolak pesanan ini?')">Tolak</button>
                                         </form>
                                     @endif
                                     
                                     @if($booking->status === 'confirmed')
-                                        <form action="{{ route('vendor.bookings.complete', $booking->id) }}" method="POST" class="inline">
+                                        <form action="{{ route('vendor.bookings.complete', $booking) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" class="text-blue-600 hover:text-blue-900">Selesai</button>
                                         </form>

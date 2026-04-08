@@ -5,19 +5,12 @@ namespace App\Services;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Vehicle;
-use App\Services\AvailabilityService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class BookingService
 {
-    protected AvailabilityService $availabilityService;
-
-    public function __construct(AvailabilityService $availabilityService)
-    {
-        $this->availabilityService = $availabilityService;
-    }
-
     /**
      * Hitung total harga sewa berdasarkan jumlah hari
      *
@@ -49,25 +42,45 @@ class BookingService
      */
     public function createBooking(User $user, Vehicle $vehicle, string $startDate, string $endDate): Booking
     {
-        // Cek ketersediaan kendaraan menggunakan AvailabilityService
-        if (!$this->availabilityService->checkAvailability($vehicle->id, $startDate, $endDate)) {
-            throw new Exception('Kendaraan tidak tersedia untuk tanggal yang dipilih');
-        }
+        return DB::transaction(function () use ($user, $vehicle, $startDate, $endDate) {
+            // Lock row kendaraan untuk mencegah booking paralel di kendaraan yang sama.
+            $lockedVehicle = Vehicle::query()
+                ->whereKey($vehicle->id)
+                ->lockForUpdate()
+                ->first();
 
-        // Hitung total harga
-        $totalPrice = $this->calculateTotalPrice($vehicle, $startDate, $endDate);
+            if (!$lockedVehicle) {
+                throw new Exception('Kendaraan tidak ditemukan.');
+            }
 
-        // Buat booking baru
-        $booking = Booking::create([
-            'user_id' => $user->id,
-            'vehicle_id' => $vehicle->id,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'total_price' => $totalPrice,
-            'status' => 'pending',
-        ]);
+            // Cek overlap di dalam transaksi yang sama agar anti race condition.
+            $hasOverlappingBooking = Booking::query()
+                ->where('vehicle_id', $lockedVehicle->id)
+                ->where('status', '!=', 'cancelled')
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->where('start_date', '<=', $endDate)
+                        ->where('end_date', '>=', $startDate);
+                })
+                ->lockForUpdate()
+                ->exists();
 
-        return $booking;
+            if ($hasOverlappingBooking) {
+                throw new Exception('Kendaraan tidak tersedia untuk tanggal yang dipilih');
+            }
+
+            // Hitung total harga
+            $totalPrice = $this->calculateTotalPrice($lockedVehicle, $startDate, $endDate);
+
+            // Buat booking baru
+            return Booking::create([
+                'user_id' => $user->id,
+                'vehicle_id' => $lockedVehicle->id,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'total_price' => $totalPrice,
+                'status' => 'pending',
+            ]);
+        });
     }
 
     /**

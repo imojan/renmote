@@ -47,7 +47,7 @@
                     @elseif($booking->status === 'confirmed') bg-green-100 text-green-800
                     @elseif($booking->status === 'completed') bg-blue-100 text-blue-800
                     @else bg-red-100 text-red-800 @endif">
-                    {{ ucfirst($booking->status) }}
+                    {{ $booking->status === 'cancelled' ? 'Declined' : ucfirst($booking->status) }}
                 </span>
             </div>
 
@@ -153,7 +153,7 @@
                             <div class="w-3 h-3 {{ in_array($booking->status, ['confirmed', 'completed']) ? 'bg-green-500' : 'bg-red-500' }} rounded-full mr-3"></div>
                             <div>
                                 <p class="text-sm font-medium text-gray-900">
-                                    {{ $booking->status === 'cancelled' ? 'Dibatalkan' : 'Dikonfirmasi' }}
+                                    {{ $booking->status === 'cancelled' ? 'Ditolak (Declined)' : 'Dikonfirmasi' }}
                                 </p>
                                 <p class="text-xs text-gray-500">{{ $booking->updated_at->format('d M Y H:i') }}</p>
                             </div>
