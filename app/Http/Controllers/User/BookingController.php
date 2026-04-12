@@ -39,7 +39,7 @@ class BookingController extends Controller
             ->latest()
             ->get();
 
-        return view('user.bookings.index', compact('bookings'));
+        return view('front.bookings.index', compact('bookings'));
     }
 
     /**
@@ -47,7 +47,7 @@ class BookingController extends Controller
      */
     public function create(Vehicle $vehicle)
     {
-        return view('user.bookings.create', compact('vehicle'));
+        return view('front.bookings.create', compact('vehicle'));
     }
 
     /**
@@ -147,7 +147,7 @@ class BookingController extends Controller
             ->with('vehicle.vendor', 'payment')
             ->findOrFail($id);
 
-        return view('user.bookings.show', compact('booking'));
+        return view('front.bookings.show', compact('booking'));
     }
 
     /**

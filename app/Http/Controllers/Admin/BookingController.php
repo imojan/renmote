@@ -24,15 +24,24 @@ class BookingController extends Controller
     public function index(Request $request)
     {
         $normalizedStatus = $this->normalizeStatus($request->query('status'));
+        $sortBy = $this->normalizeSortBy($request->query('sort_by'));
+        $sortDir = $this->normalizeSortDir($request->query('sort_dir'));
 
-        $bookings = Booking::with('user', 'vehicle.vendor', 'payment')
+        $bookingsQuery = Booking::query()
+            ->select('bookings.*')
+            ->with('user', 'vehicle.vendor', 'payment')
+            ->leftJoin('users', 'users.id', '=', 'bookings.user_id')
+            ->leftJoin('vehicles', 'vehicles.id', '=', 'bookings.vehicle_id')
+            ->leftJoin('vendors', 'vendors.id', '=', 'vehicles.vendor_id')
             ->when($normalizedStatus, function ($query) use ($normalizedStatus) {
-                $query->where('status', $normalizedStatus);
-            })
-            ->latest()
-            ->get();
+                $query->where('bookings.status', $normalizedStatus);
+            });
 
-        return view('admin.bookings.index', compact('bookings'));
+        $this->applySorting($bookingsQuery, $sortBy, $sortDir);
+
+        $bookings = $bookingsQuery->get();
+
+        return view('admin.bookings.index', compact('bookings', 'sortBy', 'sortDir'));
     }
 
     /**
@@ -41,9 +50,11 @@ class BookingController extends Controller
     public function export(Request $request)
     {
         $status = $request->query('status');
+        $sortBy = $this->normalizeSortBy($request->query('sort_by'));
+        $sortDir = $this->normalizeSortDir($request->query('sort_dir'));
         $filename = 'booking-admin-' . now()->format('Ymd_His') . '.xlsx';
 
-        return Excel::download(new AdminBookingsExport($status), $filename);
+        return Excel::download(new AdminBookingsExport($status, $sortBy, $sortDir), $filename);
     }
 
     /**
@@ -80,5 +91,32 @@ class BookingController extends Controller
         }
 
         return $status === 'declined' ? 'cancelled' : $status;
+    }
+
+    private function normalizeSortBy(?string $sortBy): string
+    {
+        $allowed = ['id', 'customer_name', 'vehicle_name', 'vendor_name', 'booking_date', 'total_paid'];
+
+        return in_array($sortBy, $allowed, true) ? $sortBy : 'id';
+    }
+
+    private function normalizeSortDir(?string $sortDir): string
+    {
+        return in_array($sortDir, ['asc', 'desc'], true) ? $sortDir : 'desc';
+    }
+
+    private function applySorting($query, string $sortBy, string $sortDir): void
+    {
+        $sortMap = [
+            'id' => 'bookings.id',
+            'customer_name' => 'users.name',
+            'vehicle_name' => 'vehicles.name',
+            'vendor_name' => 'vendors.store_name',
+            'booking_date' => 'bookings.start_date',
+            'total_paid' => 'bookings.total_price',
+        ];
+
+        $query->orderBy($sortMap[$sortBy], $sortDir)
+            ->orderBy('bookings.id', 'desc');
     }
 }

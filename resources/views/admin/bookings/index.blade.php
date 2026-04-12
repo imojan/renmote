@@ -33,35 +33,82 @@
 @endsection
 
 @section('content')
+    @php
+        $currentStatus = request('status');
+        $currentSortBy = $sortBy ?? request('sort_by', 'id');
+        $currentSortDir = $sortDir ?? request('sort_dir', 'desc');
+        $nextSortDir = $currentSortDir === 'asc' ? 'desc' : 'asc';
+        $directionLabel = $currentSortDir === 'asc' ? 'Ascending' : 'Descending';
+        $toggleDirectionLabel = $currentSortDir === 'asc' ? 'Ubah ke Desc' : 'Ubah ke Asc';
+
+        $statusOptions = [
+            '' => 'Semua',
+            'pending' => 'Pending',
+            'confirmed' => 'Confirmed',
+            'declined' => 'Declined',
+            'completed' => 'Completed',
+        ];
+
+        $sortOptions = [
+            'id' => 'ID',
+            'customer_name' => 'Pelanggan',
+            'vehicle_name' => 'Kendaraan',
+            'vendor_name' => 'Vendor',
+            'booking_date' => 'Tanggal',
+            'total_paid' => 'Total',
+        ];
+    @endphp
+
     <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
         <h2 class="text-xl font-semibold text-gray-800">Semua Booking</h2>
 
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.bookings.export', request()->only('status')) }}"
+            <a href="{{ route('admin.bookings.export', request()->only(['status', 'sort_by', 'sort_dir'])) }}"
                class="px-3 py-1 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700">
                 Export XLSX
             </a>
-            <a href="{{ route('admin.bookings.index') }}" 
-               class="px-3 py-1 rounded-lg text-sm {{ !request('status') ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
-                Semua
-            </a>
-            <a href="{{ route('admin.bookings.index', ['status' => 'pending']) }}" 
-               class="px-3 py-1 rounded-lg text-sm {{ request('status') == 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-200 text-gray-700' }}">
-                Pending
-            </a>
-            <a href="{{ route('admin.bookings.index', ['status' => 'confirmed']) }}" 
-               class="px-3 py-1 rounded-lg text-sm {{ request('status') == 'confirmed' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700' }}">
-                Confirmed
-            </a>
-                <a href="{{ route('admin.bookings.index', ['status' => 'declined']) }}" 
-                    class="px-3 py-1 rounded-lg text-sm {{ request('status') == 'declined' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700' }}">
-                     Declined
-                </a>
-            <a href="{{ route('admin.bookings.index', ['status' => 'completed']) }}" 
-               class="px-3 py-1 rounded-lg text-sm {{ request('status') == 'completed' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
-                Completed
-            </a>
         </div>
+    </div>
+
+    <div class="mb-6 bg-white border border-gray-200 rounded-lg p-4">
+        <form action="{{ route('admin.bookings.index') }}" method="GET" class="flex flex-wrap items-end gap-3">
+            <div>
+                <label for="status" class="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                <select id="status" name="status" class="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 min-w-40">
+                    @foreach($statusOptions as $statusValue => $statusLabel)
+                        <option value="{{ $statusValue }}" {{ ($currentStatus ?? '') === $statusValue ? 'selected' : '' }}>
+                            {{ $statusLabel }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label for="sort_by" class="block text-xs font-medium text-gray-600 mb-1">Urut Berdasarkan</label>
+                <select id="sort_by" name="sort_by" class="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 min-w-44">
+                    @foreach($sortOptions as $sortKey => $sortLabel)
+                        <option value="{{ $sortKey }}" {{ $currentSortBy === $sortKey ? 'selected' : '' }}>
+                            {{ $sortLabel }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <input type="hidden" name="sort_dir" value="{{ $currentSortDir }}">
+
+            <button type="submit" class="px-4 py-2 rounded-lg text-sm bg-slate-800 text-white hover:bg-slate-900">
+                Terapkan
+            </button>
+
+            <a href="{{ route('admin.bookings.index', array_filter([
+                'status' => $currentStatus,
+                'sort_by' => $currentSortBy,
+                'sort_dir' => $nextSortDir,
+            ], fn ($value) => $value !== null && $value !== '')) }}"
+               class="px-4 py-2 rounded-lg text-sm border border-gray-300 text-gray-700 hover:bg-gray-50">
+                {{ $directionLabel }} ({{ $toggleDirectionLabel }})
+            </a>
+        </form>
     </div>
 
     <div class="bg-white rounded-lg shadow">

@@ -40,6 +40,8 @@ Route::get('/vehicles/{vehicle}', [FrontVehicleController::class, 'show'])->name
 Route::get('/vendors/{vendor}', [FrontVendorController::class, 'show'])->name('vendors.show');
 Route::get('/articles', [FrontArticleController::class, 'index'])->name('articles.index');
 Route::get('/articles/{article:slug}', [FrontArticleController::class, 'show'])->name('articles.show');
+Route::view('/cara-sewa', 'front.rent-guide')->name('rent.guide');
+Route::view('/snk-sewa', 'front.rental-terms')->name('rent.terms');
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +58,9 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     Route::post('/bookings/{vehicle}', [UserBookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{id}', [UserBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{id}/cancel', [UserBookingController::class, 'cancel'])->name('bookings.cancel');
+
+    // Wishlist (front page placeholder)
+    Route::view('/wishlist', 'front.bookings.wishlist')->name('wishlist.index');
 
     // Addresses
     Route::get('/addresses', [AddressController::class, 'index'])->name('addresses.index');

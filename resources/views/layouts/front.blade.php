@@ -21,8 +21,8 @@
         <div class="topbar-left">
             <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active-link' : '' }}">Beranda</a>
             <a href="{{ route('articles.index') }}" class="{{ request()->routeIs('articles.*') ? 'active-link' : '' }}">Artikel</a>
-            <a href="#">Cara Sewa</a>
-            <a href="#">S&K Sewa</a>
+            <a href="{{ route('rent.guide') }}" class="{{ request()->routeIs('rent.guide') ? 'active-link' : '' }}">Cara Sewa</a>
+            <a href="{{ route('rent.terms') }}" class="{{ request()->routeIs('rent.terms') ? 'active-link' : '' }}">S&K Sewa</a>
             <a href="#">Tentang Kami</a>
             <a href="#">Kontak Kami</a>
             <a href="#">Bantuan</a>
@@ -36,7 +36,7 @@
             </div>
             <a href="{{ route('register') }}"><i class="fa fa-users"></i> Jadi Vendor</a>
             @auth
-                <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@elseif(auth()->user()->role === 'vendor'){{ route('vendor.dashboard') }}@else{{ route('user.dashboard') }}@endif">
+                <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@elseif(auth()->user()->role === 'vendor'){{ route('vendor.dashboard') }}@else{{ route('user.bookings.index') }}@endif">
                     <i class="fa fa-user-circle"></i> {{ auth()->user()->name }}
                 </a>
             @else
@@ -69,9 +69,23 @@
             <button type="submit"><i class="fa fa-search"></i></button>
         </form>
 
+        @php
+            $wishlistUrl = '#';
+            $bookingUrl = '#';
+
+            if (auth()->check()) {
+                if (auth()->user()->role === 'user') {
+                    $wishlistUrl = route('user.wishlist.index');
+                    $bookingUrl = route('user.bookings.index');
+                }
+            } else {
+                $wishlistUrl = route('login');
+                $bookingUrl = route('login');
+            }
+        @endphp
         <div class="nav-icons">
-            <a href="#" class="nav-icon"><i class="fa fa-heart"></i></a>
-            <a href="#" class="nav-icon"><i class="fa fa-shopping-cart"></i></a>
+            <a href="{{ $wishlistUrl }}" class="nav-icon"><i class="fa fa-heart"></i></a>
+            <a href="{{ $bookingUrl }}" class="nav-icon"><i class="fa fa-shopping-cart"></i></a>
             <a href="#" class="nav-icon"><i class="fa fa-bell"></i></a>
         </div>
     </div>
@@ -90,15 +104,15 @@
     <div class="mobile-menu-links">
         <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}"><i class="fa fa-home"></i> Beranda</a>
         <a href="{{ route('articles.index') }}" class="{{ request()->routeIs('articles.*') ? 'active' : '' }}"><i class="fa fa-newspaper"></i> Artikel</a>
-        <a href="#"><i class="fa fa-book-open"></i> Cara Sewa</a>
-        <a href="#"><i class="fa fa-file-contract"></i> S&K Sewa</a>
+        <a href="{{ route('rent.guide') }}" class="{{ request()->routeIs('rent.guide') ? 'active' : '' }}"><i class="fa fa-book-open"></i> Cara Sewa</a>
+        <a href="{{ route('rent.terms') }}" class="{{ request()->routeIs('rent.terms') ? 'active' : '' }}"><i class="fa fa-file-contract"></i> S&K Sewa</a>
         <a href="#"><i class="fa fa-info-circle"></i> Tentang Kami</a>
         <a href="#"><i class="fa fa-phone"></i> Kontak Kami</a>
         <a href="#"><i class="fa fa-question-circle"></i> Bantuan</a>
         <hr>
         <a href="{{ route('register') }}"><i class="fa fa-users"></i> Jadi Vendor</a>
         @auth
-            <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@elseif(auth()->user()->role === 'vendor'){{ route('vendor.dashboard') }}@else{{ route('user.dashboard') }}@endif">
+            <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@elseif(auth()->user()->role === 'vendor'){{ route('vendor.dashboard') }}@else{{ route('user.bookings.index') }}@endif">
                 <i class="fa fa-user-circle"></i> {{ auth()->user()->name }}
             </a>
         @else
@@ -148,8 +162,8 @@
                 <ul>
                     <li><a href="{{ route('home') }}">Beranda</a></li>
                     <li><a href="{{ route('articles.index') }}">Artikel</a></li>
-                    <li><a href="#">Cara Sewa</a></li>
-                    <li><a href="#">S&K Sewa</a></li>
+                    <li><a href="{{ route('rent.guide') }}">Cara Sewa</a></li>
+                    <li><a href="{{ route('rent.terms') }}">S&K Sewa</a></li>
                     <li><a href="#">Tentang Kami</a></li>
                     <li><a href="#">Kontak Kami</a></li>
                     <li><a href="#">Bantuan</a></li>
