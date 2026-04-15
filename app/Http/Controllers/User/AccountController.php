@@ -231,6 +231,32 @@ class AccountController extends Controller
     }
 
     /**
+     * Hapus dokumen penting user agar bisa upload ulang.
+     */
+    public function destroyDocument(Request $request, string $type): RedirectResponse
+    {
+        if (!in_array($type, ['ktp', 'sim'], true)) {
+            abort(404);
+        }
+
+        $document = $request->user()->userDocuments()->where('type', $type)->first();
+
+        if (!$document) {
+            return back()->with('error', 'Dokumen tidak ditemukan atau sudah dihapus.');
+        }
+
+        if ($document->file_path) {
+            Storage::disk('public')->delete($document->file_path);
+        }
+
+        $document->delete();
+
+        $documentLabel = $type === 'ktp' ? 'KTP/KTM' : 'SIM';
+
+        return back()->with('success', "Dokumen {$documentLabel} berhasil dihapus. Kamu bisa mengunggah ulang.");
+    }
+
+    /**
      * Ubah password user dari halaman akun.
      */
     public function updatePassword(Request $request): RedirectResponse

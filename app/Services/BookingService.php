@@ -24,8 +24,9 @@ class BookingService
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
         
-        // Hitung jumlah hari (minimal 1 hari)
-        $days = $start->diffInDays($end) + 1;
+        // End date diperlakukan sebagai tanggal selesai/checkout.
+        // Contoh: 10-11 = 1 hari, 10-12 = 2 hari.
+        $days = max(1, $start->diffInDays($end));
         
         return $vehicle->price_per_day * $days;
     }
@@ -58,8 +59,8 @@ class BookingService
                 ->where('vehicle_id', $lockedVehicle->id)
                 ->where('status', '!=', 'cancelled')
                 ->where(function ($query) use ($startDate, $endDate) {
-                    $query->where('start_date', '<=', $endDate)
-                        ->where('end_date', '>=', $startDate);
+                    $query->where('start_date', '<', $endDate)
+                        ->where('end_date', '>', $startDate);
                 })
                 ->lockForUpdate()
                 ->exists();

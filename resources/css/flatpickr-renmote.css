@@ -37,13 +37,13 @@
 .flatpickr-current-month {
     font-size: 15px;
     font-weight: 700;
-    color: #fff;
+    color: #fff !important;
     padding-top: 4px;
 }
 
 .flatpickr-current-month .flatpickr-monthDropdown-months {
     background: transparent;
-    color: #fff;
+    color: #fff !important;
     font-weight: 700;
     appearance: none;
     -webkit-appearance: none;
@@ -57,8 +57,16 @@
 }
 
 .flatpickr-current-month input.cur-year {
-    color: #fff;
+    color: #fff !important;
     font-weight: 700;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp::after {
+    border-bottom-color: rgba(255, 255, 255, 0.9);
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowDown::after {
+    border-top-color: rgba(255, 255, 255, 0.9);
 }
 
 /* Navigation arrows */
@@ -80,6 +88,14 @@
     fill: #fff;
     width: 12px;
     height: 12px;
+}
+
+.flatpickr-months .flatpickr-prev-month span,
+.flatpickr-months .flatpickr-next-month span {
+    color: #fff;
+    font-size: 16px;
+    line-height: 1;
+    display: inline-block;
 }
 
 .flatpickr-months .flatpickr-prev-month:hover svg,

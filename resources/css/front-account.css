@@ -322,6 +322,10 @@
     flex-wrap: wrap;
 }
 
+.account-action-row-spaced {
+    margin-top: 12px;
+}
+
 .account-main-btn,
 .account-sub-btn {
     border-radius: 10px;
@@ -512,6 +516,10 @@
     text-decoration: underline;
 }
 
+.account-doc-action-form {
+    margin-top: 4px;
+}
+
 .account-doc-empty {
     color: #64748b;
     font-size: 12px;
@@ -542,6 +550,45 @@
 .account-doc-upload-form small {
     color: #64748b;
     font-size: 12px;
+}
+
+.account-doc-upload-grid > div:only-child {
+    grid-column: 1 / -1;
+}
+
+.account-doc-upload-locked {
+    margin-top: 4px;
+}
+
+.account-password-field {
+    position: relative;
+}
+
+.account-password-field input {
+    padding-right: 46px;
+}
+
+.account-password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.account-password-toggle:hover {
+    color: #334155;
+}
+
+.account-password-toggle svg {
+    pointer-events: none;
 }
 
 .account-empty-box {

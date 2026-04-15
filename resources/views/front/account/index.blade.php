@@ -8,9 +8,14 @@
         $profilePhotoUrl = $user->profile_photo_path
             ? \Illuminate\Support\Facades\Storage::url($user->profile_photo_path)
             : null;
-        $usernameDisplay = $user->username ?: \Illuminate\Support\Str::slug($user->name, '_');
+        $rawUsername = trim((string) $user->username);
+        $generatedUsername = \Illuminate\Support\Str::slug($user->name, '_');
+        $hasInvalidUsernameFormat = $rawUsername === '' || preg_match('/[{}$]/', $rawUsername);
+        $usernameDisplay = $hasInvalidUsernameFormat ? $generatedUsername : $rawUsername;
         $ktpDocument = $documentsByType->get('ktp');
         $simDocument = $documentsByType->get('sim');
+        $canUploadKtp = !$ktpDocument;
+        $canUploadSim = !$simDocument;
     @endphp
 
     <div class="account-shell">
@@ -26,7 +31,7 @@
 
                 <div>
                     <p class="account-side-name">{{ $user->name }}</p>
-                    <p class="account-side-username">@{{ $usernameDisplay }}</p>
+                    <p class="account-side-username">{{ '@' . $usernameDisplay }}</p>
                 </div>
             </div>
 
@@ -105,7 +110,7 @@
                     <div class="account-two-col">
                         <div>
                             <label>Username</label>
-                            <input type="text" name="username" value="{{ old('username', $user->username) }}" placeholder="contoh: fauzan_sabani">
+                            <input type="text" name="username" value="{{ old('username', $usernameDisplay) }}" placeholder="Masukkan username">
                         </div>
                         <div>
                             <label>Nama Lengkap</label>
@@ -314,23 +319,28 @@
                 <div class="account-block-head">
                     <div>
                         <h3>Dokumen Penting</h3>
-                        <p>Unggah KTP (wajib) dan SIM (opsional) sebagai data pendukung review transaksi oleh admin/vendor.</p>
+                        <p>Unggah KTP/KTM (wajib) dan SIM (opsional) sebagai data pendukung review transaksi oleh admin/vendor.</p>
                     </div>
                     <span class="account-tag">Verifikasi</span>
                 </div>
 
                 <div class="account-document-grid">
                     <article class="account-document-item">
-                        <h4>Dokumen KTP</h4>
+                        <h4>Dokumen KTP/KTM</h4>
                         <p>Status:
                             <span class="account-doc-status account-doc-status-{{ $ktpDocument?->status ?? 'pending' }}">
                                 {{ strtoupper($ktpDocument?->status ?? 'belum upload') }}
                             </span>
                         </p>
                         @if($ktpDocument)
-                            <a href="{{ \Illuminate\Support\Facades\Storage::url($ktpDocument->file_path) }}" target="_blank">Lihat dokumen KTP</a>
+                            <a href="{{ \Illuminate\Support\Facades\Storage::url($ktpDocument->file_path) }}" target="_blank">Lihat dokumen KTP/KTM</a>
+                            <form action="{{ route('user.account.documents.destroy', 'ktp') }}" method="POST" onsubmit="return confirm('Hapus dokumen KTP/KTM? Setelah dihapus, kamu bisa unggah ulang.')" class="account-doc-action-form">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="account-mini-btn account-mini-btn-danger">Hapus dokumen</button>
+                            </form>
                         @else
-                            <span class="account-doc-empty">Belum ada file KTP.</span>
+                            <span class="account-doc-empty">Belum ada file KTP/KTM.</span>
                         @endif
                     </article>
 
@@ -343,32 +353,48 @@
                         </p>
                         @if($simDocument)
                             <a href="{{ \Illuminate\Support\Facades\Storage::url($simDocument->file_path) }}" target="_blank">Lihat dokumen SIM</a>
+                            <form action="{{ route('user.account.documents.destroy', 'sim') }}" method="POST" onsubmit="return confirm('Hapus dokumen SIM? Setelah dihapus, kamu bisa unggah ulang.')" class="account-doc-action-form">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="account-mini-btn account-mini-btn-danger">Hapus dokumen</button>
+                            </form>
                         @else
                             <span class="account-doc-empty">Belum ada file SIM.</span>
                         @endif
                     </article>
                 </div>
 
-                <form action="{{ route('user.account.documents.update') }}" method="POST" enctype="multipart/form-data" class="account-form-grid account-doc-upload-form">
-                    @csrf
+                @if($canUploadKtp || $canUploadSim)
+                    <form action="{{ route('user.account.documents.update') }}" method="POST" enctype="multipart/form-data" class="account-form-grid account-doc-upload-form">
+                        @csrf
 
-                    <div class="account-two-col">
-                        <div>
-                            <label>Upload KTP</label>
-                            <input type="file" name="document_ktp" accept=".jpg,.jpeg,.png,.pdf">
+                        <div class="account-two-col account-doc-upload-grid">
+                            @if($canUploadKtp)
+                                <div>
+                                    <label>Upload KTP/KTM</label>
+                                    <input type="file" name="document_ktp" accept=".jpg,.jpeg,.png,.pdf">
+                                </div>
+                            @endif
+
+                            @if($canUploadSim)
+                                <div>
+                                    <label>Upload SIM (opsional)</label>
+                                    <input type="file" name="document_sim" accept=".jpg,.jpeg,.png,.pdf">
+                                </div>
+                            @endif
                         </div>
-                        <div>
-                            <label>Upload SIM (opsional)</label>
-                            <input type="file" name="document_sim" accept=".jpg,.jpeg,.png,.pdf">
+
+                        <small>Format file: JPG, PNG, atau PDF. Maksimal 4MB per file.</small>
+
+                        <div class="account-action-row account-action-row-spaced">
+                            <button type="submit" class="account-main-btn">Simpan Dokumen</button>
                         </div>
+                    </form>
+                @else
+                    <div class="account-empty-box account-doc-upload-locked">
+                        Semua dokumen sudah diunggah. Jika ingin unggah ulang, hapus dokumen pada kartu di atas terlebih dahulu.
                     </div>
-
-                    <small>Format file: JPG, PNG, atau PDF. Maksimal 4MB per file.</small>
-
-                    <div class="account-action-row">
-                        <button type="submit" class="account-main-btn">Simpan Dokumen</button>
-                    </div>
-                </form>
+                @endif
             </section>
 
             <section id="account-password" class="account-block">
@@ -386,17 +412,53 @@
                     <div class="account-two-col">
                         <div>
                             <label>Password Saat Ini</label>
-                            <input type="password" name="current_password" required>
+                            <div class="account-password-field">
+                                <input id="account_current_password" type="password" name="current_password" required>
+                                <button type="button" class="account-password-toggle js-password-toggle" data-target="account_current_password" aria-label="Tampilkan password saat ini">
+                                    <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                                        <line x1="1" y1="1" x2="23" y2="23"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label>Password Baru</label>
-                            <input type="password" name="password" required>
+                            <div class="account-password-field">
+                                <input id="account_new_password" type="password" name="password" required>
+                                <button type="button" class="account-password-toggle js-password-toggle" data-target="account_new_password" aria-label="Tampilkan password baru">
+                                    <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                                        <line x1="1" y1="1" x2="23" y2="23"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <div>
                         <label>Konfirmasi Password Baru</label>
-                        <input type="password" name="password_confirmation" required>
+                        <div class="account-password-field">
+                            <input id="account_password_confirmation" type="password" name="password_confirmation" required>
+                            <button type="button" class="account-password-toggle js-password-toggle" data-target="account_password_confirmation" aria-label="Tampilkan konfirmasi password baru">
+                                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="account-action-row">
@@ -417,7 +479,7 @@
                     Belum ada kendaraan di wishlist kamu.
                 </div>
 
-                <div class="account-action-row">
+                <div class="account-action-row account-action-row-spaced">
                     <a href="{{ route('search') }}" class="account-main-btn account-main-btn-link">Cari Kendaraan</a>
                     <a href="{{ route('user.wishlist.index') }}" class="account-sub-btn">Buka Halaman Wishlist</a>
                 </div>
@@ -481,7 +543,7 @@
                     </div>
                 @endif
 
-                <div class="account-action-row">
+                <div class="account-action-row account-action-row-spaced">
                     <a href="{{ route('user.bookings.index') }}" class="account-main-btn account-main-btn-link">Buka Riwayat Lengkap</a>
                 </div>
             </section>

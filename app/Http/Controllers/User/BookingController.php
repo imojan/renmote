@@ -9,6 +9,7 @@ use App\Models\Vehicle;
 use App\Services\AvailabilityService;
 use App\Services\BookingService;
 use App\Services\PaymentService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -72,11 +73,11 @@ class BookingController extends Controller
         }
 
         if ($startDate && !$endDate) {
-            $endDate = $startDate;
+            $endDate = Carbon::parse($startDate)->addDay()->toDateString();
         }
 
         if (!$startDate && $endDate) {
-            $startDate = $endDate;
+            $startDate = Carbon::parse($endDate)->subDay()->toDateString();
         }
 
         $isAvailable = $this->availabilityService->checkAvailability(
@@ -91,8 +92,8 @@ class BookingController extends Controller
             $overlappingRanges = Booking::query()
                 ->where('vehicle_id', $vehicle->id)
                 ->where('status', '!=', 'cancelled')
-                ->where('start_date', '<=', $endDate)
-                ->where('end_date', '>=', $startDate)
+                ->where('start_date', '<', $endDate)
+                ->where('end_date', '>', $startDate)
                 ->orderBy('start_date')
                 ->get(['start_date', 'end_date'])
                 ->map(function (Booking $booking) {

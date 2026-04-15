@@ -102,6 +102,29 @@
 
     let debounceTimer = null;
 
+    function toDateInputValue(dateObj) {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function enforceEndDateMin() {
+        if (!startDateInput.value) {
+            endDateInput.min = "{{ date('Y-m-d') }}";
+            return;
+        }
+
+        const start = new Date(startDateInput.value);
+        start.setDate(start.getDate() + 1);
+        const minEndDate = toDateInputValue(start);
+        endDateInput.min = minEndDate;
+
+        if (endDateInput.value && endDateInput.value < minEndDate) {
+            endDateInput.value = '';
+        }
+    }
+
     function hideMessages() {
         warningBox.classList.add('hidden');
         successBox.classList.add('hidden');
@@ -171,8 +194,13 @@
         debounceTimer = setTimeout(checkAvailability, 250);
     }
 
-    startDateInput.addEventListener('change', scheduleCheck);
+    startDateInput.addEventListener('change', () => {
+        enforceEndDateMin();
+        scheduleCheck();
+    });
     endDateInput.addEventListener('change', scheduleCheck);
+
+    enforceEndDateMin();
 
     if (startDateInput.value || endDateInput.value) {
         checkAvailability();

@@ -97,7 +97,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Durasi</p>
-                    <p class="font-semibold">{{ \Carbon\Carbon::parse($booking->start_date)->diffInDays($booking->end_date) + 1 }} hari</p>
+                    <p class="font-semibold">{{ max(1, \Carbon\Carbon::parse($booking->start_date)->diffInDays($booking->end_date)) }} hari</p>
                 </div>
             </div>
 

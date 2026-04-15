@@ -10,7 +10,8 @@ class AvailabilityService
      * Cek ketersediaan kendaraan untuk rentang tanggal tertentu
      *
      * Logic: Return false jika ada booking yang overlap dengan tanggal yang diminta
-     * Overlap terjadi jika: existing.start_date <= requested_end_date AND existing.end_date >= requested_start_date
+        * End date diperlakukan sebagai tanggal selesai/checkout (eksklusif).
+        * Overlap terjadi jika: existing.start_date < requested_end_date AND existing.end_date > requested_start_date
      *
      * @param int $vehicleId
      * @param string $startDate
@@ -24,8 +25,8 @@ class AvailabilityService
         $overlappingBooking = Booking::where('vehicle_id', $vehicleId)
             ->where('status', '!=', 'cancelled')
             ->where(function ($query) use ($startDate, $endDate) {
-                $query->where('start_date', '<=', $endDate)
-                      ->where('end_date', '>=', $startDate);
+                $query->where('start_date', '<', $endDate)
+                      ->where('end_date', '>', $startDate);
             })
             ->exists();
 

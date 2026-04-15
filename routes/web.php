@@ -60,6 +60,7 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     Route::delete('/account/address/{address}', [AccountController::class, 'destroyAddress'])->name('account.address.destroy');
     Route::post('/account/address/{address}/default', [AccountController::class, 'setDefaultAddress'])->name('account.address.default');
     Route::post('/account/documents', [AccountController::class, 'updateDocuments'])->name('account.documents.update');
+    Route::delete('/account/documents/{type}', [AccountController::class, 'destroyDocument'])->name('account.documents.destroy');
     Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password.update');
     Route::view('/wishlist', 'front.bookings.wishlist')->name('wishlist.index');
     

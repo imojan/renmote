@@ -23,7 +23,7 @@ class StoreBookingRequest extends FormRequest
     {
         return [
             'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'end_date' => 'required|date|after:start_date',
         ];
     }
 
@@ -38,7 +38,7 @@ class StoreBookingRequest extends FormRequest
             'start_date.after_or_equal' => 'Tanggal mulai minimal hari ini.',
             'end_date.required' => 'Tanggal selesai harus diisi.',
             'end_date.date' => 'Format tanggal selesai tidak valid.',
-            'end_date.after_or_equal' => 'Tanggal selesai harus setelah atau sama dengan tanggal mulai.',
+            'end_date.after' => 'Tanggal selesai harus setelah tanggal mulai.',
         ];
     }
 }
