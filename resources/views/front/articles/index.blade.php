@@ -20,7 +20,6 @@
             <a href="{{ route('articles.show', $article) }}" class="artikel-card artikel-card-link">
                 <div class="artikel-img">
                     <img src="{{ $article->cover_image ? Storage::url($article->cover_image) : asset('images/malang-1.png') }}" alt="{{ $article->title }}">
-                    <span class="artikel-badge">Artikel Renmote</span>
                 </div>
                 <div class="artikel-body">
                     <div class="artikel-head-meta">

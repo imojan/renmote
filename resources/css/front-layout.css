@@ -44,7 +44,7 @@ body {
 
 .topbar {
     background: var(--rn-blue);
-    padding: 10px 0;
+    padding: 0;
     font-size: 12px;
     color: #fff;
 }
@@ -56,6 +56,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 46px;
 }
 
 /* --- Left: page navigation links --- */
@@ -66,11 +67,15 @@ body {
 }
 
 .topbar-left a {
+    display: inline-flex;
+    align-items: center;
     color: #fff;
     text-decoration: none;
     font-size: 12px;
     font-weight: 500;
-    padding: 6px 14px;
+    padding: 0 14px;
+    height: 46px;
+    line-height: 1;
     letter-spacing: .3px;
     text-transform: uppercase;
     position: relative;
@@ -81,7 +86,7 @@ body {
 .topbar-left a::after {
     content: '';
     position: absolute;
-    bottom: 0;
+    bottom: 6px;
     left: 14px;
     right: 14px;
     height: 2px;
@@ -109,16 +114,19 @@ body {
 /* --- Right: lang switch, vendor CTA, auth --- */
 .topbar-right {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     align-items: center;
 }
 
 .topbar-right a,
 .topbar-right span {
+    display: inline-flex;
+    align-items: center;
     color: #fff;
     text-decoration: none;
     font-size: 12px;
     font-weight: 600;
+    line-height: 1;
 }
 
 .topbar-right a:hover {
@@ -140,6 +148,7 @@ body {
     font-weight: 700;
     cursor: pointer;
     padding: 0;
+    height: 46px;
 }
 
 .topbar-account-avatar {
@@ -240,6 +249,7 @@ body {
     display: flex;
     gap: 4px;
     align-items: center;
+    min-height: 46px;
 }
 
 .lang-switch i {
@@ -274,7 +284,7 @@ body {
     padding: 16px 40px;
     display: flex;
     align-items: center;
-    gap: 28px;
+    gap: 20px;
 }
 
 /* --- Logo --- */
@@ -326,7 +336,7 @@ body {
     border-radius: 8px;
     overflow: hidden;
     background: #fff;
-    max-width: 900px;
+    max-width: 960px;
     border: 2px solid #fff;
 }
 
@@ -377,12 +387,11 @@ body {
     color: #fff;
 }
 
-/* --- Action Icons (heart, cart, bell) --- */
+/* --- Action Icons (heart, bell) --- */
 .nav-icons {
     display: flex;
-    gap: 18px;
+    gap: 14px;
     align-items: center;
-    margin-left: auto;
 }
 
 .nav-icon {

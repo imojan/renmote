@@ -3,7 +3,7 @@
 @section('title', $vehicle->name)
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <section class="section front-content-section front-vehicle-section">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Image -->
             <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -88,5 +88,5 @@
                 @endauth
             </div>
         </div>
-    </div>
+    </section>
 @endsection

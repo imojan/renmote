@@ -3,7 +3,7 @@
 @section('title', 'Cari Motor')
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <section class="section front-content-section front-search-section">
         <h1 class="text-2xl font-bold text-gray-900 mb-6">Cari Motor</h1>
         
         <!-- Search Filters -->
@@ -105,5 +105,5 @@
                 <p class="text-gray-500">Tidak ada motor yang ditemukan dengan filter tersebut.</p>
             </div>
         @endif
-    </div>
+    </section>
 @endsection

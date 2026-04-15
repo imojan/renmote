@@ -2,8 +2,8 @@
    FRONT ACCOUNT PAGE (Shopee-inspired settings hub)
    ===================================================================== */
 
-.account-page-wrap {
-    padding-top: 28px;
+.section.account-page-wrap {
+    padding-top: 34px;
     padding-bottom: 48px;
 }
 
@@ -623,8 +623,8 @@
 }
 
 @media (max-width: 768px) {
-    .account-page-wrap {
-        padding-top: 18px;
+    .section.account-page-wrap {
+        padding-top: 20px;
         padding-bottom: 28px;
     }
 

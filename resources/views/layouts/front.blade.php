@@ -97,21 +97,17 @@
 
         @php
             $wishlistUrl = '#';
-            $bookingUrl = '#';
 
             if (auth()->check()) {
                 if (auth()->user()->role === 'user') {
                     $wishlistUrl = route('user.wishlist.index');
-                    $bookingUrl = route('user.bookings.index');
                 }
             } else {
                 $wishlistUrl = route('login');
-                $bookingUrl = route('login');
             }
         @endphp
         <div class="nav-icons">
             <a href="{{ $wishlistUrl }}" class="nav-icon"><i class="fa fa-heart"></i></a>
-            <a href="{{ $bookingUrl }}" class="nav-icon"><i class="fa fa-shopping-cart"></i></a>
             <a href="#" class="nav-icon"><i class="fa fa-bell"></i></a>
         </div>
     </div>
