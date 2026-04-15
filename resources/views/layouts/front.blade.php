@@ -54,16 +54,44 @@
                         <div class="topbar-account-menu" id="topbarAccountMenu">
                             <a href="{{ route('user.account.index') }}" class="topbar-account-item">Akun Saya</a>
                             <a href="{{ route('user.bookings.index') }}" class="topbar-account-item">Riwayat Pemesanan</a>
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('logout') }}"
+                                data-confirm-title="Logout dari akun?"
+                                data-confirm-message="Kamu yakin ingin keluar dari akun sekarang?"
+                                data-confirm-confirm-text="Ya, Logout"
+                                data-confirm-cancel-text="Batal">
                                 @csrf
                                 <button type="submit" class="topbar-account-item topbar-account-item-danger">Logout</button>
                             </form>
                         </div>
                     </div>
                 @else
-                    <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@else{{ route('vendor.dashboard') }}@endif">
-                        <i class="fa fa-user-circle"></i> {{ auth()->user()->name }}
-                    </a>
+                    @php
+                        $dashboardRoute = auth()->user()->role === 'admin'
+                            ? route('admin.dashboard')
+                            : route('vendor.dashboard');
+                        $dashboardLabel = auth()->user()->role === 'admin'
+                            ? 'Menuju Dashboard Admin'
+                            : 'Menuju Dashboard Vendor';
+                    @endphp
+                    <div class="topbar-account" id="topbarAccount">
+                        <button class="topbar-account-toggle" id="topbarAccountToggle" type="button">
+                            <i class="fa fa-user-circle topbar-account-icon"></i>
+                            <span>{{ auth()->user()->name }}</span>
+                            <i class="fa fa-chevron-down topbar-account-chevron"></i>
+                        </button>
+
+                        <div class="topbar-account-menu" id="topbarAccountMenu">
+                            <a href="{{ $dashboardRoute }}" class="topbar-account-item">{{ $dashboardLabel }}</a>
+                            <form method="POST" action="{{ route('logout') }}"
+                                data-confirm-title="Logout dari akun?"
+                                data-confirm-message="Kamu yakin ingin keluar dari akun sekarang?"
+                                data-confirm-confirm-text="Ya, Logout"
+                                data-confirm-cancel-text="Batal">
+                                @csrf
+                                <button type="submit" class="topbar-account-item topbar-account-item-danger">Logout</button>
+                            </form>
+                        </div>
+                    </div>
                 @endif
             @else
                 <a href="{{ route('login') }}"><i class="fa fa-user-circle"></i> Masuk/Daftar</a>

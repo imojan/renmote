@@ -161,9 +161,13 @@
                                             @csrf
                                             <button type="submit" class="text-green-600 hover:text-green-900">Konfirmasi</button>
                                         </form>
-                                        <form action="{{ route('vendor.bookings.reject', $booking) }}" method="POST" class="inline">
+                                        <form action="{{ route('vendor.bookings.reject', $booking) }}" method="POST" class="inline"
+                                            data-confirm-title="Tolak pesanan?"
+                                            data-confirm-message="Pesanan ini akan ditolak. Lanjutkan?"
+                                            data-confirm-confirm-text="Ya, Tolak"
+                                            data-confirm-cancel-text="Batal">
                                             @csrf
-                                            <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Yakin ingin menolak pesanan ini?')">Tolak</button>
+                                            <button type="submit" class="text-red-600 hover:text-red-900">Tolak</button>
                                         </form>
                                     @endif
                                     

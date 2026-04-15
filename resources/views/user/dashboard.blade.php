@@ -91,9 +91,13 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         <a href="{{ route('user.bookings.show', $booking->id) }}" class="text-blue-600 hover:text-blue-900">Detail</a>
                                         @if($booking->status === 'pending')
-                                            <form action="{{ route('user.bookings.cancel', $booking->id) }}" method="POST" class="inline ml-2">
+                                            <form action="{{ route('user.bookings.cancel', $booking->id) }}" method="POST" class="inline ml-2"
+                                                data-confirm-title="Batalkan booking?"
+                                                data-confirm-message="Pesanan ini akan dibatalkan. Lanjutkan?"
+                                                data-confirm-confirm-text="Ya, Batalkan"
+                                                data-confirm-cancel-text="Tidak">
                                                 @csrf
-                                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Yakin ingin membatalkan?')">Batalkan</button>
+                                                <button type="submit" class="text-red-600 hover:text-red-900">Batalkan</button>
                                             </form>
                                         @endif
                                     </td>

@@ -96,10 +96,13 @@
 
             <!-- Actions -->
             @if($booking->status === 'pending')
-                <form action="{{ route('user.bookings.cancel', $booking->id) }}" method="POST">
+                <form action="{{ route('user.bookings.cancel', $booking->id) }}" method="POST"
+                    data-confirm-title="Batalkan booking?"
+                    data-confirm-message="Pesanan ini akan dibatalkan. Lanjutkan?"
+                    data-confirm-confirm-text="Ya, Batalkan"
+                    data-confirm-cancel-text="Tidak">
                     @csrf
-                    <button type="submit" class="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700"
-                            onclick="return confirm('Yakin ingin membatalkan booking ini?')">
+                    <button type="submit" class="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">
                         Batalkan Booking
                     </button>
                 </form>

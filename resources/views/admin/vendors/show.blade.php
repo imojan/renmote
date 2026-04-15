@@ -129,7 +129,11 @@
                             Approve Vendor
                         </button>
                     </form>
-                    <form action="{{ route('admin.vendors.unverify', $vendor) }}" method="POST" class="flex-1 space-y-2">
+                    <form action="{{ route('admin.vendors.unverify', $vendor) }}" method="POST" class="flex-1 space-y-2"
+                        data-confirm-title="Tolak vendor ini?"
+                        data-confirm-message="Status vendor akan diubah menjadi ditolak."
+                        data-confirm-confirm-text="Ya, Tolak"
+                        data-confirm-cancel-text="Batal">
                         @csrf
                         <textarea
                             name="reason"
@@ -138,8 +142,7 @@
                             class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
                             placeholder="Tuliskan alasan penolakan supaya vendor bisa memperbaiki datanya"
                         >{{ old('reason') }}</textarea>
-                        <button type="submit" class="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700"
-                                onclick="return confirm('Yakin ingin menolak vendor ini?')">
+                        <button type="submit" class="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">
                             Reject Vendor
                         </button>
                     </form>

@@ -132,10 +132,13 @@
                             Konfirmasi Pesanan
                         </button>
                     </form>
-                    <form action="{{ route('vendor.bookings.reject', $booking) }}" method="POST" class="flex-1">
+                    <form action="{{ route('vendor.bookings.reject', $booking) }}" method="POST" class="flex-1"
+                        data-confirm-title="Tolak pesanan?"
+                        data-confirm-message="Pesanan ini akan ditolak. Lanjutkan?"
+                        data-confirm-confirm-text="Ya, Tolak"
+                        data-confirm-cancel-text="Batal">
                         @csrf
-                        <button type="submit" class="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700"
-                                onclick="return confirm('Yakin ingin menolak pesanan ini?')">
+                        <button type="submit" class="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">
                             Tolak Pesanan
                         </button>
                     </form>

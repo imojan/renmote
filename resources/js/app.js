@@ -12,7 +12,246 @@ const DATE_FIELDS_SELECTOR = 'input[type="date"], input[type="datetime-local"]';
 const SELECT_FIELDS_SELECTOR = 'select:not([multiple]):not([size])';
 const FILE_FIELDS_SELECTOR = 'input[type="file"]';
 const PASSWORD_TOGGLE_SELECTOR = '.js-password-toggle[data-target]';
+const CONFIRMABLE_FORM_SELECTOR = 'form[data-confirm-message]';
+const INLINE_CONFIRM_SELECTOR = 'form[onsubmit*="confirm("], button[onclick*="confirm("], a[onclick*="confirm("]';
 let dropdownEventsBound = false;
+let confirmModalBound = false;
+let confirmModalResolver = null;
+
+function decodeHtmlEntities(text) {
+	if (!text) {
+		return '';
+	}
+
+	const textarea = document.createElement('textarea');
+	textarea.innerHTML = text;
+	return textarea.value;
+}
+
+function ensureConfirmModal() {
+	let modalEl = document.getElementById('rnConfirmModal');
+	if (modalEl) {
+		return modalEl;
+	}
+
+	modalEl = document.createElement('div');
+	modalEl.id = 'rnConfirmModal';
+	modalEl.className = 'rn-confirm-modal';
+	modalEl.innerHTML = `
+		<div class="rn-confirm-modal__backdrop" data-rn-confirm-backdrop></div>
+		<div class="rn-confirm-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="rnConfirmTitle">
+			<div class="rn-confirm-modal__icon" aria-hidden="true">
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M3 6h18" />
+					<path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+					<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+					<path d="M10 11v6" />
+					<path d="M14 11v6" />
+				</svg>
+			</div>
+			<h3 id="rnConfirmTitle" class="rn-confirm-modal__title">Konfirmasi Aksi</h3>
+			<p class="rn-confirm-modal__message" id="rnConfirmMessage">Apakah kamu yakin ingin melanjutkan aksi ini?</p>
+			<div class="rn-confirm-modal__actions">
+				<button type="button" class="rn-confirm-btn" data-rn-confirm-cancel>Batal</button>
+				<button type="button" class="rn-confirm-btn rn-confirm-btn--danger" data-rn-confirm-submit>Ya, Lanjutkan</button>
+			</div>
+		</div>
+	`;
+
+	document.body.appendChild(modalEl);
+	return modalEl;
+}
+
+function closeConfirmModal(confirmed) {
+	const modalEl = document.getElementById('rnConfirmModal');
+	if (!modalEl) {
+		return;
+	}
+
+	modalEl.classList.remove('is-open');
+	document.body.classList.remove('rn-confirm-open');
+
+	if (typeof confirmModalResolver === 'function') {
+		confirmModalResolver(confirmed);
+		confirmModalResolver = null;
+	}
+}
+
+function openConfirmModal({
+	title = 'Konfirmasi Aksi',
+	message = 'Apakah kamu yakin ingin melanjutkan aksi ini?',
+	confirmText = 'Ya, Lanjutkan',
+	cancelText = 'Batal',
+} = {}) {
+	const modalEl = ensureConfirmModal();
+
+	const titleEl = modalEl.querySelector('#rnConfirmTitle');
+	const messageEl = modalEl.querySelector('#rnConfirmMessage');
+	const cancelBtnEl = modalEl.querySelector('[data-rn-confirm-cancel]');
+	const submitBtnEl = modalEl.querySelector('[data-rn-confirm-submit]');
+
+	if (titleEl) {
+		titleEl.textContent = title;
+	}
+
+	if (messageEl) {
+		messageEl.textContent = message;
+	}
+
+	if (cancelBtnEl) {
+		cancelBtnEl.textContent = cancelText;
+	}
+
+	if (submitBtnEl) {
+		submitBtnEl.textContent = confirmText;
+	}
+
+	modalEl.classList.add('is-open');
+	document.body.classList.add('rn-confirm-open');
+
+	return new Promise((resolve) => {
+		confirmModalResolver = resolve;
+	});
+}
+
+function extractInlineConfirmMessage(handlerText = '') {
+	const matches = handlerText.match(/confirm\((['"])(.*?)\1\)/);
+	if (!matches) {
+		return null;
+	}
+
+	return decodeHtmlEntities(matches[2]);
+}
+
+function bindConfirmModalEvents() {
+	if (confirmModalBound) {
+		return;
+	}
+
+	const modalEl = ensureConfirmModal();
+	const backdropEl = modalEl.querySelector('[data-rn-confirm-backdrop]');
+	const cancelBtnEl = modalEl.querySelector('[data-rn-confirm-cancel]');
+	const submitBtnEl = modalEl.querySelector('[data-rn-confirm-submit]');
+
+	if (backdropEl) {
+		backdropEl.addEventListener('click', () => closeConfirmModal(false));
+	}
+
+	if (cancelBtnEl) {
+		cancelBtnEl.addEventListener('click', () => closeConfirmModal(false));
+	}
+
+	if (submitBtnEl) {
+		submitBtnEl.addEventListener('click', () => closeConfirmModal(true));
+	}
+
+	document.addEventListener('keydown', (event) => {
+		if (event.key === 'Escape') {
+			const currentModalEl = document.getElementById('rnConfirmModal');
+			if (currentModalEl?.classList.contains('is-open')) {
+				event.preventDefault();
+				closeConfirmModal(false);
+			}
+		}
+	});
+
+	document.addEventListener('submit', async (event) => {
+		const formEl = event.target;
+		if (!(formEl instanceof HTMLFormElement)) {
+			return;
+		}
+
+		const hasDataConfirm = formEl.matches(CONFIRMABLE_FORM_SELECTOR);
+		const onsubmitText = formEl.getAttribute('onsubmit') ?? '';
+		const inlineMessage = extractInlineConfirmMessage(onsubmitText);
+
+		if (!hasDataConfirm && !inlineMessage) {
+			return;
+		}
+
+		if (formEl.dataset.rnConfirmBypass === 'true') {
+			delete formEl.dataset.rnConfirmBypass;
+			return;
+		}
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		if (inlineMessage) {
+			formEl.removeAttribute('onsubmit');
+		}
+
+		const confirmed = await openConfirmModal({
+			title: formEl.dataset.confirmTitle || 'Konfirmasi Aksi',
+			message: formEl.dataset.confirmMessage || inlineMessage || 'Apakah kamu yakin ingin melanjutkan aksi ini?',
+			confirmText: formEl.dataset.confirmConfirmText || 'Ya, Lanjutkan',
+			cancelText: formEl.dataset.confirmCancelText || 'Batal',
+		});
+
+		if (!confirmed) {
+			return;
+		}
+
+		formEl.dataset.rnConfirmBypass = 'true';
+		if (typeof formEl.requestSubmit === 'function') {
+			formEl.requestSubmit();
+		} else {
+			formEl.submit();
+		}
+	}, true);
+
+	document.addEventListener('click', async (event) => {
+		const clickableEl = event.target instanceof Element
+			? event.target.closest(INLINE_CONFIRM_SELECTOR)
+			: null;
+
+		if (!clickableEl || clickableEl instanceof HTMLFormElement) {
+			return;
+		}
+
+		if (clickableEl.dataset.rnConfirmBypass === 'true') {
+			delete clickableEl.dataset.rnConfirmBypass;
+			return;
+		}
+
+		const inlineMessage = extractInlineConfirmMessage(clickableEl.getAttribute('onclick') ?? '');
+		if (!inlineMessage) {
+			return;
+		}
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		clickableEl.removeAttribute('onclick');
+
+		const confirmed = await openConfirmModal({
+			title: 'Konfirmasi Aksi',
+			message: inlineMessage,
+			confirmText: 'Ya, Lanjutkan',
+			cancelText: 'Batal',
+		});
+
+		if (!confirmed) {
+			return;
+		}
+
+		if (clickableEl instanceof HTMLAnchorElement && clickableEl.href) {
+			window.location.href = clickableEl.href;
+			return;
+		}
+
+		if (clickableEl instanceof HTMLButtonElement && clickableEl.form) {
+			clickableEl.dataset.rnConfirmBypass = 'true';
+			if (typeof clickableEl.form.requestSubmit === 'function') {
+				clickableEl.form.requestSubmit(clickableEl);
+			} else {
+				clickableEl.form.submit();
+			}
+		}
+	}, true);
+
+	confirmModalBound = true;
+}
 
 function shouldSkipReusableDropdown(selectEl) {
 	if (!selectEl) {
@@ -407,6 +646,7 @@ function initGlobalFormEnhancements() {
 	initGlobalDatePickers();
 	initUploadPreviews();
 	initPasswordToggles();
+	bindConfirmModalEvents();
 }
 
 Alpine.start();

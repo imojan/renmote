@@ -187,7 +187,11 @@
                                         </form>
                                     @endif
 
-                                    <form action="{{ route('user.account.address.destroy', $address) }}" method="POST" onsubmit="return confirm('Hapus alamat ini?')">
+                                    <form action="{{ route('user.account.address.destroy', $address) }}" method="POST"
+                                        data-confirm-title="Hapus alamat?"
+                                        data-confirm-message="Alamat ini akan dihapus dari akun kamu."
+                                        data-confirm-confirm-text="Ya, Hapus"
+                                        data-confirm-cancel-text="Batal">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="account-mini-btn account-mini-btn-danger">Hapus</button>
@@ -334,7 +338,12 @@
                         </p>
                         @if($ktpDocument)
                             <a href="{{ \Illuminate\Support\Facades\Storage::url($ktpDocument->file_path) }}" target="_blank">Lihat dokumen KTP/KTM</a>
-                            <form action="{{ route('user.account.documents.destroy', 'ktp') }}" method="POST" onsubmit="return confirm('Hapus dokumen KTP/KTM? Setelah dihapus, kamu bisa unggah ulang.')" class="account-doc-action-form">
+                            <form action="{{ route('user.account.documents.destroy', 'ktp') }}" method="POST"
+                                class="account-doc-action-form"
+                                data-confirm-title="Hapus dokumen KTP/KTM?"
+                                data-confirm-message="Dokumen akan dihapus. Kamu bisa unggah ulang setelahnya."
+                                data-confirm-confirm-text="Ya, Hapus"
+                                data-confirm-cancel-text="Batal">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="account-mini-btn account-mini-btn-danger">Hapus dokumen</button>
@@ -353,7 +362,12 @@
                         </p>
                         @if($simDocument)
                             <a href="{{ \Illuminate\Support\Facades\Storage::url($simDocument->file_path) }}" target="_blank">Lihat dokumen SIM</a>
-                            <form action="{{ route('user.account.documents.destroy', 'sim') }}" method="POST" onsubmit="return confirm('Hapus dokumen SIM? Setelah dihapus, kamu bisa unggah ulang.')" class="account-doc-action-form">
+                            <form action="{{ route('user.account.documents.destroy', 'sim') }}" method="POST"
+                                class="account-doc-action-form"
+                                data-confirm-title="Hapus dokumen SIM?"
+                                data-confirm-message="Dokumen akan dihapus. Kamu bisa unggah ulang setelahnya."
+                                data-confirm-confirm-text="Ya, Hapus"
+                                data-confirm-cancel-text="Batal">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="account-mini-btn account-mini-btn-danger">Hapus dokumen</button>
@@ -528,7 +542,11 @@
                                     <a href="{{ route('user.bookings.show', $booking->id) }}" class="booking-btn-secondary">Lihat Detail</a>
 
                                     @if($booking->status === 'pending')
-                                        <form action="{{ route('user.bookings.cancel', $booking->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan booking ini?')">
+                                        <form action="{{ route('user.bookings.cancel', $booking->id) }}" method="POST"
+                                            data-confirm-title="Batalkan booking?"
+                                            data-confirm-message="Pesanan ini akan dibatalkan dan tidak bisa dikembalikan otomatis."
+                                            data-confirm-confirm-text="Ya, Batalkan"
+                                            data-confirm-cancel-text="Tidak">
                                             @csrf
                                             <button type="submit" class="booking-btn-danger">Batalkan</button>
                                         </form>

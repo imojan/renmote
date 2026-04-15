@@ -48,7 +48,11 @@
                                 <div class="inline-flex items-center gap-3">
                                     <a href="{{ route('articles.show', $article) }}" target="_blank" class="text-slate-600 hover:text-slate-800">Lihat</a>
                                     <a href="{{ route('admin.articles.edit', $article) }}" class="text-blue-600 hover:text-blue-800">Edit</a>
-                                    <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" onsubmit="return confirm('Hapus artikel ini?')">
+                                    <form action="{{ route('admin.articles.destroy', $article) }}" method="POST"
+                                        data-confirm-title="Hapus artikel?"
+                                        data-confirm-message="Artikel ini akan dihapus permanen."
+                                        data-confirm-confirm-text="Ya, Hapus"
+                                        data-confirm-cancel-text="Batal">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-800">Hapus</button>

@@ -961,3 +961,129 @@ input.flatpickr-input:focus,
     word-break: break-word;
     max-width: 240px;
 }
+
+/* =====================================================================
+   Global Confirmation Modal (HRIS-style)
+   ===================================================================== */
+
+.rn-confirm-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1600;
+}
+
+.rn-confirm-modal.is-open {
+    display: flex;
+}
+
+body.rn-confirm-open {
+    overflow: hidden;
+}
+
+.rn-confirm-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.48);
+    backdrop-filter: blur(4px);
+}
+
+.rn-confirm-modal__dialog {
+    position: relative;
+    z-index: 1;
+    width: min(460px, calc(100vw - 28px));
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+    padding: 22px;
+    animation: rnConfirmPop .18s ease-out;
+}
+
+.rn-confirm-modal__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: #dc2626;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.rn-confirm-modal__title {
+    margin: 0;
+    color: #111827;
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 800;
+}
+
+.rn-confirm-modal__message {
+    margin: 10px 0 0;
+    color: #475569;
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+.rn-confirm-modal__actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.rn-confirm-btn {
+    flex: 1;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.rn-confirm-btn:hover {
+    background: #f8fafc;
+}
+
+.rn-confirm-btn--danger {
+    border-color: #e11d48;
+    background: #e11d48;
+    color: #fff;
+}
+
+.rn-confirm-btn--danger:hover {
+    background: #be123c;
+    border-color: #be123c;
+}
+
+@keyframes rnConfirmPop {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 640px) {
+    .rn-confirm-modal__dialog {
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .rn-confirm-modal__title {
+        font-size: 24px;
+    }
+
+    .rn-confirm-modal__message {
+        font-size: 14px;
+    }
+}

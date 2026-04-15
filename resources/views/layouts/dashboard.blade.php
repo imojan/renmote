@@ -98,7 +98,11 @@
                                 Profil
                             </a>
                             <div class="dash-dropdown-divider"></div>
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('logout') }}"
+                                data-confirm-title="Logout dari dashboard?"
+                                data-confirm-message="Kamu yakin ingin keluar dari akun sekarang?"
+                                data-confirm-confirm-text="Ya, Logout"
+                                data-confirm-cancel-text="Batal">
                                 @csrf
                                 <button type="submit" class="dash-dropdown-item dash-dropdown-logout">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>

@@ -89,10 +89,14 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                                     <a href="{{ route('vendor.vehicles.edit', $vehicle) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
-                                    <form action="{{ route('vendor.vehicles.destroy', $vehicle) }}" method="POST" class="inline">
+                                    <form action="{{ route('vendor.vehicles.destroy', $vehicle) }}" method="POST" class="inline"
+                                        data-confirm-title="Hapus kendaraan?"
+                                        data-confirm-message="Data kendaraan ini akan dihapus permanen."
+                                        data-confirm-confirm-text="Ya, Hapus"
+                                        data-confirm-cancel-text="Batal">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Yakin ingin menghapus?')">Hapus</button>
+                                        <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
                                     </form>
                                 </td>
                             </tr>
