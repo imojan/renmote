@@ -10,7 +10,7 @@
             <p class="article-list-subtitle">Kumpulan berita, tips perjalanan, dan panduan sewa motor terbaru dari Renmote.</p>
         </div>
         <form method="GET" action="{{ route('articles.index') }}" class="article-list-search">
-            <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari artikel...">
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari artikel..." autocomplete="off">
             <button type="submit"><i class="fa fa-search"></i></button>
         </form>
     </div>

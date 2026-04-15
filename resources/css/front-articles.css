@@ -3,11 +3,11 @@
 .article-detail-wrap {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 20px 40px 48px;
+    padding: 28px 40px 48px;
 }
 
 .article-list-section {
-    padding-top: 20px;
+    padding-top: 28px;
     padding-bottom: 48px;
 }
 
@@ -48,6 +48,20 @@
     outline: none;
     font-size: 13px;
     color: #334155;
+}
+
+.article-list-search input:focus,
+.article-list-search input:focus-visible {
+    border: 0;
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-shadow: 0 0 #0000;
+}
+
+.article-list-search:focus-within {
+    border-color: var(--rn-border);
+    box-shadow: none;
 }
 
 .article-list-search button {
@@ -314,7 +328,7 @@
 
 /* ===== Shared info pages: Cara Sewa + S&K ===== */
 .info-page-section {
-    padding-top: 20px;
+    padding-top: 28px;
     padding-bottom: 48px;
 }
 
@@ -471,7 +485,7 @@
 
 /* ===== Front Booking Pages ===== */
 .booking-front-section {
-    padding-top: 20px;
+    padding-top: 28px;
     padding-bottom: 48px;
 }
 
@@ -1081,7 +1095,7 @@
 
 @media (max-width: 768px) {
     .account-front-section {
-        padding-top: 12px;
+        padding-top: 18px;
         padding-bottom: 28px;
     }
 
@@ -1098,7 +1112,7 @@
     }
 
     .booking-front-section {
-        padding-top: 12px;
+        padding-top: 18px;
         padding-bottom: 28px;
     }
 
@@ -1122,7 +1136,7 @@
 
     .article-list-section,
     .info-page-section {
-        padding-top: 12px;
+        padding-top: 18px;
         padding-bottom: 28px;
     }
 

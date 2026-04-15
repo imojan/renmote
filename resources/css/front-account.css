@@ -3,7 +3,7 @@
    ===================================================================== */
 
 .account-page-wrap {
-    padding-top: 20px;
+    padding-top: 28px;
     padding-bottom: 48px;
 }
 
@@ -624,7 +624,7 @@
 
 @media (max-width: 768px) {
     .account-page-wrap {
-        padding-top: 12px;
+        padding-top: 18px;
         padding-bottom: 28px;
     }
 

@@ -10,13 +10,17 @@ class ArticleController extends Controller
 {
     public function index(Request $request)
     {
+        $rawKeyword = trim((string) $request->query('q', ''));
+        $keyword = preg_replace('/\s+/', ' ', $rawKeyword);
+        $likeKeyword = $keyword !== '' ? '%' . str_replace(' ', '%', $keyword) . '%' : null;
+
         $articles = Article::with('author')
             ->published()
-            ->when($request->filled('q'), function ($query) use ($request) {
-                $query->where(function ($innerQuery) use ($request) {
-                    $innerQuery->where('title', 'like', '%' . $request->q . '%')
-                        ->orWhere('excerpt', 'like', '%' . $request->q . '%')
-                        ->orWhere('content', 'like', '%' . $request->q . '%');
+            ->when($likeKeyword, function ($query) use ($likeKeyword) {
+                $query->where(function ($innerQuery) use ($likeKeyword) {
+                    $innerQuery->where('title', 'like', $likeKeyword)
+                        ->orWhere('excerpt', 'like', $likeKeyword)
+                        ->orWhere('content', 'like', $likeKeyword);
                 });
             })
             ->latest('published_at')
