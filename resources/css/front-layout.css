@@ -125,6 +125,116 @@ body {
     opacity: .8;
 }
 
+.topbar-account {
+    position: relative;
+}
+
+.topbar-account-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: transparent;
+    border: 0;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+.topbar-account-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid rgba(255, 255, 255, .55);
+}
+
+.topbar-account-icon {
+    font-size: 16px;
+}
+
+.topbar-account-toggle:hover {
+    opacity: .9;
+}
+
+.topbar-account-chevron {
+    font-size: 10px;
+    transition: transform .2s ease;
+}
+
+.topbar-account.open .topbar-account-chevron {
+    transform: rotate(180deg);
+}
+
+.topbar-account-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: 220px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+    padding: 8px;
+    z-index: 200;
+    display: none;
+}
+
+.topbar-account.open .topbar-account-menu {
+    display: block;
+}
+
+.topbar-account-menu::before {
+    content: '';
+    position: absolute;
+    top: -7px;
+    right: 18px;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    border-left: 1px solid #e5e7eb;
+    transform: rotate(45deg);
+}
+
+.topbar-account-item {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    display: block;
+    color: #1f2937;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+}
+
+.topbar-account-menu a.topbar-account-item,
+.topbar-account-menu button.topbar-account-item {
+    color: #1f2937;
+}
+
+.topbar-account-item:hover {
+    background: #f8fafc;
+}
+
+.topbar-account-item-danger {
+    color: #dc2626;
+}
+
+.topbar-account-menu a.topbar-account-item-danger,
+.topbar-account-menu button.topbar-account-item-danger {
+    color: #dc2626;
+}
+
+.topbar-account-item-danger:hover {
+    background: #fef2f2;
+}
+
 /* Language switch */
 .lang-switch {
     display: flex;
@@ -602,6 +712,14 @@ body {
     width: 20px;
     text-align: center;
     font-size: 15px;
+}
+
+.mobile-user-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, .6);
 }
 
 .mobile-menu-links hr {

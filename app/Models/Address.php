@@ -9,6 +9,7 @@ class Address extends Model
     protected $fillable = [
         'user_id',
         'label',
+        'address_type',
         'street',
         'district_id',
         'city',

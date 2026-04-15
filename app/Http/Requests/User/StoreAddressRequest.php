@@ -15,6 +15,7 @@ class StoreAddressRequest extends FormRequest
     {
         return [
             'label'       => ['required', 'string', 'max:50'],
+            'address_type'=> ['required', 'in:permanent,temporary'],
             'street'      => ['required', 'string', 'max:500'],
             'district_id' => ['required', 'exists:districts,id'],
             'city'        => ['required', 'string', 'max:100'],
@@ -27,6 +28,8 @@ class StoreAddressRequest extends FormRequest
     {
         return [
             'label.required'       => 'Label alamat wajib diisi (contoh: Rumah, Kantor).',
+            'address_type.required'=> 'Tipe alamat wajib dipilih.',
+            'address_type.in'      => 'Tipe alamat tidak valid.',
             'street.required'      => 'Alamat jalan wajib diisi.',
             'district_id.required' => 'Kecamatan wajib dipilih.',
             'district_id.exists'   => 'Kecamatan tidak valid.',

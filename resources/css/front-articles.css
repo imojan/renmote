@@ -808,7 +808,227 @@
     color: #64748b;
 }
 
+/* ===== Front Account Page ===== */
+.account-front-section {
+    padding-top: 20px;
+    padding-bottom: 48px;
+}
+
+.account-front-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.account-front-subtitle {
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.account-front-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.account-alert {
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.account-alert ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.account-alert-success {
+    border: 1px solid #a7f3d0;
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.account-alert-error {
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.account-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
+    gap: 14px;
+}
+
+.account-card {
+    border: 1.5px solid var(--rn-border);
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.account-card h3 {
+    margin: 0 0 12px;
+    color: #1f2937;
+    font-size: 19px;
+}
+
+.account-card h4 {
+    margin: 0 0 10px;
+    color: #1f2937;
+    font-size: 15px;
+}
+
+.account-form-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.account-form-grid label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #374151;
+    font-weight: 600;
+}
+
+.account-form-grid input,
+.account-form-grid textarea,
+.account-form-grid select {
+    width: 100%;
+    border: 1.5px solid #d1d5db;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #1f2937;
+    font-family: inherit;
+}
+
+.account-form-grid input:focus,
+.account-form-grid textarea:focus,
+.account-form-grid select:focus {
+    outline: none;
+    border-color: var(--rn-primary);
+}
+
+.account-two-col {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.account-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #4b5563;
+}
+
+.account-checkbox input {
+    width: 16px;
+    height: 16px;
+}
+
+.account-btn {
+    height: 40px;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    cursor: pointer;
+}
+
+.account-btn-primary {
+    background: var(--rn-primary);
+    color: #fff;
+}
+
+.account-btn-primary:hover {
+    background: var(--rn-primary-dark);
+}
+
+.account-btn-outline {
+    background: #fff;
+    color: #374151;
+    border: 1.5px solid #d1d5db;
+}
+
+.account-btn-outline:hover {
+    background: #f8fafc;
+}
+
+.account-address-list {
+    display: grid;
+    gap: 10px;
+}
+
+.account-address-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.account-address-item.is-default {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+}
+
+.account-address-item strong {
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.account-address-item p {
+    margin: 4px 0 0;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.account-default-pill {
+    background: #dbeafe;
+    color: #1e40af;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.account-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 14px 0;
+}
+
+.account-empty {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+}
+
 @media (max-width: 1024px) {
+    .account-front-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .account-grid {
+        grid-template-columns: 1fr;
+    }
+
     .booking-front-head {
         flex-direction: column;
         align-items: flex-start;
@@ -860,6 +1080,23 @@
 }
 
 @media (max-width: 768px) {
+    .account-front-section {
+        padding-top: 12px;
+        padding-bottom: 28px;
+    }
+
+    .account-front-actions {
+        width: 100%;
+    }
+
+    .account-front-actions .account-btn {
+        flex: 1;
+    }
+
+    .account-two-col {
+        grid-template-columns: 1fr;
+    }
+
     .booking-front-section {
         padding-top: 12px;
         padding-bottom: 28px;

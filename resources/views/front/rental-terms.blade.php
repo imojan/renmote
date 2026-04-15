@@ -17,7 +17,7 @@
             <h3>1. Persyaratan Penyewa</h3>
             <ul>
                 <li>Wajib memiliki identitas resmi yang masih berlaku (contoh: KTP).</li>
-                <li>Wajib memiliki SIM C aktif untuk mengendarai sepeda motor.</li>
+                <li>Diusahakan memiliki SIM C aktif untuk mengendarai sepeda motor.</li>
                 <li>Data pemesanan harus sesuai dengan identitas penyewa.</li>
             </ul>
         </article>

@@ -19,10 +19,14 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
         'role',
         'phone_number',
+        'gender',
+        'birth_date',
+        'profile_photo_path',
         'is_phone_verified',
     ];
 
@@ -46,6 +50,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birth_date' => 'date',
             'is_phone_verified' => 'boolean',
         ];
     }
@@ -72,5 +77,13 @@ class User extends Authenticatable
     public function addresses()
     {
         return $this->hasMany(Address::class);
+    }
+
+    /**
+     * User memiliki dokumen verifikasi (KTP/SIM).
+     */
+    public function userDocuments()
+    {
+        return $this->hasMany(UserDocument::class);
     }
 }

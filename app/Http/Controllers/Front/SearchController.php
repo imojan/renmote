@@ -5,12 +5,19 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Models\Vehicle;
 use App\Models\District;
+use App\Services\AvailabilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class SearchController extends Controller
 {
+    protected AvailabilityService $availabilityService;
+
+    public function __construct(AvailabilityService $availabilityService)
+    {
+        $this->availabilityService = $availabilityService;
+    }
+
     /**
      * Halaman pencarian kendaraan
      */
@@ -81,38 +88,18 @@ class SearchController extends Controller
             $query->whereRaw("LOWER(REPLACE(REPLACE(category, ' ', '-'), '_', '-')) = ?", [$normalizedCategory]);
         }
 
-        // Auto hide kendaraan bentrok:
-        // - Jika user isi tanggal, pakai rentang yang dipilih.
-        // - Jika user tidak isi tanggal, pakai hari ini.
-        $requestedStartDate = $request->filled('start_date')
-            ? Carbon::parse($request->start_date)->toDateString()
-            : null;
-
-        $requestedEndDate = $request->filled('end_date')
-            ? Carbon::parse($request->end_date)->toDateString()
-            : null;
-
-        if ($requestedStartDate && !$requestedEndDate) {
-            $requestedEndDate = $requestedStartDate;
-        }
-
-        if (!$requestedStartDate && $requestedEndDate) {
-            $requestedStartDate = $requestedEndDate;
-        }
-
-        if (!$requestedStartDate && !$requestedEndDate) {
-            $today = now()->toDateString();
-            $requestedStartDate = $today;
-            $requestedEndDate = $today;
-        }
-
-        $query->whereDoesntHave('bookings', function ($bookingQuery) use ($requestedStartDate, $requestedEndDate) {
-            $bookingQuery->where('status', '!=', 'cancelled')
-                ->where('start_date', '<=', $requestedEndDate)
-                ->where('end_date', '>=', $requestedStartDate);
-        });
-
         $vehicles = $query->get();
+
+        // Filter by availability (date range)
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $vehicles = $vehicles->filter(function ($vehicle) use ($request) {
+                return $this->availabilityService->checkAvailability(
+                    $vehicle->id,
+                    $request->start_date,
+                    $request->end_date
+                );
+            });
+        }
 
         $selectedCategorySlug = $resolvedCategory !== null
             ? $this->categoryToSlug($resolvedCategory)

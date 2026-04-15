@@ -36,9 +36,36 @@
             </div>
             <a href="{{ route('register') }}"><i class="fa fa-users"></i> Jadi Vendor</a>
             @auth
-                <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@elseif(auth()->user()->role === 'vendor'){{ route('vendor.dashboard') }}@else{{ route('user.bookings.index') }}@endif">
-                    <i class="fa fa-user-circle"></i> {{ auth()->user()->name }}
-                </a>
+                @if(auth()->user()->role === 'user')
+                    <div class="topbar-account" id="topbarAccount">
+                        <button class="topbar-account-toggle" id="topbarAccountToggle" type="button">
+                            @if(auth()->user()->profile_photo_path)
+                                <img
+                                    src="{{ \Illuminate\Support\Facades\Storage::url(auth()->user()->profile_photo_path) }}"
+                                    alt="{{ auth()->user()->name }}"
+                                    class="topbar-account-avatar"
+                                >
+                            @else
+                                <i class="fa fa-user-circle topbar-account-icon"></i>
+                            @endif
+                            <span>{{ auth()->user()->name }}</span>
+                            <i class="fa fa-chevron-down topbar-account-chevron"></i>
+                        </button>
+
+                        <div class="topbar-account-menu" id="topbarAccountMenu">
+                            <a href="{{ route('user.account.index') }}" class="topbar-account-item">Akun Saya</a>
+                            <a href="{{ route('user.bookings.index') }}" class="topbar-account-item">Riwayat Pemesanan</a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="topbar-account-item topbar-account-item-danger">Logout</button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@else{{ route('vendor.dashboard') }}@endif">
+                        <i class="fa fa-user-circle"></i> {{ auth()->user()->name }}
+                    </a>
+                @endif
             @else
                 <a href="{{ route('login') }}"><i class="fa fa-user-circle"></i> Masuk/Daftar</a>
             @endauth
@@ -112,9 +139,24 @@
         <hr>
         <a href="{{ route('register') }}"><i class="fa fa-users"></i> Jadi Vendor</a>
         @auth
-            <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@elseif(auth()->user()->role === 'vendor'){{ route('vendor.dashboard') }}@else{{ route('user.bookings.index') }}@endif">
-                <i class="fa fa-user-circle"></i> {{ auth()->user()->name }}
-            </a>
+            @if(auth()->user()->role === 'user')
+                <a href="{{ route('user.account.index') }}">
+                    @if(auth()->user()->profile_photo_path)
+                        <img
+                            src="{{ \Illuminate\Support\Facades\Storage::url(auth()->user()->profile_photo_path) }}"
+                            alt="{{ auth()->user()->name }}"
+                            class="mobile-user-avatar"
+                        >
+                    @else
+                        <i class="fa fa-user-circle"></i>
+                    @endif
+                    {{ auth()->user()->name }}
+                </a>
+            @else
+                <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@else{{ route('vendor.dashboard') }}@endif">
+                    <i class="fa fa-user-circle"></i> {{ auth()->user()->name }}
+                </a>
+            @endif
         @else
             <a href="{{ route('login') }}"><i class="fa fa-user-circle"></i> Masuk / Daftar</a>
         @endauth
@@ -232,6 +274,22 @@
     hamburger.addEventListener('click', openMenu);
     mobileOverlay.addEventListener('click', closeMenu);
     mobileClose.addEventListener('click', closeMenu);
+
+    const topbarAccount = document.getElementById('topbarAccount');
+    const topbarAccountToggle = document.getElementById('topbarAccountToggle');
+
+    if (topbarAccount && topbarAccountToggle) {
+        topbarAccountToggle.addEventListener('click', (event) => {
+            event.stopPropagation();
+            topbarAccount.classList.toggle('open');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!topbarAccount.contains(event.target)) {
+                topbarAccount.classList.remove('open');
+            }
+        });
+    }
 </script>
 </body>
 </html>
