@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\UserDocument;
 use App\Models\VendorDocument;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentMediaController extends Controller
 {
@@ -23,10 +24,20 @@ class DocumentMediaController extends Controller
 
         abort_unless($canView, 403);
 
-        $path = storage_path('app/' . ltrim($document->file_path, '/'));
-        abort_unless(file_exists($path), 404, 'File dokumen tidak ditemukan.');
+        $relativePath = ltrim($document->file_path, '/');
+        $localDisk = Storage::disk('local');
 
-        return response()->file($path);
+        if ($localDisk->exists($relativePath)) {
+            return response()->file($localDisk->path($relativePath));
+        }
+
+        // Fallback legacy path for old uploads.
+        $legacyPath = storage_path('app/' . $relativePath);
+        if (file_exists($legacyPath)) {
+            return response()->file($legacyPath);
+        }
+
+        abort(404, 'File dokumen tidak ditemukan.');
     }
 
     /**
@@ -53,9 +64,26 @@ class DocumentMediaController extends Controller
 
         abort_unless($isOwner || $isAdmin || $isVendorWithBooking, 403);
 
-        $path = storage_path('app/public/' . ltrim($document->file_path, '/'));
-        abort_unless(file_exists($path), 404, 'File dokumen tidak ditemukan.');
+        $relativePath = ltrim($document->file_path, '/');
+        $publicDisk = Storage::disk('public');
 
-        return response()->file($path);
+        if ($publicDisk->exists($relativePath)) {
+            return response()->file($publicDisk->path($relativePath));
+        }
+
+        // Fallback when old data stored with "public/" prefix.
+        if (str_starts_with($relativePath, 'public/')) {
+            $trimmedPath = substr($relativePath, 7);
+            if ($trimmedPath !== false && $publicDisk->exists($trimmedPath)) {
+                return response()->file($publicDisk->path($trimmedPath));
+            }
+        }
+
+        $legacyPath = storage_path('app/public/' . $relativePath);
+        if (file_exists($legacyPath)) {
+            return response()->file($legacyPath);
+        }
+
+        abort(404, 'File dokumen tidak ditemukan.');
     }
 }
