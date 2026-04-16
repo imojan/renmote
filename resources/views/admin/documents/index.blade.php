@@ -8,10 +8,10 @@
             <h3 class="dash-card-title">Arsip Dokumen User & Vendor</h3>
         </div>
         <div class="dash-card-body">
-            <form action="{{ route('admin.documents.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <form action="{{ route('admin.documents.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-3 md:items-end">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Role Pengirim</label>
-                    <select name="role" class="w-full rounded-lg border-slate-300 text-sm">
+                    <select name="role" class="w-full h-12 rounded-lg border-slate-300 text-sm">
                         <option value="all" {{ $role === 'all' ? 'selected' : '' }}>Semua</option>
                         <option value="vendor" {{ $role === 'vendor' ? 'selected' : '' }}>Vendor</option>
                         <option value="user" {{ $role === 'user' ? 'selected' : '' }}>User</option>
@@ -19,7 +19,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Status</label>
-                    <select name="status" class="w-full rounded-lg border-slate-300 text-sm">
+                    <select name="status" class="w-full h-12 rounded-lg border-slate-300 text-sm">
                         <option value="all" {{ $status === 'all' ? 'selected' : '' }}>Semua</option>
                         <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="approved" {{ $status === 'approved' ? 'selected' : '' }}>Approved</option>
@@ -28,10 +28,10 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Cari User/Vendor</label>
-                    <input type="text" name="q" value="{{ $keyword }}" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Nama, email, toko, telepon">
+                    <input type="text" name="q" value="{{ $keyword }}" class="w-full h-12 rounded-lg border-slate-300 text-sm" placeholder="Nama, email, toko, telepon">
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="w-full h-10 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">
+                    <button type="submit" class="w-full h-12 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">
                         Terapkan Filter
                     </button>
                 </div>
@@ -87,16 +87,24 @@
                                         <a href="{{ route('documents.vendor.media', $document) }}" target="_blank" class="text-sm text-blue-600 hover:underline">Lihat Dokumen</a>
                                     </div>
 
-                                    <form action="{{ route('admin.documents.vendors.update', $document) }}" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                    <form
+                                        action="{{ route('admin.documents.vendors.update', $document) }}"
+                                        method="POST"
+                                        class="grid grid-cols-1 md:grid-cols-[180px_minmax(0,1fr)_190px] gap-2 items-stretch js-doc-review-form"
+                                        data-initial-status="{{ $document->status }}"
+                                        data-initial-notes="{{ $document->notes ?? '' }}"
+                                    >
                                         @csrf
                                         @method('PATCH')
-                                        <select name="status" class="rounded-lg border-slate-300 text-sm" required>
+                                        <select name="status" class="w-full h-11 rounded-lg border-slate-300 text-sm" required>
                                             <option value="pending" {{ $document->status === 'pending' ? 'selected' : '' }}>Pending</option>
                                             <option value="approved" {{ $document->status === 'approved' ? 'selected' : '' }}>Approved</option>
                                             <option value="rejected" {{ $document->status === 'rejected' ? 'selected' : '' }}>Rejected</option>
                                         </select>
-                                        <input type="text" name="notes" value="{{ $document->notes }}" class="rounded-lg border-slate-300 text-sm md:col-span-1" placeholder="Catatan review (opsional)">
-                                        <button type="submit" class="rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 h-10">Simpan Review</button>
+                                        <input type="text" name="notes" value="{{ $document->notes }}" class="w-full h-11 rounded-lg border-slate-300 text-sm" placeholder="Catatan review (opsional)">
+                                        <button type="submit" class="w-full h-11 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" data-review-submit>
+                                            Simpan Review
+                                        </button>
                                     </form>
                                 </div>
                             @endforeach
@@ -140,16 +148,24 @@
                                         <a href="{{ route('documents.user.media', $document) }}" target="_blank" class="text-sm text-blue-600 hover:underline">Lihat Dokumen</a>
                                     </div>
 
-                                    <form action="{{ route('admin.documents.users.update', $document) }}" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                    <form
+                                        action="{{ route('admin.documents.users.update', $document) }}"
+                                        method="POST"
+                                        class="grid grid-cols-1 md:grid-cols-[180px_minmax(0,1fr)_190px] gap-2 items-stretch js-doc-review-form"
+                                        data-initial-status="{{ $document->status }}"
+                                        data-initial-notes="{{ $document->notes ?? '' }}"
+                                    >
                                         @csrf
                                         @method('PATCH')
-                                        <select name="status" class="rounded-lg border-slate-300 text-sm" required>
+                                        <select name="status" class="w-full h-11 rounded-lg border-slate-300 text-sm" required>
                                             <option value="pending" {{ $document->status === 'pending' ? 'selected' : '' }}>Pending</option>
                                             <option value="approved" {{ $document->status === 'approved' ? 'selected' : '' }}>Approved</option>
                                             <option value="rejected" {{ $document->status === 'rejected' ? 'selected' : '' }}>Rejected</option>
                                         </select>
-                                        <input type="text" name="notes" value="{{ $document->notes }}" class="rounded-lg border-slate-300 text-sm md:col-span-1" placeholder="Catatan review (opsional)">
-                                        <button type="submit" class="rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 h-10">Simpan Review</button>
+                                        <input type="text" name="notes" value="{{ $document->notes }}" class="w-full h-11 rounded-lg border-slate-300 text-sm" placeholder="Catatan review (opsional)">
+                                        <button type="submit" class="w-full h-11 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" data-review-submit>
+                                            Simpan Review
+                                        </button>
                                     </form>
                                 </div>
                             @endforeach
@@ -164,3 +180,35 @@
         </div>
     @endif
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.js-doc-review-form').forEach((form) => {
+            const statusInput = form.querySelector('select[name="status"]');
+            const notesInput = form.querySelector('input[name="notes"]');
+            const submitButton = form.querySelector('[data-review-submit]');
+
+            if (!statusInput || !notesInput || !submitButton) {
+                return;
+            }
+
+            const initialStatus = (form.dataset.initialStatus || '').trim();
+            const initialNotes = (form.dataset.initialNotes || '').trim();
+
+            const syncState = () => {
+                const currentStatus = (statusInput.value || '').trim();
+                const currentNotes = (notesInput.value || '').trim();
+                const hasChanges = currentStatus !== initialStatus || currentNotes !== initialNotes;
+
+                submitButton.disabled = !hasChanges;
+            };
+
+            statusInput.addEventListener('change', syncState);
+            notesInput.addEventListener('input', syncState);
+
+            syncState();
+        });
+    });
+</script>
+@endpush

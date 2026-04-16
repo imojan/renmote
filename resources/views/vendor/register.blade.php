@@ -19,6 +19,29 @@
 @endsection
 
 @section('content')
+    @php
+        $payoutMethods = [
+            'BCA',
+            'BRI',
+            'BNI',
+            'BSI',
+            'Mandiri',
+            'CIMB Niaga',
+            'BTN',
+            'Permata Bank',
+            'Danamon',
+            'OCBC NISP',
+            'SeaBank',
+            'DANA',
+            'GoPay',
+            'OVO',
+            'LinkAja',
+            'ShopeePay',
+        ];
+
+        $selectedPayoutMethod = old('bank_name', $vendor->bank_name ?? '');
+    @endphp
+
     <div class="dash-card" style="max-width: 920px; margin: 0 auto;">
         <div class="dash-card-header">
             <h3 class="dash-card-title">
@@ -33,6 +56,38 @@
                     <strong>Pengajuan sebelumnya ditolak.</strong><br>
                     <span>{{ $vendor->rejection_reason ?: 'Silakan lengkapi kembali data dan dokumen Anda.' }}</span>
                 </div>
+
+                @if($vendor->documents->count() > 0)
+                    <div class="rounded-xl border border-red-200 bg-red-50 p-4 mb-4">
+                        <p class="text-sm font-semibold text-red-700 mb-3">Catatan Review Per Dokumen</p>
+
+                        <div class="space-y-3">
+                            @foreach($vendor->documents as $document)
+                                <div class="rounded-lg border border-red-100 bg-white p-3">
+                                    <div class="flex items-start justify-between gap-3 mb-1">
+                                        <p class="text-sm font-semibold text-slate-800">{{ strtoupper($document->type) }}</p>
+                                        <span class="text-xs px-2 py-1 rounded-full
+                                            @if($document->status === 'approved') bg-green-100 text-green-700
+                                            @elseif($document->status === 'rejected') bg-red-100 text-red-700
+                                            @else bg-yellow-100 text-yellow-700 @endif">
+                                            {{ ucfirst($document->status) }}
+                                        </span>
+                                    </div>
+
+                                    <p class="text-xs text-slate-500 mb-2">{{ $document->created_at->diffForHumans() }}</p>
+
+                                    @if($document->notes)
+                                        <p class="text-sm text-red-700">{{ $document->notes }}</p>
+                                    @else
+                                        <p class="text-sm text-slate-500">Belum ada catatan tambahan dari admin untuk dokumen ini.</p>
+                                    @endif
+
+                                    <a href="{{ route('documents.vendor.media', $document) }}" target="_blank" class="inline-block mt-2 text-sm text-blue-600 hover:underline">Lihat Dokumen</a>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             @endif
 
             @if (session('error'))
@@ -59,7 +114,7 @@
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Nama Toko <span class="text-red-500">*</span></label>
-                    <input type="text" name="store_name" value="{{ old('store_name', $vendor->store_name ?? '') }}" required class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Contoh: Renmote Rental Jogja">
+                    <input type="text" name="store_name" value="{{ old('store_name', $vendor->store_name ?? '') }}" required class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Contoh: Renmote Rental Motor Malang">
                 </div>
 
                 <div>
@@ -88,13 +143,21 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nama Bank</label>
-                    <input type="text" name="bank_name" value="{{ old('bank_name', $vendor->bank_name ?? '') }}" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="BCA / BRI / Mandiri">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Metode Pencairan (Bank / E-Wallet)</label>
+                    <select name="bank_name" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Pilih metode pencairan</option>
+                        @foreach($payoutMethods as $method)
+                            <option value="{{ $method }}" @selected($selectedPayoutMethod === $method)>{{ $method }}</option>
+                        @endforeach
+                        @if($selectedPayoutMethod !== '' && !in_array($selectedPayoutMethod, $payoutMethods, true))
+                            <option value="{{ $selectedPayoutMethod }}" selected>{{ $selectedPayoutMethod }}</option>
+                        @endif
+                    </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nomor Rekening</label>
-                    <input type="text" name="bank_account" value="{{ old('bank_account', $vendor->bank_account ?? '') }}" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Nomor rekening">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nomor Rekening / Nomor E-Wallet</label>
+                    <input type="text" name="bank_account" value="{{ old('bank_account', $vendor->bank_account ?? '') }}" class="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Contoh: 6037006574 atau 08xxxxxxxxxx">
                 </div>
 
                 <div>

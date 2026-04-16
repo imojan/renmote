@@ -111,19 +111,25 @@
                                     <a href="{{ route('documents.vendor.media', $document) }}" target="_blank" class="text-blue-600 hover:underline text-sm">Lihat Dokumen</a>
                                 </div>
 
-                                <form action="{{ route('admin.documents.vendors.update', $document) }}" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <form
+                                    action="{{ route('admin.documents.vendors.update', $document) }}"
+                                    method="POST"
+                                    class="grid grid-cols-1 md:grid-cols-[180px_minmax(0,1fr)_220px] gap-2 items-stretch js-doc-review-form"
+                                    data-initial-status="{{ $document->status }}"
+                                    data-initial-notes="{{ $document->notes ?? '' }}"
+                                >
                                     @csrf
                                     @method('PATCH')
 
-                                    <select name="status" class="rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" required>
+                                    <select name="status" class="w-full h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" required>
                                         <option value="pending" {{ $document->status === 'pending' ? 'selected' : '' }}>Pending</option>
                                         <option value="approved" {{ $document->status === 'approved' ? 'selected' : '' }}>Approved</option>
                                         <option value="rejected" {{ $document->status === 'rejected' ? 'selected' : '' }}>Rejected</option>
                                     </select>
 
-                                    <input type="text" name="notes" value="{{ $document->notes }}" class="rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Catatan review (opsional)">
+                                    <input type="text" name="notes" value="{{ $document->notes }}" class="w-full h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Catatan review (opsional)">
 
-                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
+                                    <button type="submit" class="w-full h-11 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" data-review-submit>
                                         Simpan Review Dokumen
                                     </button>
                                 </form>
@@ -189,6 +195,24 @@
                 </div>
             @endif
 
+            <div class="mt-6 pt-6 border-t border-slate-200">
+                <h4 class="text-sm font-semibold text-slate-700 mb-3">Aksi Berisiko</h4>
+                <form
+                    action="{{ route('admin.vendors.destroy', $vendor) }}"
+                    method="POST"
+                    data-confirm-title="Hapus vendor ini?"
+                    data-confirm-message="Vendor {{ $vendor->store_name }} akan dihapus permanen beserta data dokumen terkait."
+                    data-confirm-confirm-text="Ya, Hapus"
+                    data-confirm-cancel-text="Batal"
+                >
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="w-full md:w-auto px-5 py-2.5 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700">
+                        Hapus Vendor
+                    </button>
+                </form>
+            </div>
+
             @if($vendor->status === 'rejected' && $vendor->rejection_reason)
                 <div class="mt-6 p-4 rounded-lg bg-red-50 border border-red-100">
                     <p class="text-sm text-red-700 font-semibold mb-1">Alasan penolakan terakhir:</p>
@@ -198,3 +222,35 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.js-doc-review-form').forEach((form) => {
+            const statusInput = form.querySelector('select[name="status"]');
+            const notesInput = form.querySelector('input[name="notes"]');
+            const submitButton = form.querySelector('[data-review-submit]');
+
+            if (!statusInput || !notesInput || !submitButton) {
+                return;
+            }
+
+            const initialStatus = (form.dataset.initialStatus || '').trim();
+            const initialNotes = (form.dataset.initialNotes || '').trim();
+
+            const syncState = () => {
+                const currentStatus = (statusInput.value || '').trim();
+                const currentNotes = (notesInput.value || '').trim();
+                const hasChanges = currentStatus !== initialStatus || currentNotes !== initialNotes;
+
+                submitButton.disabled = !hasChanges;
+            };
+
+            statusInput.addEventListener('change', syncState);
+            notesInput.addEventListener('input', syncState);
+
+            syncState();
+        });
+    });
+</script>
+@endpush

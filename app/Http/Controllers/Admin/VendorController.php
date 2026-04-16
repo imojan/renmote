@@ -7,6 +7,8 @@ use App\Models\Vendor;
 use App\Notifications\VendorApproved;
 use App\Notifications\VendorRejected;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class VendorController extends Controller
 {
@@ -51,14 +53,21 @@ class VendorController extends Controller
      */
     public function verify(Vendor $vendor)
     {
-        $vendor->update([
-            'verified' => true,
-            'status'   => 'approved',
-            'rejection_reason' => null,
-        ]);
+        DB::transaction(function () use ($vendor) {
+            $vendor->update([
+                'verified' => true,
+                'status'   => 'approved',
+                'rejection_reason' => null,
+            ]);
 
-        // Kirim notifikasi ke user pemilik vendor
-        $vendor->user->notify(new VendorApproved($vendor));
+            // Sinkronkan status dokumen agar arsip dokumen ikut approved.
+            $vendor->documents()->update([
+                'status' => 'approved',
+            ]);
+
+            // Kirim notifikasi ke user pemilik vendor.
+            $vendor->user->notify(new VendorApproved($vendor));
+        });
 
         return back()->with('success', "Vendor '{$vendor->store_name}' berhasil diverifikasi.");
     }
@@ -72,16 +81,29 @@ class VendorController extends Controller
             'reason' => ['required', 'string', 'max:1000'],
         ]);
 
-        $vendor->update([
-            'verified' => false,
-            'status'   => 'rejected',
-            'rejection_reason' => $validated['reason'],
-        ]);
-
         $reason = $validated['reason'];
 
-        // Kirim notifikasi penolakan ke user pemilik vendor
-        $vendor->user->notify(new VendorRejected($vendor, $reason));
+        DB::transaction(function () use ($vendor, $reason) {
+            $vendor->update([
+                'verified' => false,
+                'status'   => 'rejected',
+                'rejection_reason' => $reason,
+            ]);
+
+            // Sinkronkan status dokumen agar konsisten dengan keputusan reject vendor.
+            $vendor->documents()->each(function ($document) use ($reason) {
+                $document->status = 'rejected';
+
+                if (blank($document->notes)) {
+                    $document->notes = $reason;
+                }
+
+                $document->save();
+            });
+
+            // Kirim notifikasi penolakan ke user pemilik vendor.
+            $vendor->user->notify(new VendorRejected($vendor, $reason));
+        });
 
         return back()->with('success', "Vendor '{$vendor->store_name}' berhasil ditolak.");
     }
@@ -91,7 +113,29 @@ class VendorController extends Controller
      */
     public function destroy(Vendor $vendor)
     {
-        $vendor->delete();
+        try {
+            DB::transaction(function () use ($vendor) {
+                $vendor->loadMissing('documents', 'user');
+
+                foreach ($vendor->documents as $document) {
+                    if ($document->file_path) {
+                        Storage::disk('local')->delete($document->file_path);
+                    }
+                }
+
+                $owner = $vendor->user;
+
+                $vendor->delete();
+
+                if ($owner && $owner->role === 'vendor') {
+                    $owner->update(['role' => 'user']);
+                }
+            });
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return back()->with('error', 'Vendor gagal dihapus. Pastikan tidak ada data terkait yang masih terkunci.');
+        }
 
         return redirect()->route('admin.vendors.index')
             ->with('success', 'Vendor berhasil dihapus.');

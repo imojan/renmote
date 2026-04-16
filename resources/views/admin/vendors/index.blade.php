@@ -107,24 +107,36 @@
                                         {{ ucfirst($vendor->status) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                                    <a href="{{ route('admin.vendors.show', $vendor) }}" class="text-blue-600 hover:text-blue-900">Detail</a>
-                                    
-                                    @if($vendor->status === 'pending')
-                                        <form action="{{ route('admin.vendors.verify', $vendor) }}" method="POST" class="inline">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('admin.vendors.show', $vendor) }}" class="text-blue-600 hover:text-blue-900">Detail</a>
+
+                                        @if($vendor->status === 'pending')
+                                            <form action="{{ route('admin.vendors.verify', $vendor) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="text-green-600 hover:text-green-900">Approve</button>
+                                            </form>
+                                            <button
+                                                type="button"
+                                                class="text-red-600 hover:text-red-900"
+                                                data-reject-trigger="true"
+                                                data-vendor-name="{{ $vendor->store_name }}"
+                                                data-action-url="{{ route('admin.vendors.unverify', $vendor) }}"
+                                            >
+                                                Reject
+                                            </button>
+                                        @endif
+
+                                        <form action="{{ route('admin.vendors.destroy', $vendor) }}" method="POST" class="inline"
+                                            data-confirm-title="Hapus vendor ini?"
+                                            data-confirm-message="Vendor {{ $vendor->store_name }} akan dihapus permanen beserta data dokumen terkait."
+                                            data-confirm-confirm-text="Ya, Hapus"
+                                            data-confirm-cancel-text="Batal">
                                             @csrf
-                                            <button type="submit" class="text-green-600 hover:text-green-900">Approve</button>
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
                                         </form>
-                                        <button
-                                            type="button"
-                                            class="text-red-600 hover:text-red-900"
-                                            data-reject-trigger="true"
-                                            data-vendor-name="{{ $vendor->store_name }}"
-                                            data-action-url="{{ route('admin.vendors.unverify', $vendor) }}"
-                                        >
-                                            Reject
-                                        </button>
-                                    @endif
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

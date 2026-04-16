@@ -26,6 +26,10 @@ class VendorRegistrationController extends Controller
         $user = auth()->user();
         $existingVendor = $user->vendor;
 
+        if ($existingVendor) {
+            $existingVendor->load(['documents' => fn ($query) => $query->latest()]);
+        }
+
         if ($existingVendor && $existingVendor->status !== 'rejected') {
             return redirect()->route('vendor.dashboard')
                 ->with('success', 'Akun vendor Anda sudah terdaftar.');

@@ -68,6 +68,36 @@
                 </a>
             </div>
         @endif
+
+        @if($vendor->documents->count() > 0)
+            <div class="mt-4 p-4 rounded-lg border border-slate-200 bg-slate-50">
+                <p class="text-sm font-semibold text-slate-800 mb-3">Status Dokumen Pengajuan</p>
+
+                <div class="space-y-3">
+                    @foreach($vendor->documents as $document)
+                        <div class="rounded-lg border border-slate-200 bg-white p-3">
+                            <div class="flex items-start justify-between gap-3 mb-1">
+                                <p class="text-sm font-semibold text-slate-800">{{ strtoupper($document->type) }}</p>
+                                <span class="text-xs px-2 py-1 rounded-full
+                                    @if($document->status === 'approved') bg-green-100 text-green-700
+                                    @elseif($document->status === 'rejected') bg-red-100 text-red-700
+                                    @else bg-yellow-100 text-yellow-700 @endif">
+                                    {{ ucfirst($document->status) }}
+                                </span>
+                            </div>
+
+                            @if($document->notes)
+                                <p class="text-sm text-slate-700">{{ $document->notes }}</p>
+                            @else
+                                <p class="text-sm text-slate-500">Belum ada catatan tambahan dari admin untuk dokumen ini.</p>
+                            @endif
+
+                            <a href="{{ route('documents.vendor.media', $document) }}" target="_blank" class="inline-block mt-2 text-sm text-blue-600 hover:underline">Lihat Dokumen</a>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Stats -->

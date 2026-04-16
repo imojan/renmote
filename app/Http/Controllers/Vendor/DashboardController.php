@@ -12,7 +12,7 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $vendor = auth()->user()->vendor;
+        $vendor = auth()->user()->vendor()->with(['documents' => fn ($query) => $query->latest()])->first();
 
         if (!$vendor) {
             return redirect()->route('vendor.register')
