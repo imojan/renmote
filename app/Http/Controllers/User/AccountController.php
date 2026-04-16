@@ -12,7 +12,10 @@ use App\Models\Vehicle;
 use App\Models\Wishlist;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -294,5 +297,86 @@ class AccountController extends Controller
         ]);
 
         return back()->with('success', 'Password berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus akun user sendiri dari halaman akun (dengan konfirmasi teks + password).
+     */
+    public function destroyAccount(Request $request): RedirectResponse
+    {
+        $request->validateWithBag('userDeletion', [
+            'confirmation_text' => [
+                'required',
+                'string',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (mb_strtoupper(trim((string) $value)) !== 'HAPUS AKUN') {
+                        $fail('Ketik persis HAPUS AKUN untuk konfirmasi.');
+                    }
+                },
+            ],
+            'password' => ['required', 'current_password'],
+        ], [
+            'password.current_password' => 'Password tidak sesuai dengan akun kamu.',
+        ]);
+
+        $user = $request->user();
+
+        try {
+            DB::transaction(function () use ($user) {
+                $user->loadMissing(['userDocuments', 'vendor.documents', 'vendor.vehicles']);
+
+                if ($user->profile_photo_path) {
+                    Storage::disk('public')->delete($user->profile_photo_path);
+                }
+
+                foreach ($user->userDocuments as $document) {
+                    if ($document->file_path) {
+                        Storage::disk('public')->delete($document->file_path);
+                    }
+                }
+
+                if ($user->vendor) {
+                    foreach ($user->vendor->documents as $document) {
+                        if ($document->file_path) {
+                            Storage::disk('local')->delete($document->file_path);
+                        }
+                    }
+
+                    foreach ($user->vendor->vehicles as $vehicle) {
+                        if ($vehicle->image) {
+                            Storage::disk('public')->delete($vehicle->image);
+                        }
+                    }
+                }
+
+                if (Schema::hasTable('notifications')) {
+                    DB::table('notifications')
+                        ->where('notifiable_type', \App\Models\User::class)
+                        ->where('notifiable_id', $user->id)
+                        ->delete();
+                }
+
+                if (Schema::hasTable('sessions')) {
+                    DB::table('sessions')->where('user_id', $user->id)->delete();
+                }
+
+                if (Schema::hasTable('password_reset_tokens')) {
+                    DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+                }
+
+                $user->delete();
+            });
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return back()->with('error', 'Akun gagal dihapus. Silakan coba lagi.');
+        }
+
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home')->with('success', 'Akun kamu berhasil dihapus.');
     }
 }

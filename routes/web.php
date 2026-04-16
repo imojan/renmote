@@ -28,6 +28,7 @@ use App\Http\Controllers\Vendor\VendorRegistrationController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\DocumentController as AdminDocumentController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\VendorController as AdminVendorController;
 use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
@@ -65,6 +66,7 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     Route::post('/account/documents', [AccountController::class, 'updateDocuments'])->name('account.documents.update');
     Route::delete('/account/documents/{type}', [AccountController::class, 'destroyDocument'])->name('account.documents.destroy');
     Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password.update');
+    Route::delete('/account', [AccountController::class, 'destroyAccount'])->name('account.destroy');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/vehicles/{vehicle}/toggle', [WishlistController::class, 'toggleVehicle'])->name('wishlist.vehicles.toggle');
     Route::post('/wishlist/vendors/{vendor}/toggle', [WishlistController::class, 'toggleVendor'])->name('wishlist.vendors.toggle');
@@ -142,6 +144,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/vendors/{vendor}/verify', [AdminVendorController::class, 'verify'])->name('vendors.verify');
     Route::post('/vendors/{vendor}/unverify', [AdminVendorController::class, 'unverify'])->name('vendors.unverify');
     Route::delete('/vendors/{vendor}', [AdminVendorController::class, 'destroy'])->name('vendors.destroy');
+
+    // Users
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
 
     // Vendor Document Review (generate signed temp URL)
     Route::get('/vendor-documents/{document}/review', [VendorRegistrationController::class, 'reviewDocument'])->name('vendor-documents.review');

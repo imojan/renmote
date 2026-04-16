@@ -3,6 +3,7 @@
     $pendingUserDocuments = \App\Models\UserDocument::where('status', 'pending')->count();
     $pendingVendorDocuments = \App\Models\VendorDocument::where('status', 'pending')->count();
     $pendingAllDocuments = $pendingUserDocuments + $pendingVendorDocuments;
+    $totalUsers = \App\Models\User::where('role', 'user')->count();
 @endphp
 
 <x-sidebar-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
@@ -19,6 +20,16 @@
     Vendors
     @if($pendingVendors > 0)
         <span class="dash-nav-badge">{{ $pendingVendors }}</span>
+    @endif
+</x-sidebar-link>
+
+<x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.*')">
+    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m12 0H7m10-12a3 3 0 11-6 0 3 3 0 016 0z"/>
+    </svg>
+    Users
+    @if($totalUsers > 0)
+        <span class="dash-nav-badge">{{ $totalUsers }}</span>
     @endif
 </x-sidebar-link>
 

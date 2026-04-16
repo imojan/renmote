@@ -41,6 +41,7 @@
                 <a href="#account-addresses">Alamat</a>
                 <a href="#account-documents">Dokumen Penting</a>
                 <a href="#account-password">Ubah Password</a>
+                <a href="#account-danger">Hapus Akun</a>
                 <a href="#account-wishlist">Wishlist</a>
                 <a href="#account-bookings">Riwayat Pemesanan</a>
             </nav>
@@ -481,6 +482,38 @@
                 </form>
             </section>
 
+            <section id="account-danger" class="account-block">
+                <div class="account-block-head">
+                    <div>
+                        <h3>Hapus Akun</h3>
+                        <p>Jika kamu sudah tidak ingin menggunakan Renmote, akun bisa dihapus permanen dari sini.</p>
+                    </div>
+                </div>
+
+                @if($errors->userDeletion->any())
+                    <div class="account-alert account-alert-error mb-3">
+                        <strong>Penghapusan akun gagal:</strong>
+                        <ul>
+                            @foreach($errors->userDeletion->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div class="rounded-xl border border-red-200 bg-red-50 p-4">
+                    <p class="text-sm text-red-700 leading-relaxed">
+                        Tindakan ini tidak bisa dibatalkan. Data profil, alamat, dokumen, wishlist, dan riwayat terkait akun kamu akan ikut dihapus.
+                    </p>
+
+                    <div class="account-action-row account-action-row-spaced">
+                        <button type="button" id="account-open-delete-modal" class="h-10 px-4 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700">
+                            Hapus Akun Saya
+                        </button>
+                    </div>
+                </div>
+            </section>
+
             <section id="account-wishlist" class="account-block">
                 <div class="account-block-head">
                     <div>
@@ -613,6 +646,65 @@
             </section>
         </div>
     </div>
+
+    <div id="account-delete-modal" class="fixed inset-0 z-[1700] hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" id="account-delete-modal-backdrop"></div>
+
+        <div class="relative min-h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl border border-slate-200 bg-white">
+                <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                    <h3 class="text-2xl font-bold text-slate-800">Konfirmasi Hapus Akun</h3>
+                    <button id="account-close-delete-modal" type="button" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+                </div>
+
+                <form id="account-delete-form" method="POST" action="{{ route('user.account.destroy') }}" class="px-6 py-6 space-y-5">
+                    @csrf
+                    @method('DELETE')
+
+                    <div class="rounded-xl border border-red-200 bg-red-50 p-4">
+                        <p class="text-sm text-red-700">
+                            Untuk melanjutkan, ketik <strong>HAPUS AKUN</strong> lalu isi password akun kamu.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="account_delete_confirmation_text" class="block text-sm font-semibold text-slate-700 mb-2">
+                            Ketik Konfirmasi <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            id="account_delete_confirmation_text"
+                            name="confirmation_text"
+                            type="text"
+                            value="{{ old('confirmation_text') }}"
+                            class="w-full h-11 rounded-lg border-slate-300 focus:border-red-500 focus:ring-red-500"
+                            placeholder="Ketik: HAPUS AKUN"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="account_delete_password" class="block text-sm font-semibold text-slate-700 mb-2">
+                            Password Akun <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            id="account_delete_password"
+                            name="password"
+                            type="password"
+                            class="w-full h-11 rounded-lg border-slate-300 focus:border-red-500 focus:ring-red-500"
+                            required
+                        >
+                    </div>
+
+                    <div class="flex justify-end items-center gap-3 pt-2">
+                        <button id="account-cancel-delete-modal" type="button" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Batal</button>
+                        <button id="account-delete-submit" type="submit" class="px-5 py-2.5 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Ya, Hapus Akun
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </section>
 @endsection
 
@@ -641,5 +733,94 @@
             form.classList.remove('is-open');
         });
     });
+
+    const deleteModal = document.getElementById('account-delete-modal');
+    const deleteModalBackdrop = document.getElementById('account-delete-modal-backdrop');
+    const deleteOpenButton = document.getElementById('account-open-delete-modal');
+    const deleteCloseButton = document.getElementById('account-close-delete-modal');
+    const deleteCancelButton = document.getElementById('account-cancel-delete-modal');
+    const deleteForm = document.getElementById('account-delete-form');
+    const deleteConfirmationInput = document.getElementById('account_delete_confirmation_text');
+    const deletePasswordInput = document.getElementById('account_delete_password');
+    const deleteSubmitButton = document.getElementById('account-delete-submit');
+    const deletePhrase = 'HAPUS AKUN';
+
+    const syncDeleteSubmitState = () => {
+        if (!deleteConfirmationInput || !deleteSubmitButton) {
+            return;
+        }
+
+        const isPhraseMatched = deleteConfirmationInput.value.trim().toUpperCase() === deletePhrase;
+        deleteSubmitButton.disabled = !isPhraseMatched;
+    };
+
+    const openDeleteModal = () => {
+        if (!deleteModal) {
+            return;
+        }
+
+        deleteModal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        syncDeleteSubmitState();
+
+        if (deleteConfirmationInput && deleteConfirmationInput.value.trim() === '') {
+            deleteConfirmationInput.focus();
+        } else if (deletePasswordInput) {
+            deletePasswordInput.focus();
+        }
+    };
+
+    const closeDeleteModal = () => {
+        if (!deleteModal) {
+            return;
+        }
+
+        deleteModal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    };
+
+    if (deleteOpenButton) {
+        deleteOpenButton.addEventListener('click', openDeleteModal);
+    }
+
+    if (deleteCloseButton) {
+        deleteCloseButton.addEventListener('click', closeDeleteModal);
+    }
+
+    if (deleteCancelButton) {
+        deleteCancelButton.addEventListener('click', closeDeleteModal);
+    }
+
+    if (deleteModalBackdrop) {
+        deleteModalBackdrop.addEventListener('click', closeDeleteModal);
+    }
+
+    if (deleteConfirmationInput) {
+        deleteConfirmationInput.addEventListener('input', syncDeleteSubmitState);
+    }
+
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', (event) => {
+            const isPhraseMatched = deleteConfirmationInput
+                ? deleteConfirmationInput.value.trim().toUpperCase() === deletePhrase
+                : false;
+
+            if (!isPhraseMatched) {
+                event.preventDefault();
+                syncDeleteSubmitState();
+                deleteConfirmationInput?.focus();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && deleteModal && !deleteModal.classList.contains('hidden')) {
+            closeDeleteModal();
+        }
+    });
+
+    @if($errors->userDeletion->any())
+        openDeleteModal();
+    @endif
 </script>
 @endpush
