@@ -34,4 +34,12 @@ class Vehicle extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    /**
+     * Vehicle bisa masuk wishlist banyak user.
+     */
+    public function wishlists()
+    {
+        return $this->morphMany(Wishlist::class, 'wishlistable');
+    }
 }

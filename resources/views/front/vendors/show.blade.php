@@ -6,7 +6,8 @@
     <section class="section front-content-section front-vendor-section">
         <!-- Vendor Header -->
         <div class="bg-white rounded-lg shadow p-6 mb-8">
-            <div class="flex items-center">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center">
                 <div class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mr-6">
                     <span class="text-3xl font-bold text-gray-600">{{ substr($vendor->store_name, 0, 1) }}</span>
                 </div>
@@ -22,6 +23,22 @@
                         <p class="text-gray-600 mt-2">{{ $vendor->description }}</p>
                     @endif
                 </div>
+                </div>
+
+                @auth
+                    @if(auth()->user()->role === 'user')
+                        <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="w-11 h-11 rounded-xl border {{ $isWishlistedVendor ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
+                                <i class="fa fa-heart"></i>
+                            </button>
+                        </form>
+                    @endif
+                @else
+                    <a href="{{ route('login') }}" class="w-11 h-11 rounded-xl border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 flex items-center justify-center">
+                        <i class="fa fa-heart"></i>
+                    </a>
+                @endauth
             </div>
         </div>
 
@@ -61,9 +78,25 @@
                             
                             <div class="mt-4 flex items-center justify-between">
                                 <span class="text-lg font-bold text-blue-600">Rp {{ number_format($vehicle->price_per_day, 0, ',', '.') }}/hari</span>
-                                <a href="{{ route('vehicles.show', $vehicle) }}" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
-                                    Detail
-                                </a>
+                                <div class="flex items-center gap-2">
+                                    @auth
+                                        @if(auth()->user()->role === 'user')
+                                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="w-10 h-10 rounded-lg border {{ in_array($vehicle->id, $wishlistedVehicleIds ?? [], true) ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
+                                                    <i class="fa fa-heart"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    @else
+                                        <a href="{{ route('login') }}" class="w-10 h-10 rounded-lg border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 flex items-center justify-center">
+                                            <i class="fa fa-heart"></i>
+                                        </a>
+                                    @endauth
+                                    <a href="{{ route('vehicles.show', $vehicle) }}" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                                        Detail
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

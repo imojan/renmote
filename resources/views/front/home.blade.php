@@ -168,7 +168,22 @@
                     <span>({{ rand(50, 200) }})</span>
                 </div>
                 <div class="motor-type">{{ ucfirst(str_replace('_', ' ', $vehicle->category)) }} &bull; {{ $vehicle->year }}cc</div>
-                <a href="{{ route('search', ['keyword' => $vehicle->name]) }}" class="btn-lihat">Lihat Pilihan</a>
+                <div class="motor-actions-row">
+                    @auth
+                        @if(auth()->user()->role === 'user')
+                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn-fav {{ in_array($vehicle->id, $wishlistedVehicleIds ?? [], true) ? 'is-active' : '' }}">
+                                    <i class="fa fa-heart"></i>
+                                </button>
+                            </form>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="btn-fav"><i class="fa fa-heart"></i></a>
+                    @endauth
+
+                    <a href="{{ route('search', ['keyword' => $vehicle->name]) }}" class="btn-lihat motor-lihat-btn">Lihat Pilihan</a>
+                </div>
             </div>
         </div>
         @empty
@@ -220,7 +235,16 @@
                 </div>
             </div>
             <div class="vendor-actions">
-                <button class="btn-fav"><i class="fa fa-heart"></i></button>
+                @auth
+                    @if(auth()->user()->role === 'user')
+                        <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn-fav {{ in_array($vendor->id, $wishlistedVendorIds ?? [], true) ? 'is-active' : '' }}"><i class="fa fa-heart"></i></button>
+                        </form>
+                    @endif
+                @else
+                    <a href="{{ route('login') }}" class="btn-fav"><i class="fa fa-heart"></i></a>
+                @endauth
                 <a href="https://wa.me/{{ $vendor->phone ? preg_replace('/[^0-9]/', '', $vendor->phone) : '6289631926343' }}" target="_blank" class="btn-chat">
                     <i class="fab fa-whatsapp"></i> Chat Vendor
                 </a>

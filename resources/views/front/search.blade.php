@@ -87,11 +87,28 @@
                             </a>
                             <p class="text-sm text-gray-500">{{ $vehicle->vendor->district->name }}</p>
                             
-                            <div class="mt-4 flex items-center justify-between">
+                            <div class="mt-4 flex items-center justify-between gap-2">
                                 <span class="text-lg font-bold text-blue-600">Rp {{ number_format($vehicle->price_per_day, 0, ',', '.') }}/hari</span>
-                                <a href="{{ route('vehicles.show', $vehicle) }}" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                                <div class="flex items-center gap-2">
+                                    @auth
+                                        @if(auth()->user()->role === 'user')
+                                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="w-10 h-10 rounded-lg border {{ in_array($vehicle->id, $wishlistedVehicleIds ?? [], true) ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
+                                                    <i class="fa fa-heart"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    @else
+                                        <a href="{{ route('login') }}" class="w-10 h-10 rounded-lg border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 flex items-center justify-center">
+                                            <i class="fa fa-heart"></i>
+                                        </a>
+                                    @endauth
+
+                                    <a href="{{ route('vehicles.show', $vehicle) }}" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
                                     Lihat Detail
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

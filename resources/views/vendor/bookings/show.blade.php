@@ -54,6 +54,25 @@
                         <p class="font-semibold">{{ $booking->user->email }}</p>
                     </div>
                 </div>
+
+                <div class="mt-4">
+                    <h4 class="font-semibold text-gray-700 mb-2">Dokumen Pendukung User</h4>
+                    @if($booking->user->userDocuments->count() > 0)
+                        <div class="space-y-2">
+                            @foreach($booking->user->userDocuments as $document)
+                                <div class="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-800">{{ $document->type === 'ktp' ? 'KTP/KTM' : strtoupper($document->type) }}</p>
+                                        <p class="text-xs text-gray-500">Status: {{ ucfirst($document->status) }}</p>
+                                    </div>
+                                    <a href="{{ route('documents.user.media', $document) }}" target="_blank" class="text-sm text-blue-600 hover:underline">Lihat Dokumen</a>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-sm text-gray-500">User belum mengunggah dokumen pendukung.</p>
+                    @endif
+                </div>
             </div>
 
             <!-- Vehicle Info -->

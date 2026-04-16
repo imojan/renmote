@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Vendor;
 use App\Models\Vehicle;
 use App\Models\Booking;
+use App\Models\UserDocument;
 use App\Models\VendorDocument;
 use Illuminate\Http\Request;
 
@@ -23,7 +24,8 @@ class DashboardController extends Controller
         $totalVehicles = Vehicle::count();
         $totalBookings = Booking::count();
         $pendingVendors   = Vendor::where('verified', false)->count();
-        $pendingDocuments = VendorDocument::where('status', 'pending')->count();
+        $pendingDocuments = VendorDocument::where('status', 'pending')->count()
+            + UserDocument::where('status', 'pending')->count();
 
         // ── Recent users (last 5) ──────────────────
         $recentUsers = User::latest()

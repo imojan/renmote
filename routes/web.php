@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DocumentMediaController;
 use Illuminate\Support\Facades\Route;
 
 // Front Controllers
@@ -15,6 +16,7 @@ use App\Http\Controllers\User\DashboardController as UserDashboardController;
 use App\Http\Controllers\User\BookingController as UserBookingController;
 use App\Http\Controllers\User\AccountController;
 use App\Http\Controllers\User\AddressController;
+use App\Http\Controllers\User\WishlistController;
 
 // Vendor Controllers
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
@@ -25,6 +27,7 @@ use App\Http\Controllers\Vendor\VendorRegistrationController;
 // Admin Controllers
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
+use App\Http\Controllers\Admin\DocumentController as AdminDocumentController;
 use App\Http\Controllers\Admin\VendorController as AdminVendorController;
 use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
@@ -62,7 +65,9 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     Route::post('/account/documents', [AccountController::class, 'updateDocuments'])->name('account.documents.update');
     Route::delete('/account/documents/{type}', [AccountController::class, 'destroyDocument'])->name('account.documents.destroy');
     Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password.update');
-    Route::view('/wishlist', 'front.bookings.wishlist')->name('wishlist.index');
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/vehicles/{vehicle}/toggle', [WishlistController::class, 'toggleVehicle'])->name('wishlist.vehicles.toggle');
+    Route::post('/wishlist/vendors/{vendor}/toggle', [WishlistController::class, 'toggleVendor'])->name('wishlist.vendors.toggle');
     
     // Bookings
     Route::get('/bookings', [UserBookingController::class, 'index'])->name('bookings.index');
@@ -123,6 +128,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         return redirect()->route('admin.dashboard')->with('info', 'Halaman pengaturan belum tersedia.');
     })->name('settings.index');
 
+    // Documents
+    Route::get('/documents', [AdminDocumentController::class, 'index'])->name('documents.index');
+    Route::patch('/documents/vendors/{document}', [AdminDocumentController::class, 'updateVendorDocument'])->name('documents.vendors.update');
+    Route::patch('/documents/users/{document}', [AdminDocumentController::class, 'updateUserDocument'])->name('documents.users.update');
+
     // Articles
     Route::resource('articles', AdminArticleController::class)->except('show');
     
@@ -159,6 +169,9 @@ Route::get('/vendor-documents/{document}/serve', [VendorRegistrationController::
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+    Route::get('/documents/vendor/{document}/media', [DocumentMediaController::class, 'vendor'])->name('documents.vendor.media');
+    Route::get('/documents/user/{document}/media', [DocumentMediaController::class, 'user'])->name('documents.user.media');
+
     Route::get('/dashboard', function () {
         return match (auth()->user()->role) {
             'admin' => redirect()->route('admin.dashboard'),

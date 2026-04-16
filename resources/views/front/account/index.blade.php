@@ -489,9 +489,55 @@
                     </div>
                 </div>
 
-                <div class="account-empty-box">
-                    Belum ada kendaraan di wishlist kamu.
-                </div>
+                    @if($wishlistVehicles->count() > 0 || $wishlistVendors->count() > 0)
+                        <div class="space-y-4">
+                            @if($wishlistVehicles->count() > 0)
+                                <div>
+                                    <h4 class="account-subtitle">Kendaraan Favorit</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                        @foreach($wishlistVehicles as $vehicle)
+                                            <article class="rounded-xl border border-slate-200 p-3">
+                                                <p class="font-semibold text-slate-800">{{ $vehicle->name }}</p>
+                                                <p class="text-xs text-slate-500 mt-1">{{ $vehicle->vendor->store_name ?? '-' }}</p>
+                                                <div class="mt-3 flex items-center gap-2">
+                                                    <a href="{{ route('vehicles.show', $vehicle) }}" class="account-sub-btn h-8 px-3">Detail</a>
+                                                    <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="account-mini-btn account-mini-btn-danger">Hapus</button>
+                                                    </form>
+                                                </div>
+                                            </article>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if($wishlistVendors->count() > 0)
+                                <div>
+                                    <h4 class="account-subtitle">Vendor Favorit</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                        @foreach($wishlistVendors as $vendor)
+                                            <article class="rounded-xl border border-slate-200 p-3">
+                                                <p class="font-semibold text-slate-800">{{ $vendor->store_name }}</p>
+                                                <p class="text-xs text-slate-500 mt-1">{{ $vendor->district->name ?? '-' }}</p>
+                                                <div class="mt-3 flex items-center gap-2">
+                                                    <a href="{{ route('vendors.show', $vendor) }}" class="account-sub-btn h-8 px-3">Detail</a>
+                                                    <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="account-mini-btn account-mini-btn-danger">Hapus</button>
+                                                    </form>
+                                                </div>
+                                            </article>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <div class="account-empty-box">
+                            Belum ada kendaraan atau vendor di wishlist kamu.
+                        </div>
+                    @endif
 
                 <div class="account-action-row account-action-row-spaced">
                     <a href="{{ route('search') }}" class="account-main-btn account-main-btn-link">Cari Kendaraan</a>

@@ -7,6 +7,8 @@ use App\Models\Article;
 use App\Models\Vehicle;
 use App\Models\District;
 use App\Models\Vendor;
+use App\Models\Wishlist;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -37,6 +39,32 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
-        return view('front.home', compact('districts', 'popularVehicles', 'vendors', 'articles'));
+        $wishlistedVehicleIds = [];
+        $wishlistedVendorIds = [];
+
+        if (Auth::check() && Auth::user()->role === 'user') {
+            $wishlistedVehicleIds = Wishlist::query()
+                ->where('user_id', Auth::id())
+                ->where('wishlistable_type', Vehicle::class)
+                ->pluck('wishlistable_id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            $wishlistedVendorIds = Wishlist::query()
+                ->where('user_id', Auth::id())
+                ->where('wishlistable_type', Vendor::class)
+                ->pluck('wishlistable_id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+        }
+
+        return view('front.home', compact(
+            'districts',
+            'popularVehicles',
+            'vendors',
+            'articles',
+            'wishlistedVehicleIds',
+            'wishlistedVendorIds'
+        ));
     }
 }

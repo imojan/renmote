@@ -7,6 +7,9 @@ use App\Http\Requests\User\StoreAddressRequest;
 use App\Models\Address;
 use App\Models\District;
 use App\Models\UserDocument;
+use App\Models\Vendor;
+use App\Models\Vehicle;
+use App\Models\Wishlist;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -29,9 +32,27 @@ class AccountController extends Controller
             ->take(8)
             ->get();
 
+        $wishlistVehicles = $request->user()->wishlists()
+            ->where('wishlistable_type', Vehicle::class)
+            ->with('wishlistable.vendor.district')
+            ->latest()
+            ->take(6)
+            ->get()
+            ->map(fn (Wishlist $wishlist) => $wishlist->wishlistable)
+            ->filter();
+
+        $wishlistVendors = $request->user()->wishlists()
+            ->where('wishlistable_type', Vendor::class)
+            ->with('wishlistable.district')
+            ->latest()
+            ->take(6)
+            ->get()
+            ->map(fn (Wishlist $wishlist) => $wishlist->wishlistable)
+            ->filter();
+
         $documentsByType = $user->userDocuments->keyBy('type');
 
-        return view('front.account.index', compact('user', 'districts', 'bookings', 'documentsByType'));
+        return view('front.account.index', compact('user', 'districts', 'bookings', 'documentsByType', 'wishlistVehicles', 'wishlistVendors'));
     }
 
     /**

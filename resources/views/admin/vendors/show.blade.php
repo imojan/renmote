@@ -95,6 +95,46 @@
                 </div>
             </div>
 
+            <!-- Documents -->
+            <div class="mb-6 pb-6 border-b">
+                <h3 class="font-semibold text-gray-700 mb-3">Dokumen Pengajuan Vendor</h3>
+
+                @if($vendor->documents->count() > 0)
+                    <div class="space-y-3">
+                        @foreach($vendor->documents as $document)
+                            <div class="rounded-lg border border-gray-200 p-4">
+                                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">{{ strtoupper($document->type) }}</p>
+                                        <p class="text-xs text-gray-500">Upload {{ $document->created_at->diffForHumans() }}</p>
+                                    </div>
+                                    <a href="{{ route('documents.vendor.media', $document) }}" target="_blank" class="text-blue-600 hover:underline text-sm">Lihat Dokumen</a>
+                                </div>
+
+                                <form action="{{ route('admin.documents.vendors.update', $document) }}" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <select name="status" class="rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" required>
+                                        <option value="pending" {{ $document->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="approved" {{ $document->status === 'approved' ? 'selected' : '' }}>Approved</option>
+                                        <option value="rejected" {{ $document->status === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                    </select>
+
+                                    <input type="text" name="notes" value="{{ $document->notes }}" class="rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Catatan review (opsional)">
+
+                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
+                                        Simpan Review Dokumen
+                                    </button>
+                                </form>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-gray-500">Belum ada dokumen vendor yang diunggah.</p>
+                @endif
+            </div>
+
             <!-- Vehicles -->
             <div class="mb-6">
                 <h3 class="font-semibold text-gray-700 mb-3">Daftar Kendaraan</h3>

@@ -217,6 +217,23 @@
         border-color: #EF4444;
         color: #EF4444;
     }
+    .btn-fav.is-active {
+        border-color: #ef4444;
+        color: #ef4444;
+        background: #fff1f2;
+    }
+    .motor-actions-row {
+        @apply flex items-center gap-2;
+    }
+    .motor-actions-row .btn-fav {
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
+        border-radius: 8px;
+    }
+    .motor-lihat-btn {
+        flex: 1;
+    }
     .btn-chat {
         @apply flex flex-1 cursor-pointer items-center justify-center gap-[6px] text-xs font-bold text-white no-underline;
         border: none;

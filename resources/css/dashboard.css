@@ -452,6 +452,11 @@
     border-color: #cbd5e1;
 }
 
+.dash-stat-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
 .dash-stat-icon {
     width: 48px;
     height: 48px;

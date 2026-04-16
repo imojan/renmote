@@ -42,6 +42,29 @@
                     <span class="text-gray-500">/hari</span>
                 </div>
 
+                <div class="mb-6 flex items-center gap-2">
+                    @auth
+                        @if(auth()->user()->role === 'user')
+                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="px-4 py-2 rounded-lg border {{ $isWishlistedVehicle ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600' }} hover:border-red-300 hover:text-red-600 text-sm font-semibold">
+                                    <i class="fa fa-heart mr-1"></i> Favoritkan Kendaraan
+                                </button>
+                            </form>
+                            <form action="{{ route('user.wishlist.vendors.toggle', $vehicle->vendor) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="px-4 py-2 rounded-lg border {{ $isWishlistedVendor ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600' }} hover:border-red-300 hover:text-red-600 text-sm font-semibold">
+                                    <i class="fa fa-heart mr-1"></i> Favoritkan Vendor
+                                </button>
+                            </form>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:border-red-300 hover:text-red-600 text-sm font-semibold">
+                            <i class="fa fa-heart mr-1"></i> Login untuk Wishlist
+                        </a>
+                    @endauth
+                </div>
+
                 @if($vehicle->description)
                     <div class="mb-6">
                         <h3 class="font-semibold text-gray-900 mb-2">Deskripsi</h3>

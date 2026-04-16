@@ -51,4 +51,12 @@ class Vendor extends Model
     {
         return $this->hasMany(VendorDocument::class);
     }
+
+    /**
+     * Vendor bisa masuk wishlist banyak user.
+     */
+    public function wishlists()
+    {
+        return $this->morphMany(Wishlist::class, 'wishlistable');
+    }
 }

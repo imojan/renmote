@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Models\Vehicle;
 use App\Models\District;
+use App\Models\Wishlist;
 use App\Services\AvailabilityService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class SearchController extends Controller
@@ -107,7 +109,17 @@ class SearchController extends Controller
                 ? $this->normalizeCategorySlug($rawCategory)
                 : null);
 
-        return view('front.search', compact('vehicles', 'districts', 'selectedCategorySlug'));
+        $wishlistedVehicleIds = [];
+        if (Auth::check() && Auth::user()->role === 'user') {
+            $wishlistedVehicleIds = Wishlist::query()
+                ->where('user_id', Auth::id())
+                ->where('wishlistable_type', Vehicle::class)
+                ->pluck('wishlistable_id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+        }
+
+        return view('front.search', compact('vehicles', 'districts', 'selectedCategorySlug', 'wishlistedVehicleIds'));
     }
 
     private function resolveCategoryFromSlug(string $input): ?string
