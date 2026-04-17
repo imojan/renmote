@@ -42,16 +42,19 @@
                     <p id="rnChatHeaderName" class="rn-chat-header-name">-</p>
                     <p id="rnChatHeaderSubtitle" class="rn-chat-header-subtitle">-</p>
                 </div>
-                @if($mode !== 'page')
-                    <div class="rn-chat-header-actions">
-                        <a href="{{ route('chat.index') }}" class="rn-chat-icon-btn" title="Buka halaman chat">
-                            <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
-                        </a>
+                <div class="rn-chat-header-actions">
+                    <button type="button" id="rnChatBackToList" class="rn-chat-icon-btn rn-chat-mobile-only" title="Kembali ke list chat">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    @if($mode !== 'page')
+                        <button type="button" id="rnChatToggleRoom" class="rn-chat-icon-btn rn-chat-hide-room-btn" title="Sembunyikan jendela obrolan">
+                            <i class="fa-solid fa-window-minimize"></i>
+                        </button>
                         <button type="button" id="rnChatClose" class="rn-chat-icon-btn" title="Tutup chat">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
-                    </div>
-                @endif
+                    @endif
+                </div>
             </div>
 
             <div id="rnChatWelcome" class="rn-chat-welcome">
@@ -100,6 +103,8 @@
                     fabBadge: document.getElementById('rnChatFabBadge'),
                     panel: document.getElementById('rnChatPanel'),
                     close: document.getElementById('rnChatClose'),
+                    toggleRoom: document.getElementById('rnChatToggleRoom'),
+                    backToList: document.getElementById('rnChatBackToList'),
                     list: document.getElementById('rnChatConversationList'),
                     search: document.getElementById('rnChatSearch'),
                     header: document.getElementById('rnChatHeader'),
@@ -121,7 +126,11 @@
                     searchTimer: null,
                     pollTimer: null,
                     isOpen: mode === 'page',
+                    isDraftConversation: false,
+                    roomHidden: false,
                 };
+
+                const isMobileViewport = () => window.matchMedia('(max-width: 1024px)').matches;
 
                 const escapeHtml = (raw) => {
                     const div = document.createElement('div');
@@ -130,6 +139,55 @@
                 };
 
                 const templateUrl = (template, token, value) => template.replace(token, encodeURIComponent(String(value)));
+
+                const setMobileThreadMode = (isThread) => {
+                    if (!elements.panel) {
+                        return;
+                    }
+
+                    if (isMobileViewport()) {
+                        elements.panel.classList.toggle('rn-chat-mobile-thread', Boolean(isThread));
+                    } else {
+                        elements.panel.classList.remove('rn-chat-mobile-thread');
+                    }
+                };
+
+                const updateToggleRoomButton = () => {
+                    if (!elements.toggleRoom) {
+                        return;
+                    }
+
+                    const icon = elements.toggleRoom.querySelector('i');
+
+                    if (state.roomHidden) {
+                        elements.toggleRoom.title = 'Tampilkan jendela obrolan';
+                        if (icon) {
+                            icon.className = 'fa-solid fa-window-restore';
+                        }
+                    } else {
+                        elements.toggleRoom.title = 'Sembunyikan jendela obrolan';
+                        if (icon) {
+                            icon.className = 'fa-solid fa-window-minimize';
+                        }
+                    }
+                };
+
+                const setRoomHidden = (hidden) => {
+                    if (!isFloating || !elements.panel) {
+                        return;
+                    }
+
+                    if (isMobileViewport()) {
+                        state.roomHidden = false;
+                        elements.panel.classList.remove('rn-chat-room-hidden');
+                        updateToggleRoomButton();
+                        return;
+                    }
+
+                    state.roomHidden = Boolean(hidden);
+                    elements.panel.classList.toggle('rn-chat-room-hidden', state.roomHidden);
+                    updateToggleRoomButton();
+                };
 
                 const fetchJson = async (url, options = {}) => {
                     const requestOptions = {
@@ -186,10 +244,13 @@
                         const unreadBadge = conversation.unread_count > 0
                             ? `<span class="rn-chat-conversation-badge">${conversation.unread_count}</span>`
                             : '';
+                        const avatar = conversation.counterpart_photo_url
+                            ? `<span class="rn-chat-avatar"><img class="rn-chat-avatar-img" src="${escapeHtml(conversation.counterpart_photo_url)}" alt="${escapeHtml(conversation.counterpart_name)}" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"><span class="rn-chat-avatar-fallback hidden">${escapeHtml(conversation.counterpart_avatar || 'RN')}</span></span>`
+                            : `<span class="rn-chat-avatar">${escapeHtml(conversation.counterpart_avatar || 'RN')}</span>`;
 
                         return `
                             <button type="button" class="rn-chat-conversation-item ${activeClass}" data-conversation-id="${conversation.id}">
-                                <span class="rn-chat-avatar">${escapeHtml(conversation.counterpart_avatar || 'RN')}</span>
+                                ${avatar}
                                 <span class="rn-chat-conversation-body">
                                     <span class="rn-chat-conversation-top">
                                         <span class="rn-chat-conversation-name">${escapeHtml(conversation.counterpart_name)}</span>
@@ -252,6 +313,8 @@
                     elements.welcome.classList.add('hidden');
                     elements.messages.classList.remove('hidden');
                     elements.form.classList.remove('hidden');
+
+                    setMobileThreadMode(true);
                 };
 
                 const hideConversationUI = () => {
@@ -261,6 +324,7 @@
                     elements.form.classList.add('hidden');
                     elements.messages.innerHTML = '';
                     state.lastMessageId = 0;
+                    setMobileThreadMode(false);
                 };
 
                 const loadUnread = async () => {
@@ -291,7 +355,7 @@
 
                     if (state.activeConversationId) {
                         const exists = state.conversations.some((item) => Number(item.id) === Number(state.activeConversationId));
-                        if (!exists) {
+                        if (!exists && !state.isDraftConversation) {
                             state.activeConversationId = null;
                             hideConversationUI();
                         }
@@ -329,6 +393,10 @@
                         renderMessages(messages, false);
                     }
 
+                    if (messages.length > 0) {
+                        state.isDraftConversation = false;
+                    }
+
                     await markConversationRead(conversationId);
 
                     state.conversations = state.conversations.map((item) => {
@@ -343,8 +411,12 @@
                     renderConversations();
                 };
 
-                const selectConversation = async (conversationId) => {
+                const selectConversation = async (conversationId, options = {}) => {
+                    const isDraft = options.isDraft === true;
+
                     state.activeConversationId = Number(conversationId);
+                    state.isDraftConversation = isDraft;
+                    setRoomHidden(false);
                     renderConversations();
                     await loadMessages(state.activeConversationId, { append: false });
                 };
@@ -375,6 +447,8 @@
                             renderMessages([data.message], true);
                         }
 
+                        state.isDraftConversation = false;
+
                         await loadConversations({ preserveSelection: true, keyword: elements.search.value.trim() });
                         setUnreadCount(data.unread_count || state.unreadCount);
                     } catch (error) {
@@ -392,6 +466,8 @@
 
                     state.isOpen = true;
                     elements.panel.classList.add('open');
+                    updateToggleRoomButton();
+                    setMobileThreadMode(false);
 
                     await loadConversations({ preserveSelection: true, keyword: elements.search.value.trim() });
                     await loadUnread();
@@ -408,6 +484,8 @@
 
                     state.isOpen = false;
                     elements.panel.classList.remove('open');
+                    elements.panel.classList.remove('rn-chat-room-hidden');
+                    elements.panel.classList.remove('rn-chat-mobile-thread');
                 };
 
                 const startConversationWithVendor = async (vendorId) => {
@@ -421,7 +499,7 @@
                         const data = await fetchJson(url, { method: 'POST' });
                         await openPanel();
                         state.activeConversationId = Number(data.conversation_id);
-                        await selectConversation(state.activeConversationId);
+                        await selectConversation(state.activeConversationId, { isDraft: !data.has_messages });
                     } catch (error) {
                         alert(error.message || 'Gagal memulai percakapan dengan vendor.');
                     }
@@ -442,6 +520,18 @@
                         elements.close.addEventListener('click', closePanel);
                     }
 
+                    if (elements.toggleRoom) {
+                        elements.toggleRoom.addEventListener('click', () => {
+                            setRoomHidden(!state.roomHidden);
+                        });
+                    }
+
+                    if (elements.backToList) {
+                        elements.backToList.addEventListener('click', () => {
+                            setMobileThreadMode(false);
+                        });
+                    }
+
                     document.addEventListener('click', (event) => {
                         const chatTrigger = event.target.closest('[data-chat-vendor-id]');
                         if (chatTrigger) {
@@ -457,7 +547,7 @@
                                 return;
                             }
 
-                            selectConversation(Number(target.dataset.conversationId));
+                            selectConversation(Number(target.dataset.conversationId), { isDraft: false });
                         });
                     }
 
@@ -516,13 +606,19 @@
                     if (mode === 'page') {
                         await openPanel();
                         if (!state.activeConversationId && state.conversations.length > 0) {
-                            await selectConversation(state.conversations[0].id);
+                            await selectConversation(state.conversations[0].id, { isDraft: false });
                         }
                     }
 
                     if (startVendorId) {
                         await startConversationWithVendor(startVendorId);
                     }
+
+                    window.addEventListener('resize', () => {
+                        if (!isMobileViewport()) {
+                            elements.panel.classList.remove('rn-chat-mobile-thread');
+                        }
+                    });
                 };
 
                 boot();

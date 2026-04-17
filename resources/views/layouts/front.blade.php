@@ -196,7 +196,7 @@
 @yield('content')
 
 @auth
-    @if(auth()->user()->role === 'user')
+    @if(in_array(auth()->user()->role, ['user', 'vendor'], true))
         @include('chat.panel', ['mode' => 'floating'])
     @endif
 @endauth

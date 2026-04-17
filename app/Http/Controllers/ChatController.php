@@ -8,6 +8,7 @@ use App\Models\Vendor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ChatController extends Controller
@@ -41,17 +42,15 @@ class ChatController extends Controller
                 'user_id' => $request->user()->id,
                 'vendor_id' => $vendor->id,
             ],
-            [
-                'last_message_at' => now(),
-                'last_message_preview' => 'Percakapan dimulai.',
-            ]
+            []
         );
 
-        $conversation->loadMissing('vendor.district', 'user');
+        $conversation->loadMissing('vendor.district', 'vendor.user', 'user');
 
         return response()->json([
             'conversation_id' => $conversation->id,
             'conversation' => $this->serializeConversation($conversation, $actor),
+            'has_messages' => $conversation->messages()->exists(),
             'created' => $conversation->wasRecentlyCreated,
         ]);
     }
@@ -65,7 +64,11 @@ class ChatController extends Controller
             ->with([
                 'user',
                 'vendor.district',
+                'vendor.user',
             ]);
+
+        // Hanya tampilkan room yang memang sudah ada obrolan (punya minimal 1 pesan).
+        $query->whereHas('messages');
 
         if ($actor['role'] === 'user') {
             $query->where('user_id', $actor['user_id'])
@@ -125,7 +128,7 @@ class ChatController extends Controller
                 ->values();
         }
 
-        $conversation->loadMissing('user', 'vendor.district');
+        $conversation->loadMissing('user', 'vendor.district', 'vendor.user');
 
         return response()->json([
             'conversation' => $this->serializeConversation($conversation, $actor),
@@ -177,7 +180,7 @@ class ChatController extends Controller
         });
 
         $message->loadMissing('sender');
-        $conversation->refresh()->loadMissing('user', 'vendor.district');
+        $conversation->refresh()->loadMissing('user', 'vendor.district', 'vendor.user');
 
         return response()->json([
             'message' => $this->serializeMessage($message, $actor),
@@ -284,12 +287,17 @@ class ChatController extends Controller
         $counterpartSubtitle = $isUser
             ? ($conversation->vendor?->district?->name ?? 'Vendor RENMOTE')
             : ($conversation->user?->email ?? '-');
+        $counterpartPhotoPath = $isUser
+            ? $conversation->vendor?->user?->profile_photo_path
+            : $conversation->user?->profile_photo_path;
+        $counterpartPhotoUrl = $counterpartPhotoPath ? Storage::url($counterpartPhotoPath) : null;
 
         return [
             'id' => (int) $conversation->id,
             'counterpart_name' => $counterpartName,
             'counterpart_subtitle' => $counterpartSubtitle,
             'counterpart_avatar' => Str::upper(Str::substr($counterpartName, 0, 2)),
+            'counterpart_photo_url' => $counterpartPhotoUrl,
             'last_message_preview' => $conversation->last_message_preview ?: 'Belum ada pesan.',
             'last_message_at' => $conversation->last_message_at?->toIso8601String(),
             'last_message_label' => $conversation->last_message_at
