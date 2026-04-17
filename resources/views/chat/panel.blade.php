@@ -27,7 +27,10 @@
         <div class="rn-chat-left">
             <div class="rn-chat-left-head">
                 <h3>Chat</h3>
-                <span id="rnChatLeftUnread" class="rn-chat-total-unread hidden">0</span>
+                <div id="rnChatLeftUnreadWrap" class="rn-chat-unread-wrap hidden">
+                    <span class="rn-chat-unread-text">Pesan Baru</span>
+                    <span id="rnChatLeftUnread" class="rn-chat-total-unread">0</span>
+                </div>
             </div>
             <div class="rn-chat-search-wrap">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -66,10 +69,30 @@
             <div id="rnChatMessages" class="rn-chat-messages hidden"></div>
 
             <form id="rnChatForm" class="rn-chat-form hidden">
-                <textarea id="rnChatInput" rows="1" placeholder="Tulis pesan..."></textarea>
-                <button type="submit" id="rnChatSendBtn">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
+                <input type="file" id="rnChatMediaInput" class="hidden" accept="image/*,video/mp4,video/webm,video/quicktime">
+                <div id="rnChatSelectedMedia" class="rn-chat-selected-media hidden">
+                    <div class="rn-chat-selected-media-preview-wrap">
+                        <button type="button" id="rnChatMediaRemove" class="rn-chat-media-remove rn-chat-media-remove-overlay" title="Batalkan lampiran media">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <div id="rnChatSelectedMediaPreview" class="rn-chat-selected-media-preview"></div>
+                    </div>
+                    <div class="rn-chat-selected-media-meta">
+                        <p id="rnChatMediaName" class="rn-chat-media-name"></p>
+                    </div>
+                </div>
+
+                <div class="rn-chat-compose-row">
+                    <button type="button" id="rnChatMediaBtn" class="rn-chat-media-btn" title="Lampirkan foto atau video">
+                        <i class="fa-solid fa-paperclip"></i>
+                    </button>
+                    <div class="rn-chat-input-col">
+                        <textarea id="rnChatInput" rows="1" placeholder="Tulis pesan..."></textarea>
+                    </div>
+                    <button type="submit" id="rnChatSendBtn">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -114,7 +137,14 @@
                     messages: document.getElementById('rnChatMessages'),
                     form: document.getElementById('rnChatForm'),
                     input: document.getElementById('rnChatInput'),
+                    mediaInput: document.getElementById('rnChatMediaInput'),
+                    mediaBtn: document.getElementById('rnChatMediaBtn'),
+                    mediaRemove: document.getElementById('rnChatMediaRemove'),
+                    selectedMedia: document.getElementById('rnChatSelectedMedia'),
+                    selectedMediaPreview: document.getElementById('rnChatSelectedMediaPreview'),
+                    mediaName: document.getElementById('rnChatMediaName'),
                     sendBtn: document.getElementById('rnChatSendBtn'),
+                    leftUnreadWrap: document.getElementById('rnChatLeftUnreadWrap'),
                     leftUnread: document.getElementById('rnChatLeftUnread'),
                 };
 
@@ -128,6 +158,8 @@
                     isOpen: mode === 'page',
                     isDraftConversation: false,
                     roomHidden: false,
+                    selectedMediaObjectUrl: null,
+                    selectedMediaFile: null,
                 };
 
                 const isMobileViewport = () => window.matchMedia('(max-width: 1024px)').matches;
@@ -227,6 +259,72 @@
                         el.classList.toggle('hidden', !shouldShow);
                         el.hidden = !shouldShow;
                     });
+
+                    if (elements.leftUnreadWrap) {
+                        elements.leftUnreadWrap.classList.toggle('hidden', !shouldShow);
+                    }
+                };
+
+                const clearSelectedMedia = () => {
+                    if (!elements.mediaInput || !elements.mediaName) {
+                        return;
+                    }
+
+                    if (state.selectedMediaObjectUrl) {
+                        URL.revokeObjectURL(state.selectedMediaObjectUrl);
+                        state.selectedMediaObjectUrl = null;
+                    }
+
+                    elements.mediaInput.value = '';
+                    state.selectedMediaFile = null;
+                    elements.mediaName.textContent = '';
+                    elements.selectedMedia?.classList.add('hidden');
+
+                    if (elements.selectedMediaPreview) {
+                        elements.selectedMediaPreview.innerHTML = '';
+                    }
+                };
+
+                const showSelectedMediaPreview = (mediaFile) => {
+                    if (!elements.selectedMedia || !elements.selectedMediaPreview || !elements.mediaName) {
+                        return;
+                    }
+
+                    if (!mediaFile) {
+                        clearSelectedMedia();
+                        return;
+                    }
+
+                    state.selectedMediaFile = mediaFile;
+
+                    if (state.selectedMediaObjectUrl) {
+                        URL.revokeObjectURL(state.selectedMediaObjectUrl);
+                    }
+
+                    const objectUrl = URL.createObjectURL(mediaFile);
+                    state.selectedMediaObjectUrl = objectUrl;
+
+                    const isVideo = (mediaFile.type || '').startsWith('video/');
+                    elements.selectedMediaPreview.innerHTML = isVideo
+                        ? `<video class="rn-chat-selected-media-asset" controls preload="metadata" src="${escapeHtml(objectUrl)}"></video>`
+                        : `<img class="rn-chat-selected-media-asset" src="${escapeHtml(objectUrl)}" alt="Preview media terpilih">`;
+
+                    elements.mediaName.textContent = mediaFile.name;
+                    elements.selectedMedia.classList.remove('hidden');
+                };
+
+                const syncComposerVisibility = () => {
+                    const hasActiveConversation = Boolean(state.activeConversationId);
+
+                    if (hasActiveConversation) {
+                        elements.form?.classList.remove('hidden');
+                        elements.header?.classList.remove('hidden');
+                        elements.welcome?.classList.add('hidden');
+                        elements.messages?.classList.remove('hidden');
+                        return;
+                    }
+
+                    elements.form?.classList.add('hidden');
                 };
 
                 const renderConversations = () => {
@@ -257,8 +355,10 @@
                                         <span class="rn-chat-conversation-time">${escapeHtml(conversation.last_message_label || '-')}</span>
                                     </span>
                                     <span class="rn-chat-conversation-subtitle">${escapeHtml(conversation.counterpart_subtitle || '-')}</span>
-                                    <span class="rn-chat-conversation-preview">${escapeHtml(conversation.last_message_preview || '-')}</span>
-                                    ${unreadBadge}
+                                    <span class="rn-chat-conversation-bottom">
+                                        <span class="rn-chat-conversation-preview">${escapeHtml(conversation.last_message_preview || '-')}</span>
+                                        ${unreadBadge}
+                                    </span>
                                 </span>
                             </button>
                         `;
@@ -277,17 +377,36 @@
                     const oldHeight = elements.messages.scrollHeight;
 
                     messages.forEach((message) => {
+                        const messageId = Number(message.id || 0);
+
+                        if (messageId > 0 && elements.messages.querySelector(`[data-message-id="${messageId}"]`)) {
+                            state.lastMessageId = Math.max(state.lastMessageId, messageId);
+                            return;
+                        }
+
                         const row = document.createElement('div');
                         row.className = `rn-chat-message-row ${message.is_mine ? 'mine' : ''}`;
-                        row.dataset.messageId = String(message.id);
+                        row.dataset.messageId = String(messageId || message.id);
+
+                        const mediaBlock = message.media_url
+                            ? (message.media_type === 'video'
+                                ? `<div class="rn-chat-media-wrap"><video class="rn-chat-media" controls preload="metadata" src="${escapeHtml(message.media_url)}"></video></div>`
+                                : `<div class="rn-chat-media-wrap"><img class="rn-chat-media" src="${escapeHtml(message.media_url)}" alt="Media chat" loading="lazy"></div>`)
+                            : '';
+
+                        const textBlock = message.body
+                            ? `<p class="rn-chat-bubble-text">${escapeHtml(message.body)}</p>`
+                            : '';
+
                         row.innerHTML = `
                             <div class="rn-chat-bubble">
-                                <p class="rn-chat-bubble-text">${escapeHtml(message.body)}</p>
+                                ${mediaBlock}
+                                ${textBlock}
                                 <p class="rn-chat-bubble-meta">${escapeHtml(message.created_label || '')}</p>
                             </div>
                         `;
                         elements.messages.appendChild(row);
-                        state.lastMessageId = Math.max(state.lastMessageId, Number(message.id));
+                        state.lastMessageId = Math.max(state.lastMessageId, messageId);
                     });
 
                     if (!append) {
@@ -315,6 +434,7 @@
                     elements.form.classList.remove('hidden');
 
                     setMobileThreadMode(true);
+                    syncComposerVisibility();
                 };
 
                 const hideConversationUI = () => {
@@ -324,7 +444,9 @@
                     elements.form.classList.add('hidden');
                     elements.messages.innerHTML = '';
                     state.lastMessageId = 0;
+                    clearSelectedMedia();
                     setMobileThreadMode(false);
+                    syncComposerVisibility();
                 };
 
                 const loadUnread = async () => {
@@ -348,18 +470,13 @@
 
                     setUnreadCount(data.unread_count || 0);
                     renderConversations();
+                    syncComposerVisibility();
 
                     if (!preserveSelection && state.conversations.length > 0) {
                         state.activeConversationId = state.conversations[0].id;
                     }
 
-                    if (state.activeConversationId) {
-                        const exists = state.conversations.some((item) => Number(item.id) === Number(state.activeConversationId));
-                        if (!exists && !state.isDraftConversation) {
-                            state.activeConversationId = null;
-                            hideConversationUI();
-                        }
-                    }
+                    // Keep active room state stable even when list is filtered/refreshed by polling.
                 };
 
                 const markConversationRead = async (conversationId) => {
@@ -419,6 +536,10 @@
                     setRoomHidden(false);
                     renderConversations();
                     await loadMessages(state.activeConversationId, { append: false });
+
+                    // Guard state: ensure composer always visible in active room.
+                    elements.form?.classList.remove('hidden');
+                    syncComposerVisibility();
                 };
 
                 const sendMessage = async () => {
@@ -427,7 +548,9 @@
                     }
 
                     const body = (elements.input.value || '').trim();
-                    if (!body) {
+                    const mediaFile = state.selectedMediaFile || elements.mediaInput?.files?.[0] || null;
+
+                    if (!body && !mediaFile) {
                         return;
                     }
 
@@ -435,13 +558,39 @@
                     elements.sendBtn.disabled = true;
 
                     try {
-                        const data = await fetchJson(url, {
+                        const formData = new FormData();
+
+                        if (body) {
+                            formData.append('body', body);
+                        }
+
+                        if (mediaFile) {
+                            formData.append('media', mediaFile);
+                        }
+
+                        const response = await fetch(url, {
                             method: 'POST',
-                            body: { body },
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': csrfToken,
+                            },
+                            body: formData,
                         });
+
+                        const data = await response.json().catch(() => ({}));
+
+                        if (!response.ok) {
+                            const validationErrors = data && typeof data === 'object' ? data.errors : null;
+                            const firstError = validationErrors && typeof validationErrors === 'object'
+                                ? Object.values(validationErrors).flat().find(Boolean)
+                                : null;
+                            throw new Error(firstError || data.message || 'Pesan gagal dikirim.');
+                        }
 
                         elements.input.value = '';
                         elements.input.style.height = '44px';
+                        clearSelectedMedia();
 
                         if (data.message) {
                             renderMessages([data.message], true);
@@ -468,6 +617,7 @@
                     elements.panel.classList.add('open');
                     updateToggleRoomButton();
                     setMobileThreadMode(false);
+                    syncComposerVisibility();
 
                     await loadConversations({ preserveSelection: true, keyword: elements.search.value.trim() });
                     await loadUnread();
@@ -486,6 +636,7 @@
                     elements.panel.classList.remove('open');
                     elements.panel.classList.remove('rn-chat-room-hidden');
                     elements.panel.classList.remove('rn-chat-mobile-thread');
+                    clearSelectedMedia();
                 };
 
                 const startConversationWithVendor = async (vendorId) => {
@@ -529,6 +680,13 @@
                     if (elements.backToList) {
                         elements.backToList.addEventListener('click', () => {
                             setMobileThreadMode(false);
+
+                            if (state.activeConversationId) {
+                                state.activeConversationId = null;
+                                renderConversations();
+                            }
+
+                            hideConversationUI();
                         });
                     }
 
@@ -547,7 +705,13 @@
                                 return;
                             }
 
-                            selectConversation(Number(target.dataset.conversationId), { isDraft: false });
+                            const targetId = Number(target.dataset.conversationId);
+
+                            if (state.activeConversationId === targetId) {
+                                return;
+                            }
+
+                            selectConversation(targetId, { isDraft: false });
                         });
                     }
 
@@ -571,6 +735,23 @@
                                 event.preventDefault();
                                 sendMessage();
                             }
+                        });
+                    }
+
+                    if (elements.mediaBtn && elements.mediaInput) {
+                        elements.mediaBtn.addEventListener('click', () => {
+                            elements.mediaInput.click();
+                        });
+
+                        elements.mediaInput.addEventListener('change', () => {
+                            const mediaFile = elements.mediaInput.files?.[0];
+                            showSelectedMediaPreview(mediaFile);
+                        });
+                    }
+
+                    if (elements.mediaRemove) {
+                        elements.mediaRemove.addEventListener('click', () => {
+                            clearSelectedMedia();
                         });
                     }
 
@@ -613,6 +794,8 @@
                     if (startVendorId) {
                         await startConversationWithVendor(startVendorId);
                     }
+
+                    syncComposerVisibility();
 
                     window.addEventListener('resize', () => {
                         if (!isMobileViewport()) {

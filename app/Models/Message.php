@@ -15,6 +15,8 @@ class Message extends Model
         'sender_id',
         'sender_role',
         'body',
+        'media_path',
+        'media_type',
         'read_at',
     ];
 

@@ -145,27 +145,50 @@ class ChatController extends Controller
         $this->assertConversationAccess($conversation, $actor);
 
         $validated = $request->validate([
-            'body' => ['required', 'string', 'max:2000'],
+            'body' => ['nullable', 'string', 'max:2000', 'required_without:media'],
+            'media' => [
+                'nullable',
+                'file',
+                'max:20480',
+                'mimetypes:image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime',
+                'mimes:jpg,jpeg,png,webp,gif,mp4,webm,mov',
+                'required_without:body',
+            ],
         ]);
 
-        $messageBody = trim($validated['body']);
+        $messageBody = trim((string) ($validated['body'] ?? ''));
+        $mediaPath = null;
+        $mediaType = null;
 
-        if ($messageBody === '') {
+        if ($request->hasFile('media')) {
+            $mediaFile = $request->file('media');
+            $mediaPath = $mediaFile->store('chat-media', 'public');
+            $mediaMime = (string) $mediaFile->getMimeType();
+            $mediaType = str_starts_with($mediaMime, 'video/') ? 'video' : 'image';
+        }
+
+        if ($messageBody === '' && !$mediaPath) {
             return response()->json([
                 'message' => 'Isi pesan tidak boleh kosong.',
             ], 422);
         }
 
-        $message = DB::transaction(function () use ($conversation, $actor, $request, $messageBody) {
+        $message = DB::transaction(function () use ($conversation, $actor, $request, $messageBody, $mediaPath, $mediaType) {
             $createdMessage = $conversation->messages()->create([
                 'sender_id' => $request->user()->id,
                 'sender_role' => $actor['role'],
                 'body' => $messageBody,
+                'media_path' => $mediaPath,
+                'media_type' => $mediaType,
             ]);
+
+            $previewText = $messageBody !== ''
+                ? Str::limit($messageBody, 120)
+                : ($mediaType === 'video' ? '[Video]' : '[Foto]');
 
             $updates = [
                 'last_message_at' => now(),
-                'last_message_preview' => Str::limit($messageBody, 120),
+                'last_message_preview' => $previewText,
             ];
 
             if ($actor['role'] === 'user') {
@@ -281,6 +304,7 @@ class ChatController extends Controller
     private function serializeConversation(Conversation $conversation, array $actor): array
     {
         $isUser = $actor['role'] === 'user';
+        $chatTimezone = $this->chatTimezone();
         $counterpartName = $isUser
             ? ($conversation->vendor?->store_name ?? 'Vendor')
             : ($conversation->user?->name ?? 'User');
@@ -291,6 +315,7 @@ class ChatController extends Controller
             ? $conversation->vendor?->user?->profile_photo_path
             : $conversation->user?->profile_photo_path;
         $counterpartPhotoUrl = $counterpartPhotoPath ? Storage::url($counterpartPhotoPath) : null;
+        $lastMessageAtLocal = $conversation->last_message_at?->copy()->timezone($chatTimezone);
 
         return [
             'id' => (int) $conversation->id,
@@ -299,9 +324,9 @@ class ChatController extends Controller
             'counterpart_avatar' => Str::upper(Str::substr($counterpartName, 0, 2)),
             'counterpart_photo_url' => $counterpartPhotoUrl,
             'last_message_preview' => $conversation->last_message_preview ?: 'Belum ada pesan.',
-            'last_message_at' => $conversation->last_message_at?->toIso8601String(),
-            'last_message_label' => $conversation->last_message_at
-                ? $conversation->last_message_at->format('d M H:i')
+            'last_message_at' => $lastMessageAtLocal?->toIso8601String(),
+            'last_message_label' => $lastMessageAtLocal
+                ? $lastMessageAtLocal->format('d M H:i')
                 : '-',
             'unread_count' => $isUser
                 ? (int) $conversation->unread_user_count
@@ -311,15 +336,26 @@ class ChatController extends Controller
 
     private function serializeMessage(Message $message, array $actor): array
     {
+        $chatTimezone = $this->chatTimezone();
+        $createdAtLocal = $message->created_at?->copy()->timezone($chatTimezone);
+        $readAtLocal = $message->read_at?->copy()->timezone($chatTimezone);
+
         return [
             'id' => (int) $message->id,
             'body' => $message->body,
+            'media_type' => $message->media_type,
+            'media_url' => $message->media_path ? Storage::url($message->media_path) : null,
             'sender_id' => (int) $message->sender_id,
             'sender_role' => $message->sender_role,
             'is_mine' => (int) $message->sender_id === (int) $actor['user_id'],
-            'created_at' => optional($message->created_at)->toIso8601String(),
-            'created_label' => optional($message->created_at)->format('H:i'),
-            'read_at' => optional($message->read_at)->toIso8601String(),
+            'created_at' => $createdAtLocal?->toIso8601String(),
+            'created_label' => $createdAtLocal?->format('H:i'),
+            'read_at' => $readAtLocal?->toIso8601String(),
         ];
+    }
+
+    private function chatTimezone(): string
+    {
+        return (string) config('app.chat_timezone', config('app.timezone', 'Asia/Jakarta'));
     }
 }
