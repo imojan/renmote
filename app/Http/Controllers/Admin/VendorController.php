@@ -9,6 +9,7 @@ use App\Notifications\VendorRejected;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class VendorController extends Controller
 {
@@ -18,21 +19,34 @@ class VendorController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Vendor::with('user', 'district', 'documents');
+        $selectedStatus = $request->status;
+
+        $query = Vendor::query()
+            ->with([
+                'user' => fn ($q) => $q->withTrashed(),
+                'district',
+                'documents',
+            ]);
 
         // Filter berdasarkan status vendor
-        if (in_array($request->status, ['pending', 'approved', 'rejected'], true)) {
-            $query->where('status', $request->status);
+        if ($selectedStatus === 'deleted') {
+            $query->onlyTrashed();
+        } elseif (in_array($selectedStatus, ['pending', 'approved', 'rejected'], true)) {
+            $query->where('status', $selectedStatus);
         }
 
-        $vendors = $query->latest()->get();
+        $vendors = $selectedStatus === 'deleted'
+            ? $query->orderByDesc('deleted_at')->get()
+            : $query->latest()->get();
 
         // Hitung statistik
         $stats = [
-            'total'    => Vendor::count(),
+            'total'    => Vendor::withTrashed()->count(),
+            'active'   => Vendor::count(),
             'pending'  => Vendor::where('status', 'pending')->count(),
             'approved' => Vendor::where('status', 'approved')->count(),
             'rejected' => Vendor::where('status', 'rejected')->count(),
+            'deleted'  => Vendor::onlyTrashed()->count(),
         ];
 
         return view('admin.vendors.index', compact('vendors', 'stats'));
@@ -123,12 +137,24 @@ class VendorController extends Controller
                     }
                 }
 
+                $vendor->vehicles()->update(['status' => 'unavailable']);
+
                 $owner = $vendor->user;
 
-                $vendor->delete();
+                if (!$vendor->trashed()) {
+                    $vendor->delete();
+                }
 
-                if ($owner && $owner->role === 'vendor') {
-                    $owner->update(['role' => 'user']);
+                if ($owner && !$owner->trashed()) {
+                    DB::table('sessions')->where('user_id', $owner->id)->delete();
+
+                    $deletedStamp = now()->format('YmdHis') . '_' . $owner->id . '_' . Str::random(5);
+                    $owner->email = "deleted_{$deletedStamp}@renmote.local";
+                    $owner->username = 'deleted_' . $deletedStamp;
+                    $owner->phone_number = null;
+                    $owner->save();
+
+                    $owner->delete();
                 }
             });
         } catch (\Throwable $exception) {

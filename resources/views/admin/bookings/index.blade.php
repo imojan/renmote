@@ -40,6 +40,7 @@
         $nextSortDir = $currentSortDir === 'asc' ? 'desc' : 'asc';
         $directionLabel = $currentSortDir === 'asc' ? 'Ascending' : 'Descending';
         $toggleDirectionLabel = $currentSortDir === 'asc' ? 'Ubah ke Desc' : 'Ubah ke Asc';
+        $sortIconClass = $currentSortDir === 'asc' ? 'fa-arrow-up-wide-short' : 'fa-arrow-down-wide-short';
 
         $statusOptions = [
             '' => 'Semua',
@@ -74,7 +75,7 @@
         <form action="{{ route('admin.bookings.index') }}" method="GET" class="flex flex-wrap items-end gap-3">
             <div>
                 <label for="status" class="block text-xs font-medium text-gray-600 mb-1">Status</label>
-                <select id="status" name="status" class="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 min-w-40">
+                <select id="status" name="status" class="h-12 px-3 rounded-lg border border-gray-300 text-sm text-gray-700 min-w-40">
                     @foreach($statusOptions as $statusValue => $statusLabel)
                         <option value="{{ $statusValue }}" {{ ($currentStatus ?? '') === $statusValue ? 'selected' : '' }}>
                             {{ $statusLabel }}
@@ -85,7 +86,7 @@
 
             <div>
                 <label for="sort_by" class="block text-xs font-medium text-gray-600 mb-1">Urut Berdasarkan</label>
-                <select id="sort_by" name="sort_by" class="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 min-w-44">
+                <select id="sort_by" name="sort_by" class="h-12 px-3 rounded-lg border border-gray-300 text-sm text-gray-700 min-w-44">
                     @foreach($sortOptions as $sortKey => $sortLabel)
                         <option value="{{ $sortKey }}" {{ $currentSortBy === $sortKey ? 'selected' : '' }}>
                             {{ $sortLabel }}
@@ -96,7 +97,7 @@
 
             <input type="hidden" name="sort_dir" value="{{ $currentSortDir }}">
 
-            <button type="submit" class="px-4 py-2 rounded-lg text-sm bg-slate-800 text-white hover:bg-slate-900">
+            <button type="submit" class="h-12 px-5 rounded-lg text-sm font-semibold bg-slate-800 text-white hover:bg-slate-900">
                 Terapkan
             </button>
 
@@ -105,8 +106,9 @@
                 'sort_by' => $currentSortBy,
                 'sort_dir' => $nextSortDir,
             ], fn ($value) => $value !== null && $value !== '')) }}"
-               class="px-4 py-2 rounded-lg text-sm border border-gray-300 text-gray-700 hover:bg-gray-50">
-                {{ $directionLabel }} ({{ $toggleDirectionLabel }})
+               class="h-12 px-5 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center gap-2">
+                <i class="fa-solid {{ $sortIconClass }}" aria-hidden="true"></i>
+                <span>{{ $directionLabel }} ({{ $toggleDirectionLabel }})</span>
             </a>
         </form>
     </div>
@@ -134,14 +136,14 @@
                                     #{{ $booking->id }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $booking->user->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $booking->user->email }}</div>
+                                    <div class="text-sm font-medium text-gray-900">{{ $booking->user?->name ?? '-' }}</div>
+                                    <div class="text-sm text-gray-500">{{ $booking->user?->email ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $booking->vehicle->name }}</div>
+                                    <div class="text-sm text-gray-900">{{ $booking->vehicle?->name ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $booking->vehicle->vendor->store_name }}</div>
+                                    <div class="text-sm text-gray-900">{{ $booking->vehicle?->vendor?->store_name ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ \Carbon\Carbon::parse($booking->start_date)->format('d M') }} - 

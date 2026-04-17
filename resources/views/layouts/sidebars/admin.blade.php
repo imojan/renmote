@@ -3,7 +3,14 @@
     $pendingUserDocuments = \App\Models\UserDocument::where('status', 'pending')->count();
     $pendingVendorDocuments = \App\Models\VendorDocument::where('status', 'pending')->count();
     $pendingAllDocuments = $pendingUserDocuments + $pendingVendorDocuments;
-    $totalUsers = \App\Models\User::where('role', 'user')->count();
+    $usersLastSeenAt = session('admin_users_last_seen_at');
+    $newUsersCountQuery = \App\Models\User::where('role', 'user');
+
+    if ($usersLastSeenAt) {
+        $newUsersCountQuery->where('created_at', '>', $usersLastSeenAt);
+    }
+
+    $newUsersCount = $newUsersCountQuery->count();
 @endphp
 
 <x-sidebar-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
@@ -24,12 +31,10 @@
 </x-sidebar-link>
 
 <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.*')">
-    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m12 0H7m10-12a3 3 0 11-6 0 3 3 0 016 0z"/>
-    </svg>
+    <i class="fa-regular fa-id-card w-5 h-5 mr-3" aria-hidden="true"></i>
     Users
-    @if($totalUsers > 0)
-        <span class="dash-nav-badge">{{ $totalUsers }}</span>
+    @if($newUsersCount > 0)
+        <span class="dash-nav-badge">{{ $newUsersCount }}</span>
     @endif
 </x-sidebar-link>
 
@@ -46,11 +51,7 @@
 </x-sidebar-link>
 
 <x-sidebar-link href="{{ route('admin.articles.index') }}" :active="request()->routeIs('admin.articles.*')">
-    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21H5a2 2 0 01-2-2V7a2 2 0 012-2h9l5 5v9a2 2 0 01-2 2z"/>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-8H7v8"/>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h1m4 0h1"/>
-    </svg>
+    <i class="fa-regular fa-newspaper w-5 h-5 mr-3" aria-hidden="true"></i>
     Artikel
 </x-sidebar-link>
 
@@ -65,9 +66,6 @@
 </x-sidebar-link>
 
 <x-sidebar-link href="{{ route('admin.settings.index') }}" :active="request()->routeIs('admin.settings.*')">
-    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317a1 1 0 011.35-.936l.108.043 1.49.744a1 1 0 00.894 0l1.49-.744a1 1 0 011.458.893v1.658a1 1 0 00.553.894l1.49.744a1 1 0 01.36 1.57l-1.06 1.325a1 1 0 000 1.249l1.06 1.325a1 1 0 01-.36 1.57l-1.49.744a1 1 0 00-.553.894v1.658a1 1 0 01-1.458.893l-1.49-.744a1 1 0 00-.894 0l-1.49.744a1 1 0 01-1.458-.893v-1.658a1 1 0 00-.553-.894l-1.49-.744a1 1 0 01-.36-1.57l1.06-1.325a1 1 0 000-1.249L3.8 9.146a1 1 0 01.36-1.57l1.49-.744a1 1 0 00.553-.894V4.28a1 1 0 011.458-.893l1.49.744a1 1 0 00.894 0l1.49-.744z"/>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-    </svg>
+    <i class="fa-solid fa-gear w-5 h-5 mr-3" aria-hidden="true"></i>
     Pengaturan
 </x-sidebar-link>

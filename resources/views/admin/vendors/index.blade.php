@@ -33,25 +33,33 @@
 @endsection
 
 @section('content')
+    @php
+        $selectedStatus = request('status');
+    @endphp
+
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-semibold text-gray-800">Daftar Vendor</h2>
         
         <div class="flex space-x-2">
             <a href="{{ route('admin.vendors.index') }}" 
-               class="px-3 py-1 rounded-lg {{ !request('status') ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+               class="px-3 py-1 rounded-lg {{ !$selectedStatus ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Semua
             </a>
             <a href="{{ route('admin.vendors.index', ['status' => 'pending']) }}" 
-               class="px-3 py-1 rounded-lg {{ request('status') == 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+               class="px-3 py-1 rounded-lg {{ $selectedStatus == 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Pending
             </a>
                 <a href="{{ route('admin.vendors.index', ['status' => 'approved']) }}" 
-                    class="px-3 py-1 rounded-lg {{ request('status') == 'approved' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    class="px-3 py-1 rounded-lg {{ $selectedStatus == 'approved' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                 Approved
             </a>
                 <a href="{{ route('admin.vendors.index', ['status' => 'rejected']) }}" 
-                   class="px-3 py-1 rounded-lg {{ request('status') == 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                   class="px-3 py-1 rounded-lg {{ $selectedStatus == 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700' }}">
                     Rejected
+                </a>
+                <a href="{{ route('admin.vendors.index', ['status' => 'deleted']) }}"
+                   class="px-3 py-1 rounded-lg {{ $selectedStatus == 'deleted' ? 'bg-slate-700 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    Deleted
                 </a>
         </div>
     </div>
@@ -90,28 +98,33 @@
                                     <div class="text-sm text-gray-500">{{ $vendor->phone }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $vendor->user->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $vendor->user->email }}</div>
+                                    <div class="text-sm text-gray-900">{{ $vendor->user->name ?? '-' }}</div>
+                                    <div class="text-sm text-gray-500">{{ $vendor->user->email ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $vendor->district->name }}
+                                    {{ $vendor->district?->name ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $vendor->vehicles->count() }} unit
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 py-1 text-xs font-medium rounded-full
-                                        @if($vendor->status === 'pending') bg-yellow-100 text-yellow-800
+                                        @if($vendor->deleted_at) bg-slate-200 text-slate-700
+                                        @elseif($vendor->status === 'pending') bg-yellow-100 text-yellow-800
                                         @elseif($vendor->status === 'approved') bg-green-100 text-green-800
                                         @else bg-red-100 text-red-800 @endif">
-                                        {{ ucfirst($vendor->status) }}
+                                        {{ $vendor->deleted_at ? 'Deleted' : ucfirst($vendor->status) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     <div class="flex items-center gap-2">
-                                        <a href="{{ route('admin.vendors.show', $vendor) }}" class="text-blue-600 hover:text-blue-900">Detail</a>
+                                        @if(!$vendor->deleted_at)
+                                            <a href="{{ route('admin.vendors.show', $vendor) }}" class="text-blue-600 hover:text-blue-900">Detail</a>
+                                        @else
+                                            <span class="text-slate-400">-</span>
+                                        @endif
 
-                                        @if($vendor->status === 'pending')
+                                        @if($vendor->status === 'pending' && !$vendor->deleted_at)
                                             <form action="{{ route('admin.vendors.verify', $vendor) }}" method="POST" class="inline">
                                                 @csrf
                                                 <button type="submit" class="text-green-600 hover:text-green-900">Approve</button>
@@ -127,15 +140,17 @@
                                             </button>
                                         @endif
 
-                                        <form action="{{ route('admin.vendors.destroy', $vendor) }}" method="POST" class="inline"
-                                            data-confirm-title="Hapus vendor ini?"
-                                            data-confirm-message="Vendor {{ $vendor->store_name }} akan dihapus permanen beserta data dokumen terkait."
-                                            data-confirm-confirm-text="Ya, Hapus"
-                                            data-confirm-cancel-text="Batal">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
-                                        </form>
+                                        @if(!$vendor->deleted_at)
+                                            <form action="{{ route('admin.vendors.destroy', $vendor) }}" method="POST" class="inline"
+                                                data-confirm-title="Hapus vendor ini?"
+                                                data-confirm-message="Vendor {{ $vendor->store_name }} akan dihapus beserta akun vendor pemiliknya."
+                                                data-confirm-confirm-text="Ya, Hapus"
+                                                data-confirm-cancel-text="Batal">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

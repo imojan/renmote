@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Address;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -18,10 +19,21 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $keyword = trim((string) $request->query('q', ''));
+        $filter = $request->query('filter', 'all');
 
-        $users = User::query()
+        // Tandai notifikasi user baru sebagai sudah dibaca saat admin membuka halaman user.
+        $request->session()->put('admin_users_last_seen_at', now()->toDateTimeString());
+
+        $usersQuery = User::query()
             ->where('role', 'user')
+            ->withTrashed()
             ->withCount(['bookings', 'wishlists'])
+            ->when($filter === 'active', function ($query) {
+                $query->whereNull('deleted_at');
+            })
+            ->when($filter === 'deleted', function ($query) {
+                $query->onlyTrashed();
+            })
             ->when($keyword !== '', function ($query) use ($keyword) {
                 $query->where(function ($inner) use ($keyword) {
                     $inner->where('name', 'like', "%{$keyword}%")
@@ -29,12 +41,50 @@ class UserController extends Controller
                         ->orWhere('username', 'like', "%{$keyword}%")
                         ->orWhere('phone_number', 'like', "%{$keyword}%");
                 });
-            })
-            ->latest()
+            });
+
+        if ($filter === 'deleted') {
+            $usersQuery->orderByDesc('deleted_at');
+        } else {
+            $usersQuery->latest();
+        }
+
+        $users = $usersQuery
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.users.index', compact('users', 'keyword'));
+        $stats = [
+            'all' => User::withTrashed()->where('role', 'user')->count(),
+            'active' => User::where('role', 'user')->count(),
+            'deleted' => User::onlyTrashed()->where('role', 'user')->count(),
+        ];
+
+        return view('admin.users.index', compact('users', 'keyword', 'filter', 'stats'));
+    }
+
+    /**
+     * Detail user untuk admin (termasuk user yang sudah dihapus).
+     */
+    public function show(int $user)
+    {
+        $user = User::withTrashed()
+            ->where('role', 'user')
+            ->with([
+                'addresses.district',
+                'userDocuments',
+                'bookings' => fn ($query) => $query->with('vehicle.vendor', 'payment')->latest()->take(10),
+            ])
+            ->findOrFail($user);
+
+        $summary = [
+            'total_bookings' => Booking::where('user_id', $user->id)->count(),
+            'completed_bookings' => Booking::where('user_id', $user->id)->where('status', 'completed')->count(),
+            'total_addresses' => Address::where('user_id', $user->id)->count(),
+            'total_documents' => $user->userDocuments->count(),
+            'total_wishlist' => $user->wishlists()->count(),
+        ];
+
+        return view('admin.users.show', compact('user', 'summary'));
     }
 
     /**
@@ -50,48 +100,19 @@ class UserController extends Controller
             return back()->with('error', 'Hanya akun role user yang bisa dihapus dari menu ini.');
         }
 
+        if ($user->trashed()) {
+            return back()->with('error', 'User ini sudah pernah dihapus sebelumnya.');
+        }
+
         try {
             DB::transaction(function () use ($user) {
-                $user->loadMissing(['userDocuments', 'vendor.documents', 'vendor.vehicles']);
+                DB::table('sessions')->where('user_id', $user->id)->delete();
 
-                if ($user->profile_photo_path) {
-                    Storage::disk('public')->delete($user->profile_photo_path);
-                }
-
-                foreach ($user->userDocuments as $document) {
-                    if ($document->file_path) {
-                        Storage::disk('public')->delete($document->file_path);
-                    }
-                }
-
-                if ($user->vendor) {
-                    foreach ($user->vendor->documents as $document) {
-                        if ($document->file_path) {
-                            Storage::disk('local')->delete($document->file_path);
-                        }
-                    }
-
-                    foreach ($user->vendor->vehicles as $vehicle) {
-                        if ($vehicle->image) {
-                            Storage::disk('public')->delete($vehicle->image);
-                        }
-                    }
-                }
-
-                if (Schema::hasTable('notifications')) {
-                    DB::table('notifications')
-                        ->where('notifiable_type', User::class)
-                        ->where('notifiable_id', $user->id)
-                        ->delete();
-                }
-
-                if (Schema::hasTable('sessions')) {
-                    DB::table('sessions')->where('user_id', $user->id)->delete();
-                }
-
-                if (Schema::hasTable('password_reset_tokens')) {
-                    DB::table('password_reset_tokens')->where('email', $user->email)->delete();
-                }
+                $deletedStamp = now()->format('YmdHis') . '_' . $user->id . '_' . Str::random(5);
+                $user->email = "deleted_{$deletedStamp}@renmote.local";
+                $user->username = 'deleted_' . $deletedStamp;
+                $user->phone_number = null;
+                $user->save();
 
                 $user->delete();
             });

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -69,7 +70,7 @@ class AccountController extends Controller
                 'string',
                 'max:50',
                 'alpha_dash',
-                Rule::unique('users', 'username')->ignore($request->user()->id),
+                Rule::unique('users', 'username')->whereNull('deleted_at')->ignore($request->user()->id),
             ],
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -78,7 +79,7 @@ class AccountController extends Controller
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')->ignore($request->user()->id),
+                Rule::unique('users', 'email')->whereNull('deleted_at')->ignore($request->user()->id),
             ],
             'phone_number' => ['nullable', 'string', 'max:20'],
             'gender' => ['nullable', Rule::in(['male', 'female', 'other'])],
@@ -363,6 +364,12 @@ class AccountController extends Controller
                 if (Schema::hasTable('password_reset_tokens')) {
                     DB::table('password_reset_tokens')->where('email', $user->email)->delete();
                 }
+
+                $deletedStamp = now()->format('YmdHis') . '_' . $user->id . '_' . Str::random(5);
+                $user->email = "deleted_{$deletedStamp}@renmote.local";
+                $user->username = 'deleted_' . $deletedStamp;
+                $user->phone_number = null;
+                $user->save();
 
                 $user->delete();
             });

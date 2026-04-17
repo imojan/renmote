@@ -3,6 +3,25 @@
 @section('title', 'Kelola User')
 
 @section('content')
+    <div class="flex justify-between items-center mb-6 gap-3 flex-wrap">
+        <h2 class="text-xl font-semibold text-gray-800">Daftar User</h2>
+
+        <div class="flex space-x-2">
+            <a href="{{ route('admin.users.index', ['filter' => 'all', 'q' => $keyword ?: null]) }}"
+               class="px-3 py-1 rounded-lg {{ $filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                Semua ({{ $stats['all'] }})
+            </a>
+            <a href="{{ route('admin.users.index', ['filter' => 'active', 'q' => $keyword ?: null]) }}"
+               class="px-3 py-1 rounded-lg {{ $filter === 'active' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                Aktif ({{ $stats['active'] }})
+            </a>
+            <a href="{{ route('admin.users.index', ['filter' => 'deleted', 'q' => $keyword ?: null]) }}"
+               class="px-3 py-1 rounded-lg {{ $filter === 'deleted' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                Deleted ({{ $stats['deleted'] }})
+            </a>
+        </div>
+    </div>
+
     <div class="dash-card mb-5">
         <div class="dash-card-header">
             <h3 class="dash-card-title">Daftar User</h3>
@@ -10,6 +29,7 @@
 
         <div class="dash-card-body">
             <form action="{{ route('admin.users.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_180px] gap-3 md:items-end">
+                <input type="hidden" name="filter" value="{{ $filter }}">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Cari User</label>
                     <input
@@ -65,20 +85,31 @@
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700">
                                         {{ $user->created_at->format('d M Y') }}
+                                        @if($user->deleted_at)
+                                            <div class="text-xs text-red-500 mt-1">Hapus: {{ $user->deleted_at->format('d M Y H:i') }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm">
-                                        <form
-                                            action="{{ route('admin.users.destroy', $user) }}"
-                                            method="POST"
-                                            data-confirm-title="Hapus user ini?"
-                                            data-confirm-message="User {{ $user->name }} akan dihapus permanen dari platform."
-                                            data-confirm-confirm-text="Ya, Hapus"
-                                            data-confirm-cancel-text="Batal"
-                                        >
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-800 font-semibold">Hapus</button>
-                                        </form>
+                                        <div class="flex items-center gap-3">
+                                            <a href="{{ route('admin.users.show', $user->id) }}" class="text-blue-600 hover:text-blue-800 font-semibold">Detail</a>
+
+                                            @if(!$user->deleted_at)
+                                                <form
+                                                    action="{{ route('admin.users.destroy', $user) }}"
+                                                    method="POST"
+                                                    data-confirm-title="Hapus user ini?"
+                                                    data-confirm-message="User {{ $user->name }} akan dihapus dari platform dan ditandai deleted."
+                                                    data-confirm-confirm-text="Ya, Hapus"
+                                                    data-confirm-cancel-text="Batal"
+                                                >
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-800 font-semibold">Hapus</button>
+                                                </form>
+                                            @else
+                                                <span class="text-xs text-slate-400">Sudah dihapus</span>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
