@@ -136,7 +136,7 @@
         @endphp
         <div class="nav-icons">
             <a href="{{ $wishlistUrl }}" class="nav-icon"><i class="fa fa-heart"></i></a>
-            <a href="#" class="nav-icon"><i class="fa fa-bell"></i></a>
+            <a href="#" class="nav-icon" aria-label="Notifikasi"><i class="fa fa-bell"></i></a>
         </div>
     </div>
 </nav>
@@ -194,6 +194,12 @@
 
 {{-- ===== MAIN CONTENT ===== --}}
 @yield('content')
+
+@auth
+    @if(auth()->user()->role === 'user')
+        @include('chat.panel', ['mode' => 'floating'])
+    @endif
+@endauth
 
 {{-- ===== CTA BANNER ===== --}}
 <div class="cta-banner">

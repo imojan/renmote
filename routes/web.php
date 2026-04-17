@@ -10,6 +10,7 @@ use App\Http\Controllers\Front\SearchController;
 use App\Http\Controllers\Front\ArticleController as FrontArticleController;
 use App\Http\Controllers\Front\VehicleController as FrontVehicleController;
 use App\Http\Controllers\Front\VendorController as FrontVendorController;
+use App\Http\Controllers\ChatController;
 
 // User Controllers
 use App\Http\Controllers\User\DashboardController as UserDashboardController;
@@ -115,6 +116,21 @@ Route::middleware(['auth', 'role:vendor'])->prefix('vendor')->name('vendor.')->g
     Route::post('/bookings/{booking}/confirm', [VendorBookingController::class, 'confirm'])->name('bookings.confirm');
     Route::post('/bookings/{booking}/reject', [VendorBookingController::class, 'reject'])->name('bookings.reject');
     Route::post('/bookings/{booking}/complete', [VendorBookingController::class, 'complete'])->name('bookings.complete');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Chat Routes (middleware: auth)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->prefix('chat')->name('chat.')->group(function () {
+    Route::get('/', [ChatController::class, 'index'])->name('index');
+    Route::get('/conversations', [ChatController::class, 'conversations'])->name('conversations');
+    Route::post('/start/vendor/{vendor}', [ChatController::class, 'startWithVendor'])->name('start.vendor');
+    Route::get('/conversations/{conversation}/messages', [ChatController::class, 'messages'])->name('messages');
+    Route::post('/conversations/{conversation}/messages', [ChatController::class, 'sendMessage'])->name('send');
+    Route::post('/conversations/{conversation}/read', [ChatController::class, 'markAsRead'])->name('read');
+    Route::get('/unread', [ChatController::class, 'unread'])->name('unread');
 });
 
 /*

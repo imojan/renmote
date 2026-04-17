@@ -95,4 +95,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(Wishlist::class);
     }
+
+    /**
+     * User customer memiliki banyak percakapan sebagai penyewa.
+     */
+    public function conversationsAsUser()
+    {
+        return $this->hasMany(Conversation::class, 'user_id');
+    }
+
+    /**
+     * User dapat mengirim banyak pesan.
+     */
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
 }

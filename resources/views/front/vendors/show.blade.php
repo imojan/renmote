@@ -27,17 +27,39 @@
 
                 @auth
                     @if(auth()->user()->role === 'user')
-                        <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="w-11 h-11 rounded-xl border {{ $isWishlistedVendor ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
-                                <i class="fa fa-heart"></i>
-                            </button>
-                        </form>
+                        <div class="flex items-center gap-2">
+                            <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-11 h-11 rounded-xl border {{ $isWishlistedVendor ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
+                                    <i class="fa fa-heart"></i>
+                                </button>
+                            </form>
+
+                            <a
+                                href="{{ route('chat.index', ['vendor' => $vendor->id]) }}"
+                                class="inline-flex items-center gap-2 px-4 h-11 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700"
+                                data-chat-vendor-id="{{ $vendor->id }}"
+                            >
+                                <i class="fa-solid fa-comments"></i>
+                                Chat Vendor
+                            </a>
+                        </div>
+                    @else
+                        <a href="{{ route('chat.index') }}" class="inline-flex items-center gap-2 px-4 h-11 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700">
+                            <i class="fa-solid fa-comments"></i>
+                            Chat Vendor
+                        </a>
                     @endif
                 @else
-                    <a href="{{ route('login') }}" class="w-11 h-11 rounded-xl border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 flex items-center justify-center">
-                        <i class="fa fa-heart"></i>
-                    </a>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('login') }}" class="w-11 h-11 rounded-xl border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 flex items-center justify-center">
+                            <i class="fa fa-heart"></i>
+                        </a>
+                        <a href="{{ route('login') }}" class="inline-flex items-center gap-2 px-4 h-11 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700">
+                            <i class="fa-solid fa-comments"></i>
+                            Chat Vendor
+                        </a>
+                    </div>
                 @endauth
             </div>
         </div>

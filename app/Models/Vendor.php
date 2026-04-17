@@ -62,4 +62,12 @@ class Vendor extends Model
     {
         return $this->morphMany(Wishlist::class, 'wishlistable');
     }
+
+    /**
+     * Vendor memiliki banyak percakapan dengan user.
+     */
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
+    }
 }

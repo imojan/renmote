@@ -245,9 +245,23 @@
                 @else
                     <a href="{{ route('login') }}" class="btn-fav"><i class="fa fa-heart"></i></a>
                 @endauth
-                <a href="https://wa.me/{{ $vendor->phone ? preg_replace('/[^0-9]/', '', $vendor->phone) : '6289631926343' }}" target="_blank" class="btn-chat">
-                    <i class="fab fa-whatsapp"></i> Chat Vendor
-                </a>
+
+                @auth
+                    @if(auth()->user()->role === 'user')
+                        <a href="{{ route('chat.index', ['vendor' => $vendor->id]) }}" class="btn-chat" data-chat-vendor-id="{{ $vendor->id }}">
+                            <i class="fa-solid fa-comments"></i> Chat Vendor
+                        </a>
+                    @else
+                        <a href="{{ route('chat.index') }}" class="btn-chat">
+                            <i class="fa-solid fa-comments"></i> Chat Vendor
+                        </a>
+                    @endif
+                @else
+                    <a href="{{ route('login') }}" class="btn-chat">
+                        <i class="fa-solid fa-comments"></i> Chat Vendor
+                    </a>
+                @endauth
+
                 <a href="{{ route('vendors.show', $vendor) }}" class="btn-detail">
                     <i class="fa fa-info-circle"></i> Lihat Lebih Lengkap
                 </a>
@@ -268,7 +282,7 @@
             </div>
             <div class="vendor-actions">
                 <button class="btn-fav"><i class="fa fa-heart"></i></button>
-                <button class="btn-chat"><i class="fab fa-whatsapp"></i> Chat Vendor</button>
+                <a class="btn-chat" href="{{ route('login') }}"><i class="fa-solid fa-comments"></i> Chat Vendor</a>
                 <button class="btn-detail"><i class="fa fa-info-circle"></i> Lihat Lebih Lengkap</button>
             </div>
         </div>
