@@ -50,6 +50,10 @@
                 <label>Total Harga</label>
                 <strong>Rp {{ number_format($booking->total_price, 0, ',', '.') }}</strong>
             </div>
+            <div>
+                <label>Metode Pengambilan</label>
+                <strong>{{ $booking->fulfillment_method === 'delivery' ? 'Diantar ke alamat user' : 'Ambil di outlet/vendor' }}</strong>
+            </div>
             @if($booking->payment)
                 <div>
                     <label>Status Pembayaran</label>
@@ -58,15 +62,42 @@
             @endif
         </div>
 
+        @if($booking->fulfillment_method === 'delivery')
+            @php
+                $deliveryAddress = $booking->delivery_address_snapshot ?? [];
+            @endphp
+            <div class="booking-payment-info">
+                <h4>Alamat Pengantaran</h4>
+                <ul>
+                    <li>{{ $deliveryAddress['label'] ?? optional($booking->address)->label ?? '-' }} ({{ (($deliveryAddress['address_type'] ?? optional($booking->address)->address_type) === 'temporary') ? 'Sementara' : 'Tetap' }})</li>
+                    <li>{{ $deliveryAddress['street'] ?? optional($booking->address)->street ?? '-' }}, {{ $deliveryAddress['district'] ?? optional(optional($booking->address)->district)->name ?? '-' }}, {{ $deliveryAddress['city'] ?? optional($booking->address)->city ?? '-' }} {{ $deliveryAddress['postal_code'] ?? optional($booking->address)->postal_code ?? '-' }}</li>
+                </ul>
+            </div>
+        @endif
+
         @if($booking->payment)
             <div class="booking-payment-summary">
                 <h4>Informasi Pembayaran</h4>
                 <ul>
+                    <li>Invoice: <strong>{{ $booking->payment->invoice_number ?: '-' }}</strong></li>
+                    <li>Metode: <strong>{{ strtoupper($booking->payment->payment_method ?? 'qris') }}</strong></li>
                     <li>Nominal dibayar: <strong>Rp {{ number_format($booking->payment->amount, 0, ',', '.') }}</strong></li>
+                    <li>Status bukti pembayaran: <strong>{{ ucfirst(str_replace('_', ' ', $booking->payment->proof_status ?? 'not_uploaded')) }}</strong></li>
                     @if($booking->payment->payment_type === 'dp')
                         <li>Sisa pembayaran saat pengambilan: <strong>Rp {{ number_format($booking->total_price - $booking->payment->amount, 0, ',', '.') }}</strong></li>
                     @endif
                 </ul>
+            </div>
+        @endif
+
+        @if($booking->payment)
+            <div class="booking-form-actions">
+                @if(!$booking->payment->proof_path)
+                    <a href="{{ route('user.bookings.payment', $booking) }}" class="booking-btn-primary">Lanjutkan Flow Pembayaran</a>
+                @else
+                    <a href="{{ route('user.bookings.invoice', $booking) }}" class="booking-btn-primary">Lihat Invoice Selesai</a>
+                    <a href="{{ route('documents.payment.proof.media', $booking->payment) }}" target="_blank" class="booking-btn-secondary">Lihat Bukti Bayar</a>
+                @endif
             </div>
         @endif
 

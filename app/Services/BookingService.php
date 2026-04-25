@@ -41,9 +41,9 @@ class BookingService
      * @return Booking
      * @throws Exception
      */
-    public function createBooking(User $user, Vehicle $vehicle, string $startDate, string $endDate): Booking
+    public function createBooking(User $user, Vehicle $vehicle, string $startDate, string $endDate, array $attributes = []): Booking
     {
-        return DB::transaction(function () use ($user, $vehicle, $startDate, $endDate) {
+        return DB::transaction(function () use ($user, $vehicle, $startDate, $endDate, $attributes) {
             // Lock row kendaraan untuk mencegah booking paralel di kendaraan yang sama.
             $lockedVehicle = Vehicle::query()
                 ->whereKey($vehicle->id)
@@ -73,14 +73,14 @@ class BookingService
             $totalPrice = $this->calculateTotalPrice($lockedVehicle, $startDate, $endDate);
 
             // Buat booking baru
-            return Booking::create([
+            return Booking::create(array_merge([
                 'user_id' => $user->id,
                 'vehicle_id' => $lockedVehicle->id,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'total_price' => $totalPrice,
                 'status' => 'pending',
-            ]);
+            ], $attributes));
         });
     }
 

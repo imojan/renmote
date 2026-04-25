@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\UserDocument;
 use App\Models\VendorDocument;
 use Illuminate\Http\Request;
@@ -85,5 +86,37 @@ class DocumentMediaController extends Controller
         }
 
         abort(404, 'File dokumen tidak ditemukan.');
+    }
+
+    /**
+     * Tampilkan bukti pembayaran booking untuk user owner, vendor terkait, atau admin.
+     */
+    public function paymentProof(Payment $payment, Request $request)
+    {
+        $authUser = $request->user();
+
+        abort_unless($authUser, 403);
+        abort_unless($payment->proof_path, 404, 'Bukti pembayaran tidak ditemukan.');
+
+        $payment->loadMissing('booking.vehicle');
+
+        $isOwner = $authUser->role === 'user' && $payment->booking?->user_id === $authUser->id;
+        $isAdmin = $authUser->role === 'admin';
+        $isVendor = $authUser->role === 'vendor'
+            && $authUser->vendor
+            && $payment->booking
+            && $payment->booking->vehicle
+            && $payment->booking->vehicle->vendor_id === $authUser->vendor->id;
+
+        abort_unless($isOwner || $isAdmin || $isVendor, 403);
+
+        $relativePath = ltrim($payment->proof_path, '/');
+        $publicDisk = Storage::disk('public');
+
+        if ($publicDisk->exists($relativePath)) {
+            return response()->file($publicDisk->path($relativePath));
+        }
+
+        abort(404, 'File bukti pembayaran tidak ditemukan.');
     }
 }

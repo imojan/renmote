@@ -76,7 +76,13 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     Route::get('/bookings', [UserBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/create/{vehicle}', [UserBookingController::class, 'create'])->name('bookings.create');
     Route::get('/bookings/{vehicle}/check-availability', [UserBookingController::class, 'checkAvailability'])->name('bookings.checkAvailability');
+    Route::get('/bookings/{vehicle}/confirmation', [UserBookingController::class, 'confirmation'])->name('bookings.confirmation');
     Route::post('/bookings/{vehicle}', [UserBookingController::class, 'store'])->name('bookings.store');
+    Route::get('/bookings/{booking}/payment', [UserBookingController::class, 'payment'])->name('bookings.payment');
+    Route::post('/bookings/{booking}/payment/confirm', [UserBookingController::class, 'confirmPayment'])->name('bookings.payment.confirm');
+    Route::get('/bookings/{booking}/payment-proof', [UserBookingController::class, 'paymentProof'])->name('bookings.payment.proof');
+    Route::post('/bookings/{booking}/payment-proof', [UserBookingController::class, 'storePaymentProof'])->name('bookings.payment.proof.store');
+    Route::get('/bookings/{booking}/invoice', [UserBookingController::class, 'invoice'])->name('bookings.invoice');
     Route::get('/bookings/{id}', [UserBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{id}/cancel', [UserBookingController::class, 'cancel'])->name('bookings.cancel');
 
@@ -194,6 +200,7 @@ Route::get('/vendor-documents/{document}/serve', [VendorRegistrationController::
 Route::middleware('auth')->group(function () {
     Route::get('/documents/vendor/{document}/media', [DocumentMediaController::class, 'vendor'])->name('documents.vendor.media');
     Route::get('/documents/user/{document}/media', [DocumentMediaController::class, 'user'])->name('documents.user.media');
+    Route::get('/documents/payment/{payment}/proof', [DocumentMediaController::class, 'paymentProof'])->name('documents.payment.proof.media');
 
     Route::get('/dashboard', function () {
         return match (auth()->user()->role) {

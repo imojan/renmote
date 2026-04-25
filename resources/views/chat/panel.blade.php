@@ -96,6 +96,16 @@
             </form>
         </div>
     </div>
+
+    <div id="rnChatMediaModal" class="rn-chat-media-modal hidden" aria-hidden="true">
+        <div id="rnChatMediaModalBackdrop" class="rn-chat-media-modal-backdrop"></div>
+        <div class="rn-chat-media-modal-dialog" role="dialog" aria-modal="true" aria-label="Preview media chat">
+            <button type="button" id="rnChatMediaModalClose" class="rn-chat-media-modal-close" aria-label="Tutup preview media">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="rnChatMediaModalContent" class="rn-chat-media-modal-content"></div>
+        </div>
+    </div>
 </div>
 
 @once
@@ -146,6 +156,10 @@
                     sendBtn: document.getElementById('rnChatSendBtn'),
                     leftUnreadWrap: document.getElementById('rnChatLeftUnreadWrap'),
                     leftUnread: document.getElementById('rnChatLeftUnread'),
+                    mediaModal: document.getElementById('rnChatMediaModal'),
+                    mediaModalBackdrop: document.getElementById('rnChatMediaModalBackdrop'),
+                    mediaModalClose: document.getElementById('rnChatMediaModalClose'),
+                    mediaModalContent: document.getElementById('rnChatMediaModalContent'),
                 };
 
                 const state = {
@@ -153,13 +167,13 @@
                     conversations: [],
                     unreadCount: 0,
                     lastMessageId: 0,
+                    selectionToken: 0,
                     searchTimer: null,
                     pollTimer: null,
                     isOpen: mode === 'page',
                     isDraftConversation: false,
                     roomHidden: false,
-                    selectedMediaObjectUrl: null,
-                    selectedMediaFile: null,
+                    drafts: {},
                 };
 
                 const isMobileViewport = () => window.matchMedia('(max-width: 1024px)').matches;
@@ -171,6 +185,162 @@
                 };
 
                 const templateUrl = (template, token, value) => template.replace(token, encodeURIComponent(String(value)));
+
+                const toConversationKey = (conversationId) => String(Number(conversationId || 0));
+
+                const ensureDraft = (conversationId) => {
+                    const key = toConversationKey(conversationId);
+
+                    if (!state.drafts[key]) {
+                        state.drafts[key] = {
+                            body: '',
+                            mediaFile: null,
+                            mediaObjectUrl: null,
+                        };
+                    }
+
+                    return state.drafts[key];
+                };
+
+                const revokeDraftMediaUrl = (draft) => {
+                    if (!draft?.mediaObjectUrl) {
+                        return;
+                    }
+
+                    URL.revokeObjectURL(draft.mediaObjectUrl);
+                    draft.mediaObjectUrl = null;
+                };
+
+                const setDraftBody = (conversationId, body) => {
+                    if (!conversationId) {
+                        return;
+                    }
+
+                    const draft = ensureDraft(conversationId);
+                    draft.body = body || '';
+                };
+
+                const setDraftMedia = (conversationId, mediaFile) => {
+                    if (!conversationId) {
+                        return;
+                    }
+
+                    const draft = ensureDraft(conversationId);
+                    revokeDraftMediaUrl(draft);
+
+                    if (!mediaFile) {
+                        draft.mediaFile = null;
+                        return;
+                    }
+
+                    draft.mediaFile = mediaFile;
+                    draft.mediaObjectUrl = URL.createObjectURL(mediaFile);
+                };
+
+                const clearDraft = (conversationId) => {
+                    if (!conversationId) {
+                        return;
+                    }
+
+                    const draft = ensureDraft(conversationId);
+                    draft.body = '';
+                    draft.mediaFile = null;
+                    revokeDraftMediaUrl(draft);
+                };
+
+                const getActiveDraft = () => {
+                    if (!state.activeConversationId) {
+                        return null;
+                    }
+
+                    return ensureDraft(state.activeConversationId);
+                };
+
+                const renderSelectedMediaFromDraft = (draft) => {
+                    if (!elements.selectedMedia || !elements.selectedMediaPreview || !elements.mediaName) {
+                        return;
+                    }
+
+                    if (!draft?.mediaFile || !draft.mediaObjectUrl) {
+                        elements.mediaName.textContent = '';
+                        elements.selectedMediaPreview.innerHTML = '';
+                        elements.selectedMedia.classList.add('hidden');
+                        return;
+                    }
+
+                    const isVideo = (draft.mediaFile.type || '').startsWith('video/');
+                    elements.selectedMediaPreview.innerHTML = isVideo
+                        ? `<video class="rn-chat-selected-media-asset rn-chat-media-clickable" controls preload="metadata" data-preview-type="video" data-preview-src="${escapeHtml(draft.mediaObjectUrl)}" src="${escapeHtml(draft.mediaObjectUrl)}"></video>`
+                        : `<img class="rn-chat-selected-media-asset rn-chat-media-clickable" data-preview-type="image" data-preview-src="${escapeHtml(draft.mediaObjectUrl)}" src="${escapeHtml(draft.mediaObjectUrl)}" alt="Preview media terpilih">`;
+
+                    elements.mediaName.textContent = draft.mediaFile.name || '';
+                    elements.selectedMedia.classList.remove('hidden');
+                };
+
+                const applyDraftToComposer = (conversationId) => {
+                    if (!elements.input || !elements.mediaInput) {
+                        return;
+                    }
+
+                    if (!conversationId) {
+                        elements.input.value = '';
+                        elements.input.style.height = '44px';
+                        elements.mediaInput.value = '';
+                        renderSelectedMediaFromDraft(null);
+                        return;
+                    }
+
+                    const draft = ensureDraft(conversationId);
+                    elements.input.value = draft.body || '';
+                    elements.input.style.height = '44px';
+                    elements.input.style.height = `${Math.min(elements.input.scrollHeight, 120)}px`;
+                    elements.mediaInput.value = '';
+                    renderSelectedMediaFromDraft(draft);
+                };
+
+                const persistActiveDraftFromComposer = () => {
+                    if (!state.activeConversationId || !elements.input) {
+                        return;
+                    }
+
+                    setDraftBody(state.activeConversationId, elements.input.value || '');
+                };
+
+                const closeMediaModal = () => {
+                    if (!elements.mediaModal || !elements.mediaModalContent) {
+                        return;
+                    }
+
+                    elements.mediaModal.classList.add('hidden');
+                    elements.mediaModal.setAttribute('aria-hidden', 'true');
+                    elements.mediaModalContent.innerHTML = '';
+                };
+
+                const openMediaModal = (src, type = 'image') => {
+                    if (!elements.mediaModal || !elements.mediaModalContent || !src) {
+                        return;
+                    }
+
+                    const escapedSrc = escapeHtml(src);
+                    elements.mediaModalContent.innerHTML = type === 'video'
+                        ? `<video class="rn-chat-media-modal-asset" controls autoplay preload="metadata" src="${escapedSrc}"></video>`
+                        : `<img class="rn-chat-media-modal-asset" src="${escapedSrc}" alt="Preview media chat">`;
+
+                    elements.mediaModal.classList.remove('hidden');
+                    elements.mediaModal.setAttribute('aria-hidden', 'false');
+                };
+
+                const leaveActiveConversation = () => {
+                    if (!state.activeConversationId) {
+                        return;
+                    }
+
+                    persistActiveDraftFromComposer();
+                    state.activeConversationId = null;
+                    state.isDraftConversation = false;
+                    renderConversations();
+                    hideConversationUI();
+                };
 
                 const setMobileThreadMode = (isThread) => {
                     if (!elements.panel) {
@@ -270,23 +440,20 @@
                         return;
                     }
 
-                    if (state.selectedMediaObjectUrl) {
-                        URL.revokeObjectURL(state.selectedMediaObjectUrl);
-                        state.selectedMediaObjectUrl = null;
-                    }
-
                     elements.mediaInput.value = '';
-                    state.selectedMediaFile = null;
-                    elements.mediaName.textContent = '';
-                    elements.selectedMedia?.classList.add('hidden');
+                    const activeDraft = getActiveDraft();
 
-                    if (elements.selectedMediaPreview) {
-                        elements.selectedMediaPreview.innerHTML = '';
+                    if (!activeDraft) {
+                        renderSelectedMediaFromDraft(null);
+                        return;
                     }
+
+                    setDraftMedia(state.activeConversationId, null);
+                    renderSelectedMediaFromDraft(activeDraft);
                 };
 
                 const showSelectedMediaPreview = (mediaFile) => {
-                    if (!elements.selectedMedia || !elements.selectedMediaPreview || !elements.mediaName) {
+                    if (!state.activeConversationId) {
                         return;
                     }
 
@@ -295,22 +462,8 @@
                         return;
                     }
 
-                    state.selectedMediaFile = mediaFile;
-
-                    if (state.selectedMediaObjectUrl) {
-                        URL.revokeObjectURL(state.selectedMediaObjectUrl);
-                    }
-
-                    const objectUrl = URL.createObjectURL(mediaFile);
-                    state.selectedMediaObjectUrl = objectUrl;
-
-                    const isVideo = (mediaFile.type || '').startsWith('video/');
-                    elements.selectedMediaPreview.innerHTML = isVideo
-                        ? `<video class="rn-chat-selected-media-asset" controls preload="metadata" src="${escapeHtml(objectUrl)}"></video>`
-                        : `<img class="rn-chat-selected-media-asset" src="${escapeHtml(objectUrl)}" alt="Preview media terpilih">`;
-
-                    elements.mediaName.textContent = mediaFile.name;
-                    elements.selectedMedia.classList.remove('hidden');
+                    setDraftMedia(state.activeConversationId, mediaFile);
+                    applyDraftToComposer(state.activeConversationId);
                 };
 
                 const syncComposerVisibility = () => {
@@ -390,8 +543,8 @@
 
                         const mediaBlock = message.media_url
                             ? (message.media_type === 'video'
-                                ? `<div class="rn-chat-media-wrap"><video class="rn-chat-media" controls preload="metadata" src="${escapeHtml(message.media_url)}"></video></div>`
-                                : `<div class="rn-chat-media-wrap"><img class="rn-chat-media" src="${escapeHtml(message.media_url)}" alt="Media chat" loading="lazy"></div>`)
+                                ? `<div class="rn-chat-media-wrap"><video class="rn-chat-media rn-chat-media-clickable" controls preload="metadata" data-preview-type="video" data-preview-src="${escapeHtml(message.media_url)}" src="${escapeHtml(message.media_url)}"></video></div>`
+                                : `<div class="rn-chat-media-wrap"><img class="rn-chat-media rn-chat-media-clickable" data-preview-type="image" data-preview-src="${escapeHtml(message.media_url)}" src="${escapeHtml(message.media_url)}" alt="Media chat" loading="lazy"></div>`)
                             : '';
 
                         const textBlock = message.body
@@ -444,7 +597,7 @@
                     elements.form.classList.add('hidden');
                     elements.messages.innerHTML = '';
                     state.lastMessageId = 0;
-                    clearSelectedMedia();
+                    applyDraftToComposer(null);
                     setMobileThreadMode(false);
                     syncComposerVisibility();
                 };
@@ -493,12 +646,20 @@
                     }
                 };
 
-                const loadMessages = async (conversationId, { append = false } = {}) => {
+                const loadMessages = async (conversationId, { append = false, selectionToken = null } = {}) => {
+                    const normalizedConversationId = Number(conversationId);
                     const query = append && state.lastMessageId > 0 ? `?after_id=${state.lastMessageId}` : '';
-                    const url = `${templateUrl(urls.messagesTemplate, '__CONV__', conversationId)}${query}`;
+                    const url = `${templateUrl(urls.messagesTemplate, '__CONV__', normalizedConversationId)}${query}`;
                     const data = await fetchJson(url);
 
-                    const currentConversation = state.conversations.find((item) => Number(item.id) === Number(conversationId)) || data.conversation;
+                    const stillSameConversation = Number(state.activeConversationId) === normalizedConversationId;
+                    const stillCurrentSelection = selectionToken === null || selectionToken === state.selectionToken;
+
+                    if (!stillSameConversation || !stillCurrentSelection) {
+                        return;
+                    }
+
+                    const currentConversation = state.conversations.find((item) => Number(item.id) === normalizedConversationId) || data.conversation;
                     showConversationUI(currentConversation);
 
                     const messages = Array.isArray(data.messages) ? data.messages : [];
@@ -514,10 +675,10 @@
                         state.isDraftConversation = false;
                     }
 
-                    await markConversationRead(conversationId);
+                    await markConversationRead(normalizedConversationId);
 
                     state.conversations = state.conversations.map((item) => {
-                        if (Number(item.id) === Number(conversationId)) {
+                        if (Number(item.id) === normalizedConversationId) {
                             return {
                                 ...item,
                                 unread_count: 0,
@@ -530,12 +691,25 @@
 
                 const selectConversation = async (conversationId, options = {}) => {
                     const isDraft = options.isDraft === true;
+                    const targetConversationId = Number(conversationId);
+                    const selectionToken = ++state.selectionToken;
 
-                    state.activeConversationId = Number(conversationId);
+                    persistActiveDraftFromComposer();
+
+                    state.activeConversationId = targetConversationId;
                     state.isDraftConversation = isDraft;
+                    state.lastMessageId = 0;
                     setRoomHidden(false);
                     renderConversations();
-                    await loadMessages(state.activeConversationId, { append: false });
+
+                    // Apply target room draft immediately so draft from previous room never bleeds into the next room.
+                    applyDraftToComposer(targetConversationId);
+
+                    await loadMessages(targetConversationId, { append: false, selectionToken });
+
+                    if (selectionToken !== state.selectionToken || Number(state.activeConversationId) !== targetConversationId) {
+                        return;
+                    }
 
                     // Guard state: ensure composer always visible in active room.
                     elements.form?.classList.remove('hidden');
@@ -547,14 +721,18 @@
                         return;
                     }
 
-                    const body = (elements.input.value || '').trim();
-                    const mediaFile = state.selectedMediaFile || elements.mediaInput?.files?.[0] || null;
+                    persistActiveDraftFromComposer();
+
+                    const conversationId = Number(state.activeConversationId);
+                    const draft = ensureDraft(conversationId);
+                    const body = (draft.body || '').trim();
+                    const mediaFile = draft.mediaFile || null;
 
                     if (!body && !mediaFile) {
                         return;
                     }
 
-                    const url = templateUrl(urls.sendTemplate, '__CONV__', state.activeConversationId);
+                    const url = templateUrl(urls.sendTemplate, '__CONV__', conversationId);
                     elements.sendBtn.disabled = true;
 
                     try {
@@ -588,9 +766,11 @@
                             throw new Error(firstError || data.message || 'Pesan gagal dikirim.');
                         }
 
-                        elements.input.value = '';
-                        elements.input.style.height = '44px';
-                        clearSelectedMedia();
+                        clearDraft(conversationId);
+
+                        if (Number(state.activeConversationId) === conversationId) {
+                            applyDraftToComposer(conversationId);
+                        }
 
                         if (data.message) {
                             renderMessages([data.message], true);
@@ -604,7 +784,10 @@
                         alert(error.message || 'Pesan gagal dikirim.');
                     } finally {
                         elements.sendBtn.disabled = false;
-                        elements.input.focus();
+
+                        if (Number(state.activeConversationId) === conversationId) {
+                            elements.input.focus();
+                        }
                     }
                 };
 
@@ -623,7 +806,8 @@
                     await loadUnread();
 
                     if (state.activeConversationId) {
-                        await loadMessages(state.activeConversationId, { append: false });
+                        await loadMessages(state.activeConversationId, { append: false, selectionToken: state.selectionToken });
+                        applyDraftToComposer(state.activeConversationId);
                     }
                 };
 
@@ -636,7 +820,6 @@
                     elements.panel.classList.remove('open');
                     elements.panel.classList.remove('rn-chat-room-hidden');
                     elements.panel.classList.remove('rn-chat-mobile-thread');
-                    clearSelectedMedia();
                 };
 
                 const startConversationWithVendor = async (vendorId) => {
@@ -679,6 +862,7 @@
 
                     if (elements.backToList) {
                         elements.backToList.addEventListener('click', () => {
+                            persistActiveDraftFromComposer();
                             setMobileThreadMode(false);
 
                             if (state.activeConversationId) {
@@ -700,6 +884,8 @@
 
                     if (elements.list) {
                         elements.list.addEventListener('click', (event) => {
+                            event.stopPropagation();
+
                             const target = event.target.closest('[data-conversation-id]');
                             if (!target) {
                                 return;
@@ -708,6 +894,10 @@
                             const targetId = Number(target.dataset.conversationId);
 
                             if (state.activeConversationId === targetId) {
+                                if (isFloating && state.roomHidden) {
+                                    setRoomHidden(false);
+                                    syncComposerVisibility();
+                                }
                                 return;
                             }
 
@@ -728,6 +918,7 @@
                         elements.input.addEventListener('input', () => {
                             elements.input.style.height = '44px';
                             elements.input.style.height = `${Math.min(elements.input.scrollHeight, 120)}px`;
+                            setDraftBody(state.activeConversationId, elements.input.value || '');
                         });
 
                         elements.input.addEventListener('keydown', (event) => {
@@ -746,6 +937,7 @@
                         elements.mediaInput.addEventListener('change', () => {
                             const mediaFile = elements.mediaInput.files?.[0];
                             showSelectedMediaPreview(mediaFile);
+                            elements.mediaInput.value = '';
                         });
                     }
 
@@ -761,6 +953,77 @@
                             sendMessage();
                         });
                     }
+
+                    if (elements.messages) {
+                        elements.messages.addEventListener('click', (event) => {
+                            const mediaTarget = event.target.closest('.rn-chat-media-clickable, .rn-chat-media');
+                            if (!mediaTarget) {
+                                return;
+                            }
+
+                            const previewSrc = mediaTarget.dataset.previewSrc || mediaTarget.currentSrc || mediaTarget.getAttribute('src') || '';
+                            const previewType = mediaTarget.dataset.previewType || (mediaTarget.tagName === 'VIDEO' ? 'video' : 'image');
+                            openMediaModal(previewSrc, previewType);
+                        });
+                    }
+
+                    if (elements.selectedMediaPreview) {
+                        elements.selectedMediaPreview.addEventListener('click', (event) => {
+                            const mediaTarget = event.target.closest('.rn-chat-media-clickable, .rn-chat-selected-media-asset');
+                            if (!mediaTarget) {
+                                return;
+                            }
+
+                            const previewSrc = mediaTarget.dataset.previewSrc || mediaTarget.currentSrc || mediaTarget.getAttribute('src') || '';
+                            const previewType = mediaTarget.dataset.previewType || (mediaTarget.tagName === 'VIDEO' ? 'video' : 'image');
+                            openMediaModal(previewSrc, previewType);
+                        });
+                    }
+
+                    if (elements.mediaModalClose) {
+                        elements.mediaModalClose.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            closeMediaModal();
+                        });
+                    }
+
+                    if (elements.mediaModalBackdrop) {
+                        elements.mediaModalBackdrop.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            closeMediaModal();
+                        });
+                    }
+
+                    document.addEventListener('keydown', (event) => {
+                        if (event.key === 'Escape') {
+                            closeMediaModal();
+                        }
+                    });
+
+                    document.addEventListener('click', (event) => {
+                        if (!isFloating || !state.isOpen || !state.activeConversationId || !elements.panel) {
+                            return;
+                        }
+
+                        const clickedInsideMediaModal = elements.mediaModal ? elements.mediaModal.contains(event.target) : false;
+
+                        if (clickedInsideMediaModal) {
+                            return;
+                        }
+
+                        if (elements.mediaModal && !elements.mediaModal.classList.contains('hidden')) {
+                            return;
+                        }
+
+                        const eventPath = typeof event.composedPath === 'function' ? event.composedPath() : [];
+                        const clickedInsidePanel = eventPath.includes(elements.panel) || elements.panel.contains(event.target);
+                        const clickedFab = elements.fab ? elements.fab.contains(event.target) : false;
+                        const clickedChatTrigger = Boolean(event.target.closest('[data-chat-vendor-id]'));
+
+                        if (!clickedInsidePanel && !clickedFab && !clickedChatTrigger) {
+                            leaveActiveConversation();
+                        }
+                    });
                 };
 
                 const setupPolling = () => {
@@ -774,12 +1037,16 @@
                         await loadConversations({ preserveSelection: true, keyword: elements.search.value.trim() });
 
                         if (state.activeConversationId) {
-                            await loadMessages(state.activeConversationId, { append: true });
+                            await loadMessages(state.activeConversationId, { append: true, selectionToken: state.selectionToken });
                         }
                     }, 3000);
                 };
 
                 const boot = async () => {
+                    if (elements.mediaModal && elements.mediaModal.parentElement !== document.body) {
+                        document.body.appendChild(elements.mediaModal);
+                    }
+
                     setupListeners();
                     setupPolling();
                     await loadUnread();
@@ -801,6 +1068,12 @@
                         if (!isMobileViewport()) {
                             elements.panel.classList.remove('rn-chat-mobile-thread');
                         }
+                    });
+
+                    window.addEventListener('beforeunload', () => {
+                        Object.values(state.drafts).forEach((draft) => {
+                            revokeDraftMediaUrl(draft);
+                        });
                     });
                 };
 

@@ -69,7 +69,7 @@ class BookingController extends Controller
     public function show(Booking $booking)
     {
         $this->authorizeBooking($booking);
-        $booking->load('user.userDocuments', 'vehicle', 'payment');
+        $booking->load('user.userDocuments', 'vehicle', 'payment', 'address.district');
 
         return view('vendor.bookings.show', compact('booking'));
     }

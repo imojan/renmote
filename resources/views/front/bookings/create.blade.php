@@ -43,8 +43,7 @@
         </article>
 
         <article class="booking-form-card">
-            <form action="{{ route('user.bookings.store', $vehicle) }}" method="POST">
-                @csrf
+            <form action="{{ route('user.bookings.confirmation', $vehicle) }}" method="GET">
 
                 <div id="bookingAvailabilityWarning" class="booking-alert booking-alert-error hidden"></div>
                 <div id="bookingAvailabilitySuccess" class="booking-alert booking-alert-success hidden"></div>

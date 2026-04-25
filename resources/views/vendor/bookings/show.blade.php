@@ -53,7 +53,35 @@
                         <p class="text-sm text-gray-500">Email</p>
                         <p class="font-semibold">{{ $booking->user->email }}</p>
                     </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Nomor Telepon</p>
+                        <p class="font-semibold">{{ $booking->user->phone_number ?: '-' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Metode Pengambilan</p>
+                        <p class="font-semibold">{{ $booking->fulfillment_method === 'delivery' ? 'Diantar ke alamat user' : 'Ambil di outlet/vendor' }}</p>
+                    </div>
                 </div>
+
+                @if($booking->fulfillment_method === 'delivery')
+                    @php
+                        $deliveryAddress = $booking->delivery_address_snapshot ?? [];
+                    @endphp
+                    <div class="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                        <h4 class="font-semibold text-blue-900 mb-1">Alamat Pengantaran</h4>
+                        <p class="text-sm text-blue-900">
+                            {{ $deliveryAddress['label'] ?? optional($booking->address)->label ?? '-' }}
+                            •
+                            {{ (($deliveryAddress['address_type'] ?? optional($booking->address)->address_type) === 'temporary') ? 'Sementara' : 'Tetap' }}
+                        </p>
+                        <p class="text-sm text-blue-800 mt-1">
+                            {{ $deliveryAddress['street'] ?? optional($booking->address)->street ?? '-' }},
+                            {{ $deliveryAddress['district'] ?? optional(optional($booking->address)->district)->name ?? '-' }},
+                            {{ $deliveryAddress['city'] ?? optional($booking->address)->city ?? '-' }}
+                            {{ $deliveryAddress['postal_code'] ?? optional($booking->address)->postal_code ?? '-' }}
+                        </p>
+                    </div>
+                @endif
 
                 <div class="mt-4">
                     <h4 class="font-semibold text-gray-700 mb-2">Dokumen Pendukung User</h4>
@@ -118,6 +146,14 @@
                     <h4 class="font-semibold text-gray-900 mb-3">Informasi Pembayaran</h4>
                     <div class="space-y-2">
                         <div class="flex justify-between">
+                            <span class="text-gray-600">No. Invoice</span>
+                            <span class="font-medium">{{ $booking->payment->invoice_number ?: '-' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Metode Pembayaran</span>
+                            <span class="font-medium">{{ strtoupper($booking->payment->payment_method ?? 'qris') }}</span>
+                        </div>
+                        <div class="flex justify-between">
                             <span class="text-gray-600">Tipe Pembayaran</span>
                             <span class="font-medium">{{ strtoupper($booking->payment->payment_type) }}</span>
                         </div>
@@ -132,6 +168,28 @@
                                 {{ ucfirst($booking->payment->status) }}
                             </span>
                         </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Status Bukti Pembayaran</span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full {{ $booking->payment->proof_status === 'uploaded' ? 'bg-blue-100 text-blue-800' : 'bg-gray-200 text-gray-700' }}">
+                                {{ ucfirst(str_replace('_', ' ', $booking->payment->proof_status ?? 'not_uploaded')) }}
+                            </span>
+                        </div>
+                        @if($booking->payment->proof_uploaded_at)
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Waktu Upload Bukti</span>
+                                <span class="font-medium">{{ $booking->payment->proof_uploaded_at->format('d M Y H:i') }}</span>
+                            </div>
+                        @endif
+                        @if($booking->payment->proof_path)
+                            <div class="pt-2 border-t">
+                                <a href="{{ route('documents.payment.proof.media', $booking->payment) }}" target="_blank" class="text-sm text-blue-600 hover:underline">
+                                    Lihat Bukti Pembayaran
+                                </a>
+                                @if($booking->payment->proof_notes)
+                                    <p class="text-xs text-gray-500 mt-1">Catatan user: {{ $booking->payment->proof_notes }}</p>
+                                @endif
+                            </div>
+                        @endif
                         @if($booking->payment->payment_type === 'dp')
                             <div class="flex justify-between border-t pt-2 mt-2">
                                 <span class="text-gray-600">Sisa Pembayaran</span>

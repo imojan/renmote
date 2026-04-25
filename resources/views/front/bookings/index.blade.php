@@ -44,7 +44,7 @@
                         <div>
                             <span>Pembayaran</span>
                             @if($booking->payment)
-                                {{ strtoupper($booking->payment->payment_type) }} - {{ ucfirst($booking->payment->status) }}
+                                {{ strtoupper($booking->payment->payment_type) }} - {{ ucfirst($booking->payment->status) }} ({{ ucfirst(str_replace('_', ' ', $booking->payment->proof_status ?? 'not_uploaded')) }})
                             @else
                                 -
                             @endif
@@ -53,6 +53,10 @@
 
                     <div class="booking-history-actions">
                         <a href="{{ route('user.bookings.show', $booking->id) }}" class="booking-btn-secondary">Lihat Detail</a>
+
+                        @if($booking->payment && !$booking->payment->proof_path)
+                            <a href="{{ route('user.bookings.payment', $booking) }}" class="booking-btn-primary">Lanjutkan Pembayaran</a>
+                        @endif
 
                         @if($booking->status === 'pending')
                             <form action="{{ route('user.bookings.cancel', $booking->id) }}" method="POST"
