@@ -119,6 +119,8 @@ Route::middleware(['auth', 'role:vendor'])->prefix('vendor')->name('vendor.')->g
     Route::get('/bookings', [VendorBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/export', [VendorBookingController::class, 'export'])->name('bookings.export');
     Route::get('/bookings/{booking}', [VendorBookingController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{booking}/payment-proof/approve', [VendorBookingController::class, 'approvePaymentProof'])->name('bookings.paymentProof.approve');
+    Route::post('/bookings/{booking}/payment-proof/reject', [VendorBookingController::class, 'rejectPaymentProof'])->name('bookings.paymentProof.reject');
     Route::post('/bookings/{booking}/confirm', [VendorBookingController::class, 'confirm'])->name('bookings.confirm');
     Route::post('/bookings/{booking}/reject', [VendorBookingController::class, 'reject'])->name('bookings.reject');
     Route::post('/bookings/{booking}/complete', [VendorBookingController::class, 'complete'])->name('bookings.complete');
@@ -184,6 +186,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/export', [AdminBookingController::class, 'export'])->name('bookings.export');
     Route::get('/bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{booking}/payment-proof/approve', [AdminBookingController::class, 'approvePaymentProof'])->name('bookings.paymentProof.approve');
+    Route::post('/bookings/{booking}/payment-proof/reject', [AdminBookingController::class, 'rejectPaymentProof'])->name('bookings.paymentProof.reject');
     Route::patch('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
 });
 

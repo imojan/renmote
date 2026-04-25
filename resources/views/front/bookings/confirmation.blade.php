@@ -70,6 +70,18 @@
                     </label>
                 </div>
 
+                <div id="pickupOutletSection" class="booking-pickup-outlet {{ $selectedMethod === 'pickup' ? '' : 'hidden' }}">
+                    <h4>Alamat Outlet Vendor</h4>
+                    <p>
+                        <strong>{{ $vehicle->vendor->store_name }}</strong><br>
+                        {{ $vehicle->vendor->address ?: 'Alamat outlet belum diisi vendor.' }}
+                        @if($vehicle->vendor->district)
+                            , {{ $vehicle->vendor->district->name }}
+                        @endif
+                    </p>
+                
+                </div>
+
                 <div id="deliveryAddressSection" class="booking-delivery-section {{ $selectedMethod === 'delivery' ? '' : 'hidden' }}">
                     @if($user->addresses->count() > 0)
                         <div class="booking-delivery-list">
@@ -250,7 +262,7 @@
 
                 <div class="booking-payment-method">
                     <div class="booking-payment-method-row">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/QRIS_logo.svg/512px-QRIS_logo.svg.png" alt="QRIS" loading="lazy">
+                        <img src="{{ asset('images/logo-qris.png') }}" alt="QRIS" loading="lazy">
                         <div>
                             <strong>QRIS</strong>
                             <p>Bayar DP 30% melalui scan QR code.</p>
@@ -279,6 +291,7 @@
     const methodInputs = document.querySelectorAll('input[name="fulfillment_method"]');
     const useNewAddressInput = document.getElementById('useNewAddressInput');
     const deliverySection = document.getElementById('deliveryAddressSection');
+    const pickupOutletSection = document.getElementById('pickupOutletSection');
     const newAddressFields = document.getElementById('newAddressFields');
     const addressInputs = document.querySelectorAll('input[name="address_id"]');
     const addressCards = document.querySelectorAll('.booking-address-card');
@@ -294,9 +307,13 @@
     function toggleDeliverySection() {
         const selectedMethod = document.querySelector('input[name="fulfillment_method"]:checked')?.value;
         const isDelivery = selectedMethod === 'delivery';
+        const isPickup = selectedMethod === 'pickup';
         if (!deliverySection) return;
 
         deliverySection.classList.toggle('hidden', !isDelivery);
+        if (pickupOutletSection) {
+            pickupOutletSection.classList.toggle('hidden', !isPickup);
+        }
 
         if (!isDelivery) {
             addressInputs.forEach((input) => {

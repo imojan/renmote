@@ -18,8 +18,11 @@ class Payment extends Model
         'paid_at',
         'proof_path',
         'proof_notes',
+        'proof_review_notes',
         'proof_status',
         'proof_uploaded_at',
+        'proof_reviewed_at',
+        'proof_reviewer_role',
     ];
 
     protected function casts(): array
@@ -28,6 +31,7 @@ class Payment extends Model
             'expires_at' => 'datetime',
             'paid_at' => 'datetime',
             'proof_uploaded_at' => 'datetime',
+            'proof_reviewed_at' => 'datetime',
         ];
     }
 

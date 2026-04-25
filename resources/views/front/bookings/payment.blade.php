@@ -36,6 +36,12 @@
                 $isExpired = $payment->expires_at && $payment->expires_at->isPast();
                 $qrisPayload = 'RENMOTE|BOOKING:' . $booking->id . '|INV:' . $payment->invoice_number . '|AMOUNT:' . (int) $payment->amount;
                 $qrisImage = 'https://api.qrserver.com/v1/create-qr-code/?size=340x340&data=' . urlencode($qrisPayload);
+                $proofStatusLabel = match ($payment->proof_status) {
+                    'uploaded' => 'Sudah diunggah (menunggu verifikasi)',
+                    'verified' => 'Terverifikasi',
+                    'rejected' => 'Ditolak (unggah ulang diperlukan)',
+                    default => 'Belum diunggah',
+                };
             @endphp
 
             <div class="booking-payment-timer {{ $isExpired ? 'is-expired' : '' }}">
@@ -47,7 +53,7 @@
 
             <div class="booking-qris-wrap">
                 <div class="booking-qris-brand">
-                    <img src="{{ $qrisLogoUrl }}" alt="QRIS" loading="lazy">
+                    <img src="{{ asset('images/logo-qris.png') }}" alt="QRIS" loading="lazy">
                     <div>
                         <p>Metode Pembayaran</p>
                         <strong>QRIS</strong>
@@ -60,7 +66,7 @@
                 <div><span>No. Invoice</span><strong>{{ $payment->invoice_number }}</strong></div>
                 <div><span>No. Booking</span><strong>#{{ $booking->id }}</strong></div>
                 <div><span>Nominal DP</span><strong>Rp {{ number_format($payment->amount, 0, ',', '.') }}</strong></div>
-                <div><span>Status Bukti Bayar</span><strong>{{ $payment->proof_status === 'uploaded' ? 'Sudah diunggah' : 'Belum diunggah' }}</strong></div>
+                <div><span>Status Bukti Bayar</span><strong>{{ $proofStatusLabel }}</strong></div>
             </div>
 
             <form action="{{ route('user.bookings.payment.confirm', $booking) }}" method="POST" class="booking-payment-actions">

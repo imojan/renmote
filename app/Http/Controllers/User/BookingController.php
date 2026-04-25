@@ -324,6 +324,11 @@ class BookingController extends Controller
             'proof_notes' => $validated['proof_notes'] ?? null,
             'proof_status' => 'uploaded',
             'proof_uploaded_at' => now(),
+            'proof_review_notes' => null,
+            'proof_reviewed_at' => null,
+            'proof_reviewer_role' => null,
+            'status' => 'pending',
+            'paid_at' => null,
         ]);
 
         return redirect()

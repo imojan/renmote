@@ -149,6 +149,20 @@
             </div>
 
             <!-- Payment Info -->
+            @php
+                $proofStatus = optional($booking->payment)->proof_status ?? 'not_uploaded';
+                $proofStatusClass = match ($proofStatus) {
+                    'uploaded' => 'bg-blue-100 text-blue-800',
+                    'verified' => 'bg-green-100 text-green-800',
+                    'rejected' => 'bg-red-100 text-red-800',
+                    default => 'bg-gray-200 text-gray-700',
+                };
+                $proofReviewerLabel = match (optional($booking->payment)->proof_reviewer_role) {
+                    'admin' => 'Admin',
+                    'vendor' => 'Vendor',
+                    default => '-',
+                };
+            @endphp
             <div class="bg-gray-50 rounded-lg p-4 mb-6">
                 <h4 class="font-semibold text-gray-900 mb-3">Informasi Pembayaran</h4>
                 <div class="space-y-2">
@@ -182,8 +196,8 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Status Bukti Bayar</span>
-                            <span class="px-2 py-1 text-xs font-medium rounded-full {{ $booking->payment->proof_status === 'uploaded' ? 'bg-blue-100 text-blue-800' : 'bg-gray-200 text-gray-700' }}">
-                                {{ ucfirst(str_replace('_', ' ', $booking->payment->proof_status ?? 'not_uploaded')) }}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full {{ $proofStatusClass }}">
+                                {{ ucfirst(str_replace('_', ' ', $proofStatus)) }}
                             </span>
                         </div>
                         @if($booking->payment->proof_uploaded_at)
@@ -206,6 +220,46 @@
                             <div class="flex justify-between border-t pt-2 mt-2">
                                 <span class="text-gray-600">Sisa Pembayaran</span>
                                 <span class="font-semibold text-red-600">Rp {{ number_format($booking->total_price - $booking->payment->amount, 0, ',', '.') }}</span>
+                            </div>
+                        @endif
+
+                        @if($booking->payment->proof_reviewed_at)
+                            <div class="border-t pt-2 mt-2 text-sm text-gray-600 space-y-1">
+                                <p>
+                                    Ditinjau oleh: <span class="font-medium text-gray-800">{{ $proofReviewerLabel }}</span>
+                                    pada <span class="font-medium text-gray-800">{{ $booking->payment->proof_reviewed_at->format('d M Y H:i') }}</span>
+                                </p>
+                                @if($booking->payment->proof_review_notes)
+                                    <p>Catatan reviewer: <span class="text-gray-800">{{ $booking->payment->proof_review_notes }}</span></p>
+                                @endif
+                            </div>
+                        @endif
+
+                        @if($booking->payment->proof_status === 'uploaded')
+                            <div class="border-t pt-3 mt-3 space-y-3">
+                                <p class="text-sm font-semibold text-gray-800">Aksi Verifikasi Bukti</p>
+
+                                <form action="{{ route('admin.bookings.paymentProof.approve', $booking) }}" method="POST" class="space-y-2">
+                                    @csrf
+                                    <label class="block text-xs text-gray-600">Catatan verifikasi (opsional)</label>
+                                    <textarea name="review_notes" rows="2" class="w-full rounded-lg border-gray-300 text-sm" placeholder="Contoh: nominal dan nama pengirim sudah sesuai.">{{ old('review_notes') }}</textarea>
+                                    <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700">
+                                        Approve Bukti Pembayaran
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('admin.bookings.paymentProof.reject', $booking) }}" method="POST" class="space-y-2"
+                                    data-confirm-title="Tolak bukti pembayaran?"
+                                    data-confirm-message="Status bukti akan menjadi rejected dan user perlu upload ulang."
+                                    data-confirm-confirm-text="Ya, Tolak"
+                                    data-confirm-cancel-text="Batal">
+                                    @csrf
+                                    <label class="block text-xs text-gray-600">Alasan penolakan <span class="text-red-600">*</span></label>
+                                    <textarea name="review_notes" rows="2" class="w-full rounded-lg border-gray-300 text-sm" required placeholder="Contoh: nominal tidak sesuai atau bukti tidak terbaca.">{{ old('review_notes') }}</textarea>
+                                    <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700">
+                                        Reject Bukti Pembayaran
+                                    </button>
+                                </form>
                             </div>
                         @endif
                     @else

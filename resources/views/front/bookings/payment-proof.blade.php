@@ -4,6 +4,15 @@
 
 @section('content')
 <section class="section booking-front-section booking-checkout-section">
+    @php
+        $proofStatusLabel = match ($booking->payment->proof_status) {
+            'uploaded' => 'Sudah diunggah (menunggu verifikasi)',
+            'verified' => 'Terverifikasi',
+            'rejected' => 'Ditolak (unggah ulang diperlukan)',
+            default => 'Belum diunggah',
+        };
+    @endphp
+
     <div class="booking-front-head">
         <div>
             <h2 class="section-title">Upload Bukti Pembayaran</h2>
@@ -70,7 +79,7 @@
                 <div><span>No. Invoice</span><strong>{{ $booking->payment->invoice_number }}</strong></div>
                 <div><span>Metode</span><strong>{{ strtoupper($booking->payment->payment_method) }}</strong></div>
                 <div><span>Nominal DP</span><strong>Rp {{ number_format($booking->payment->amount, 0, ',', '.') }}</strong></div>
-                <div><span>Status Bukti</span><strong>{{ $booking->payment->proof_status === 'uploaded' ? 'Sudah diunggah' : 'Belum diunggah' }}</strong></div>
+                <div><span>Status Bukti</span><strong>{{ $proofStatusLabel }}</strong></div>
             </div>
 
             <div class="booking-payment-note-box">

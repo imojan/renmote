@@ -120,6 +120,86 @@ class BookingController extends Controller
     }
 
     /**
+     * Verifikasi bukti pembayaran sebagai vendor.
+     */
+    public function approvePaymentProof(Request $request, Booking $booking)
+    {
+        $this->authorizeBooking($booking);
+        $booking->load('payment');
+
+        if (!$booking->payment || !$booking->payment->proof_path) {
+            return back()->with('error', 'Bukti pembayaran belum tersedia.');
+        }
+
+        if ($booking->payment->proof_status !== 'uploaded') {
+            if ($booking->payment->proof_status === 'verified') {
+                return back()->with('info', 'Bukti pembayaran sudah diverifikasi sebelumnya.');
+            }
+
+            if ($booking->payment->proof_status === 'rejected') {
+                return back()->with('info', 'Bukti pembayaran ini sudah ditolak sebelumnya.');
+            }
+
+            return back()->with('error', 'Bukti pembayaran belum siap diverifikasi.');
+        }
+
+        $validated = $request->validate([
+            'review_notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $booking->payment->update([
+            'status' => 'paid',
+            'paid_at' => now(),
+            'proof_status' => 'verified',
+            'proof_review_notes' => $validated['review_notes'] ?? null,
+            'proof_reviewed_at' => now(),
+            'proof_reviewer_role' => 'vendor',
+        ]);
+
+        return back()->with('success', 'Bukti pembayaran berhasil diverifikasi.');
+    }
+
+    /**
+     * Tolak bukti pembayaran sebagai vendor.
+     */
+    public function rejectPaymentProof(Request $request, Booking $booking)
+    {
+        $this->authorizeBooking($booking);
+        $booking->load('payment');
+
+        if (!$booking->payment || !$booking->payment->proof_path) {
+            return back()->with('error', 'Bukti pembayaran belum tersedia.');
+        }
+
+        if ($booking->payment->proof_status !== 'uploaded') {
+            if ($booking->payment->proof_status === 'rejected') {
+                return back()->with('info', 'Bukti pembayaran ini sudah ditolak sebelumnya.');
+            }
+
+            if ($booking->payment->proof_status === 'verified') {
+                return back()->with('error', 'Bukti pembayaran yang sudah diverifikasi tidak bisa ditolak.');
+            }
+
+            return back()->with('error', 'Bukti pembayaran belum siap ditolak.');
+        }
+
+        $validated = $request->validate([
+            'review_notes' => ['required', 'string', 'max:500'],
+        ]);
+
+        $booking->payment->update([
+            'status' => 'pending',
+            'paid_at' => null,
+            'proof_status' => 'rejected',
+            'proof_review_notes' => $validated['review_notes'],
+            'proof_reviewed_at' => now(),
+            'proof_reviewer_role' => 'vendor',
+        ]);
+
+        return back()->with('success', 'Bukti pembayaran ditolak. User diminta upload ulang.');
+    }
+
+    /**
      * Pastikan booking untuk kendaraan milik vendor ini
      */
     private function authorizeBooking(Booking $booking)

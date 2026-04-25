@@ -76,13 +76,24 @@
         @endif
 
         @if($booking->payment)
+            @php
+                $proofStatusLabel = match ($booking->payment->proof_status) {
+                    'uploaded' => 'Menunggu verifikasi',
+                    'verified' => 'Terverifikasi',
+                    'rejected' => 'Ditolak (unggah ulang diperlukan)',
+                    default => ucfirst(str_replace('_', ' ', $booking->payment->proof_status ?? 'not_uploaded')),
+                };
+            @endphp
             <div class="booking-payment-summary">
                 <h4>Informasi Pembayaran</h4>
                 <ul>
                     <li>Invoice: <strong>{{ $booking->payment->invoice_number ?: '-' }}</strong></li>
                     <li>Metode: <strong>{{ strtoupper($booking->payment->payment_method ?? 'qris') }}</strong></li>
                     <li>Nominal dibayar: <strong>Rp {{ number_format($booking->payment->amount, 0, ',', '.') }}</strong></li>
-                    <li>Status bukti pembayaran: <strong>{{ ucfirst(str_replace('_', ' ', $booking->payment->proof_status ?? 'not_uploaded')) }}</strong></li>
+                    <li>Status bukti pembayaran: <strong>{{ $proofStatusLabel }}</strong></li>
+                    @if($booking->payment->proof_review_notes)
+                        <li>Catatan reviewer: <strong>{{ $booking->payment->proof_review_notes }}</strong></li>
+                    @endif
                     @if($booking->payment->payment_type === 'dp')
                         <li>Sisa pembayaran saat pengambilan: <strong>Rp {{ number_format($booking->total_price - $booking->payment->amount, 0, ',', '.') }}</strong></li>
                     @endif

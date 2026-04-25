@@ -4,6 +4,15 @@
 
 @section('content')
 <section class="section booking-front-section booking-checkout-section">
+    @php
+        $proofStatusLabel = match ($booking->payment->proof_status) {
+            'uploaded' => 'Menunggu verifikasi',
+            'verified' => 'Terverifikasi',
+            'rejected' => 'Ditolak (unggah ulang diperlukan)',
+            default => ucfirst(str_replace('_', ' ', $booking->payment->proof_status)),
+        };
+    @endphp
+
     <div class="booking-front-head">
         <div>
             <h2 class="section-title">Selesai - Invoice Penyewaan</h2>
@@ -38,7 +47,7 @@
                 <div><span>Metode Bayar</span><strong>{{ strtoupper($booking->payment->payment_method) }}</strong></div>
                 <div><span>Total Sewa</span><strong>Rp {{ number_format($booking->total_price, 0, ',', '.') }}</strong></div>
                 <div><span>Total DP Dibayar</span><strong class="booking-value-primary">Rp {{ number_format($booking->payment->amount, 0, ',', '.') }}</strong></div>
-                <div><span>Status Bukti Bayar</span><strong>{{ $booking->payment->proof_status === 'uploaded' ? 'Menunggu verifikasi' : ucfirst(str_replace('_', ' ', $booking->payment->proof_status)) }}</strong></div>
+                <div><span>Status Bukti Bayar</span><strong>{{ $proofStatusLabel }}</strong></div>
             </div>
 
             @if($booking->fulfillment_method === 'delivery')
