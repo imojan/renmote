@@ -53,14 +53,14 @@
                         <label class="booking-label">Tanggal Mulai</label>
                         <input type="date" id="startDateInput" name="start_date" value="{{ old('start_date') }}" min="{{ date('Y-m-d') }}" class="booking-input @error('start_date') booking-input-error @enderror">
                         @error('start_date')
-                            <p class="booking-error-text">{{ $message }}</p>
+                            <p id="startDateServerError" class="booking-error-text">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
                         <label class="booking-label">Tanggal Selesai</label>
                         <input type="date" id="endDateInput" name="end_date" value="{{ old('end_date') }}" min="{{ date('Y-m-d') }}" class="booking-input @error('end_date') booking-input-error @enderror">
                         @error('end_date')
-                            <p class="booking-error-text">{{ $message }}</p>
+                            <p id="endDateServerError" class="booking-error-text">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -93,7 +93,11 @@
     const warningBox = document.getElementById('bookingAvailabilityWarning');
     const successBox = document.getElementById('bookingAvailabilitySuccess');
     const submitBtn = document.getElementById('bookingSubmitBtn');
+    const startDateServerError = document.getElementById('startDateServerError');
+    const endDateServerError = document.getElementById('endDateServerError');
     const checkUrl = "{{ route('user.bookings.checkAvailability', $vehicle) }}";
+    const defaultBorderColor = '#d1d5db';
+    const focusBorderColor = getComputedStyle(document.documentElement).getPropertyValue('--rn-primary').trim() || '#2563eb';
 
     let debounceTimer = null;
 
@@ -129,6 +133,23 @@
 
     function setSubmitDisabled(disabled) {
         submitBtn.disabled = disabled;
+    }
+
+    function clearServerDateError(input, errorElement) {
+        input.classList.remove('booking-input-error');
+        input.removeAttribute('aria-invalid');
+        input.style.borderColor = (document.activeElement === input) ? focusBorderColor : defaultBorderColor;
+        if (errorElement && input.value) {
+            errorElement.remove();
+        }
+    }
+
+    function normalizeDateInputBorder(input) {
+        if (input.classList.contains('booking-input-error')) {
+            return;
+        }
+
+        input.style.borderColor = (document.activeElement === input) ? focusBorderColor : defaultBorderColor;
     }
 
     function formatRangeText(overlaps) {
@@ -168,6 +189,10 @@
             const data = await response.json();
 
             hideMessages();
+            clearServerDateError(startDateInput, startDateServerError);
+            clearServerDateError(endDateInput, endDateServerError);
+            normalizeDateInputBorder(startDateInput);
+            normalizeDateInputBorder(endDateInput);
 
             if (data.available) {
                 successBox.textContent = data.message;
@@ -188,13 +213,32 @@
         debounceTimer = setTimeout(checkAvailability, 250);
     }
 
-    startDateInput.addEventListener('change', () => {
+    function handleStartDateInteraction() {
+        clearServerDateError(startDateInput, startDateServerError);
         enforceEndDateMin();
         scheduleCheck();
-    });
-    endDateInput.addEventListener('change', scheduleCheck);
+    }
+
+    function handleEndDateInteraction() {
+        clearServerDateError(endDateInput, endDateServerError);
+        scheduleCheck();
+    }
+
+    startDateInput.addEventListener('input', handleStartDateInteraction);
+    startDateInput.addEventListener('change', handleStartDateInteraction);
+    endDateInput.addEventListener('input', handleEndDateInteraction);
+    endDateInput.addEventListener('change', handleEndDateInteraction);
+    startDateInput.addEventListener('focus', () => normalizeDateInputBorder(startDateInput));
+    startDateInput.addEventListener('blur', () => normalizeDateInputBorder(startDateInput));
+    endDateInput.addEventListener('focus', () => normalizeDateInputBorder(endDateInput));
+    endDateInput.addEventListener('blur', () => normalizeDateInputBorder(endDateInput));
 
     enforceEndDateMin();
+
+    clearServerDateError(startDateInput, startDateServerError);
+    clearServerDateError(endDateInput, endDateServerError);
+    normalizeDateInputBorder(startDateInput);
+    normalizeDateInputBorder(endDateInput);
 
     if (startDateInput.value || endDateInput.value) {
         checkAvailability();
