@@ -43,9 +43,13 @@ class VendorApproved extends Notification
     public function toArray(object $notifiable): array
     {
         return [
+            'title'      => 'Vendor Disetujui',
             'vendor_id'  => $this->vendor->id,
             'store_name' => $this->vendor->store_name,
+            'category'   => 'vendor-registration',
             'message'    => "Selamat! Toko '{$this->vendor->store_name}' telah diverifikasi.",
+            'action_url' => route('vendor.dashboard'),
+            'action_label' => 'Buka Dashboard Vendor',
         ];
     }
 }

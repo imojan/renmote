@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Models\Vendor;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class NewVendorRegistration extends Notification
@@ -36,9 +35,13 @@ class NewVendorRegistration extends Notification
     public function toArray(object $notifiable): array
     {
         return [
+            'title'      => 'Vendor Baru Menunggu Verifikasi',
             'vendor_id'  => $this->vendor->id,
             'store_name' => $this->vendor->store_name,
+            'category'   => 'vendor-registration',
             'message'    => "Vendor baru '{$this->vendor->store_name}' mendaftar dan menunggu verifikasi.",
+            'action_url' => route('admin.vendors.show', $this->vendor),
+            'action_label' => 'Tinjau Data Vendor',
         ];
     }
 }

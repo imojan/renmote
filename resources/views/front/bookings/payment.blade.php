@@ -98,6 +98,13 @@
                 <div class="booking-midtrans-state booking-midtrans-state-pending">
                     <h4>Widget Pembayaran Belum Tersedia</h4>
                     <p>Silakan refresh halaman ini atau ajukan ulang pembayaran.</p>
+
+                    @if($canRetryPayment)
+                        <form action="{{ route('user.bookings.payment.retry', $booking) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="booking-btn-primary booking-btn-block">Ajukan Ulang Pembayaran</button>
+                        </form>
+                    @endif
                 </div>
             @endif
 

@@ -41,10 +41,14 @@ class VendorRejected extends Notification
     public function toArray(object $notifiable): array
     {
         return [
+            'title'      => 'Pendaftaran Vendor Ditolak',
             'vendor_id'  => $this->vendor->id,
             'store_name' => $this->vendor->store_name,
             'reason'     => $this->reason,
+            'category'   => 'vendor-registration',
             'message'    => "Pendaftaran toko '{$this->vendor->store_name}' ditolak.",
+            'action_url' => route('vendor.register'),
+            'action_label' => 'Perbarui Data Vendor',
         ];
     }
 }

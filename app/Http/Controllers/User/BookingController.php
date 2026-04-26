@@ -18,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -239,7 +240,7 @@ class BookingController extends Controller
     }
 
     /**
-     * Step 2: detail pembayaran QRIS.
+        * Step 2: halaman pembayaran Midtrans.
      */
     public function payment(Booking $booking)
     {
@@ -260,6 +261,17 @@ class BookingController extends Controller
 
         $payment = $booking->payment;
 
+        if ($payment->status !== 'paid' && !$payment->expires_at) {
+            $payment->update([
+                'expires_at' => now()->addMinutes(30),
+            ]);
+            $payment->refresh();
+        }
+
+        if ($payment->status !== 'paid' && empty($payment->invoice_number)) {
+            $payment = $this->paymentService->regenerateInvoice($payment);
+        }
+
         if ($payment->expires_at && $payment->expires_at->isPast() && $payment->status !== 'paid') {
             $payment->update([
                 'gateway_status' => 'failed',
@@ -279,7 +291,14 @@ class BookingController extends Controller
                 ]);
                 $payment->refresh();
             } catch (\Throwable $exception) {
-                $midtransError = 'Gagal menyiapkan pembayaran Midtrans: ' . $exception->getMessage();
+                Log::warning('Midtrans token creation failed', [
+                    'booking_id' => $booking->id,
+                    'payment_id' => $payment->id,
+                    'invoice_number' => $payment->invoice_number,
+                    'exception' => $exception->getMessage(),
+                ]);
+
+                $midtransError = $this->humanizeMidtransError($exception);
             }
         }
 
@@ -291,7 +310,11 @@ class BookingController extends Controller
             'midtransSnapScriptUrl' => $this->midtransService->getSnapScriptUrl(),
             'midtransLanguage' => $this->midtransService->normalizeLanguage(app()->getLocale()),
             'midtransStatusEndpoint' => route('user.bookings.payment.midtrans.finish', $booking),
-            'canRetryPayment' => $payment->status !== 'paid' && ($payment->gateway_status === 'failed' || ($payment->expires_at && $payment->expires_at->isPast())),
+            'canRetryPayment' => $payment->status !== 'paid' && (
+                $payment->gateway_status === 'failed'
+                || ($payment->expires_at && $payment->expires_at->isPast())
+                || $midtransError !== null
+            ),
             'midtransError' => $midtransError,
         ]);
     }
@@ -325,7 +348,14 @@ class BookingController extends Controller
             $statusPayload = $this->midtransService->getTransactionStatus((string) $payment->invoice_number);
             $payment = $this->paymentService->syncMidtransTransaction($payment, $statusPayload);
         } catch (\Throwable $exception) {
-            return back()->with('error', 'Gagal memeriksa status pembayaran: ' . $exception->getMessage());
+            Log::warning('Midtrans status check failed', [
+                'booking_id' => $booking->id,
+                'payment_id' => $payment->id,
+                'invoice_number' => $payment->invoice_number,
+                'exception' => $exception->getMessage(),
+            ]);
+
+            return back()->with('error', 'Status pembayaran belum bisa dipastikan saat ini. Coba beberapa saat lagi atau ajukan ulang pembayaran.');
         }
 
         if ($payment->status === 'paid') {
@@ -659,5 +689,24 @@ class BookingController extends Controller
                 'notes' => null,
             ]
         );
+    }
+
+    private function humanizeMidtransError(\Throwable $exception): string
+    {
+        $message = strtolower($exception->getMessage());
+
+        if (str_contains($message, 'transaction_details.order_id is required')) {
+            return 'Data pembayaran lama belum lengkap. Klik "Ajukan Ulang Pembayaran" untuk membuat invoice baru.';
+        }
+
+        if (str_contains($message, 'access denied') || str_contains($message, 'unauthorized') || str_contains($message, '401')) {
+            return 'Integrasi Midtrans sandbox belum tervalidasi. Silakan hubungi admin untuk pengecekan kredensial.';
+        }
+
+        if (str_contains($message, 'gross_amount')) {
+            return 'Nominal transaksi belum valid. Silakan ajukan ulang pembayaran untuk membuat invoice baru.';
+        }
+
+        return 'Widget pembayaran sedang tidak tersedia. Coba refresh halaman atau ajukan ulang pembayaran.';
     }
 }
