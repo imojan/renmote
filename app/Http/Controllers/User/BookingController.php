@@ -11,6 +11,7 @@ use App\Models\UserDocument;
 use App\Models\Vehicle;
 use App\Services\AvailabilityService;
 use App\Services\BookingService;
+use App\Services\MidtransService;
 use App\Services\PaymentService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -24,16 +25,19 @@ class BookingController extends Controller
 {
     protected BookingService $bookingService;
     protected PaymentService $paymentService;
+    protected MidtransService $midtransService;
     protected AvailabilityService $availabilityService;
 
     public function __construct(
         BookingService $bookingService,
         PaymentService $paymentService,
+        MidtransService $midtransService,
         AvailabilityService $availabilityService
     )
     {
         $this->bookingService = $bookingService;
         $this->paymentService = $paymentService;
+        $this->midtransService = $midtransService;
         $this->availabilityService = $availabilityService;
     }
 
@@ -248,10 +252,47 @@ class BookingController extends Controller
                 ->with('error', 'Data pembayaran belum tersedia untuk pesanan ini.');
         }
 
+        if ($booking->payment->status === 'paid' && !$booking->payment->proof_path) {
+            return redirect()
+                ->route('user.bookings.payment.proof', $booking)
+                ->with('success', 'Pembayaran terverifikasi. Lanjutkan upload bukti pembayaran.');
+        }
+
+        $payment = $booking->payment;
+
+        if ($payment->expires_at && $payment->expires_at->isPast() && $payment->status !== 'paid') {
+            $payment->update([
+                'gateway_status' => 'failed',
+                'gateway_last_synced_at' => now(),
+            ]);
+            $payment->refresh();
+        }
+
+        $midtransError = null;
+
+        if (!$this->midtransService->isConfigured()) {
+            $midtransError = 'Konfigurasi Midtrans belum lengkap. Silakan hubungi admin.';
+        } elseif ($payment->status !== 'paid' && $payment->gateway_status !== 'failed' && !$payment->snap_token) {
+            try {
+                $payment->update([
+                    'snap_token' => $this->midtransService->createSnapTokenForBooking($booking),
+                ]);
+                $payment->refresh();
+            } catch (\Throwable $exception) {
+                $midtransError = 'Gagal menyiapkan pembayaran Midtrans: ' . $exception->getMessage();
+            }
+        }
+
         return view('front.bookings.payment', [
             'booking' => $booking,
             'summary' => $this->buildSummary($booking->vehicle, $booking->start_date, $booking->end_date),
-            'qrisLogoUrl' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/QRIS_logo.svg/512px-QRIS_logo.svg.png',
+            'snapToken' => $payment->snap_token,
+            'midtransClientKey' => (string) config('services.midtrans.client_key'),
+            'midtransSnapScriptUrl' => $this->midtransService->getSnapScriptUrl(),
+            'midtransLanguage' => $this->midtransService->normalizeLanguage(app()->getLocale()),
+            'midtransStatusEndpoint' => route('user.bookings.payment.midtrans.finish', $booking),
+            'canRetryPayment' => $payment->status !== 'paid' && ($payment->gateway_status === 'failed' || ($payment->expires_at && $payment->expires_at->isPast())),
+            'midtransError' => $midtransError,
         ]);
     }
 
@@ -268,13 +309,147 @@ class BookingController extends Controller
                 ->with('error', 'Data pembayaran tidak ditemukan.');
         }
 
-        if ($booking->payment->expires_at && $booking->payment->expires_at->isPast()) {
-            return back()->with('error', 'Waktu pembayaran sudah habis. Silakan hubungi admin untuk membuat invoice baru.');
+        $payment = $booking->payment;
+
+        if ($payment->status === 'paid') {
+            return redirect()
+                ->route('user.bookings.payment.proof', $booking)
+                ->with('success', 'Pembayaran terverifikasi. Lanjutkan upload bukti pembayaran.');
         }
 
-        return redirect()
-            ->route('user.bookings.payment.proof', $booking)
-            ->with('success', 'Lanjutkan ke upload bukti pembayaran untuk proses verifikasi admin/vendor.');
+        if (!$this->midtransService->isConfigured()) {
+            return back()->with('error', 'Konfigurasi Midtrans belum lengkap.');
+        }
+
+        try {
+            $statusPayload = $this->midtransService->getTransactionStatus((string) $payment->invoice_number);
+            $payment = $this->paymentService->syncMidtransTransaction($payment, $statusPayload);
+        } catch (\Throwable $exception) {
+            return back()->with('error', 'Gagal memeriksa status pembayaran: ' . $exception->getMessage());
+        }
+
+        if ($payment->status === 'paid') {
+            return redirect()
+                ->route('user.bookings.payment.proof', $booking)
+                ->with('success', 'Pembayaran terverifikasi. Lanjutkan upload bukti pembayaran.');
+        }
+
+        if ($payment->gateway_status === 'failed') {
+            return back()->with('error', 'Pembayaran gagal atau kadaluarsa. Silakan ajukan ulang pembayaran.');
+        }
+
+        if ($booking->payment->expires_at && $booking->payment->expires_at->isPast()) {
+            return back()->with('error', 'Waktu pembayaran sudah habis. Silakan ajukan ulang pembayaran.');
+        }
+
+        return back()->with('info', 'Pembayaran masih pending. Silakan selesaikan pembayaran di widget Midtrans.');
+    }
+
+    /**
+     * Sinkronisasi hasil transaksi Midtrans dari event frontend embed.
+     */
+    public function syncMidtransResult(Request $request, Booking $booking): JsonResponse
+    {
+        $this->authorizeOwnedBooking($booking);
+        $booking->load('payment');
+
+        if (!$booking->payment) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Data pembayaran tidak ditemukan.',
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'order_id' => 'required|string',
+            'transaction_status' => 'nullable|string',
+            'fraud_status' => 'nullable|string',
+            'payment_type' => 'nullable|string',
+            'transaction_id' => 'nullable|string',
+        ]);
+
+        $payment = $booking->payment;
+
+        if ((string) $payment->invoice_number !== (string) $validated['order_id']) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Order ID tidak sesuai dengan invoice booking ini.',
+            ], 422);
+        }
+
+        $statusPayload = $validated;
+
+        if ($this->midtransService->isConfigured()) {
+            try {
+                $statusPayload = $this->midtransService->getTransactionStatus((string) $validated['order_id']);
+            } catch (\Throwable $exception) {
+                // Fallback ke payload frontend jika pengecekan API gagal.
+            }
+        }
+
+        $payment = $this->paymentService->syncMidtransTransaction($payment, $statusPayload);
+
+        if ($payment->status === 'paid') {
+            return response()->json([
+                'ok' => true,
+                'state' => 'paid',
+                'next_url' => route('user.bookings.payment.proof', $booking),
+                'message' => 'Pembayaran berhasil. Lanjutkan upload bukti pembayaran.',
+            ]);
+        }
+
+        if ($payment->gateway_status === 'failed') {
+            return response()->json([
+                'ok' => true,
+                'state' => 'failed',
+                'next_url' => route('user.bookings.payment', $booking),
+                'message' => 'Pembayaran gagal atau kadaluarsa. Silakan ajukan ulang pembayaran.',
+            ]);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'state' => 'pending',
+            'next_url' => route('user.bookings.payment', $booking),
+            'message' => 'Pembayaran masih pending.',
+        ]);
+    }
+
+    /**
+     * Ajukan ulang pembayaran jika transaksi sebelumnya gagal/expired.
+     */
+    public function retryPayment(Booking $booking)
+    {
+        $this->authorizeOwnedBooking($booking);
+        $booking->load('payment');
+
+        if (!$booking->payment) {
+            return redirect()->route('user.bookings.show', $booking)
+                ->with('error', 'Data pembayaran tidak ditemukan.');
+        }
+
+        $payment = $booking->payment;
+
+        if ($payment->status === 'paid') {
+            return redirect()->route('user.bookings.payment.proof', $booking)
+                ->with('success', 'Pembayaran sudah berhasil, lanjutkan upload bukti pembayaran.');
+        }
+
+        if (!$this->midtransService->isConfigured()) {
+            return back()->with('error', 'Konfigurasi Midtrans belum lengkap.');
+        }
+
+        try {
+            $payment = $this->paymentService->regenerateInvoice($payment);
+            $payment->update([
+                'snap_token' => $this->midtransService->createSnapTokenForBooking($booking),
+            ]);
+        } catch (\Throwable $exception) {
+            return back()->with('error', 'Gagal membuat ulang invoice Midtrans: ' . $exception->getMessage());
+        }
+
+        return redirect()->route('user.bookings.payment', $booking)
+            ->with('success', 'Invoice pembayaran baru berhasil dibuat. Silakan lanjutkan pembayaran.');
     }
 
     /**

@@ -549,6 +549,12 @@
     color: #047857;
 }
 
+.booking-alert-info {
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1e3a8a;
+}
+
 .booking-create-grid {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
@@ -1422,6 +1428,70 @@
     margin-top: 12px;
 }
 
+.booking-midtrans-wrap {
+    margin-top: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    padding: 10px;
+}
+
+.booking-midtrans-embed {
+    width: 100%;
+    min-height: 620px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.booking-midtrans-state {
+    margin-top: 12px;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.booking-midtrans-state h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.booking-midtrans-state p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.booking-midtrans-state-success {
+    border: 1px solid #86efac;
+    background: #f0fdf4;
+}
+
+.booking-midtrans-state-success h4,
+.booking-midtrans-state-success p {
+    color: #166534;
+}
+
+.booking-midtrans-state-failed {
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+}
+
+.booking-midtrans-state-failed h4,
+.booking-midtrans-state-failed p {
+    color: #991b1b;
+}
+
+.booking-midtrans-state-pending {
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+}
+
+.booking-midtrans-state-pending h4,
+.booking-midtrans-state-pending p {
+    color: #1e3a8a;
+}
+
 .booking-payment-side h3 {
     margin: 0;
     color: #0f172a;
@@ -1950,6 +2020,10 @@
 
     .booking-checkout-vehicle {
         grid-template-columns: 1fr;
+    }
+
+    .booking-midtrans-embed {
+        min-height: 560px;
     }
 
     .booking-invoice-card {

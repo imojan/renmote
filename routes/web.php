@@ -80,6 +80,8 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     Route::post('/bookings/{vehicle}', [UserBookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{booking}/payment', [UserBookingController::class, 'payment'])->name('bookings.payment');
     Route::post('/bookings/{booking}/payment/confirm', [UserBookingController::class, 'confirmPayment'])->name('bookings.payment.confirm');
+    Route::post('/bookings/{booking}/payment/retry', [UserBookingController::class, 'retryPayment'])->name('bookings.payment.retry');
+    Route::post('/bookings/{booking}/payment/midtrans/finish', [UserBookingController::class, 'syncMidtransResult'])->name('bookings.payment.midtrans.finish');
     Route::get('/bookings/{booking}/payment-proof', [UserBookingController::class, 'paymentProof'])->name('bookings.payment.proof');
     Route::post('/bookings/{booking}/payment-proof', [UserBookingController::class, 'storePaymentProof'])->name('bookings.payment.proof.store');
     Route::get('/bookings/{booking}/invoice', [UserBookingController::class, 'invoice'])->name('bookings.invoice');

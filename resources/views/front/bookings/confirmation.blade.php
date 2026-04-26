@@ -7,7 +7,7 @@
     <div class="booking-front-head">
         <div>
             <h2 class="section-title">Checkout Penyewaan</h2>
-            <p class="booking-front-subtitle">Pastikan detail sewa, alamat, dokumen, dan metode pembayaran sudah benar.</p>
+            <p class="booking-front-subtitle">Pastikan detail sewa, alamat, dan dokumen sudah benar. Metode pembayaran dipilih di langkah bayar.</p>
         </div>
         <a href="{{ route('user.bookings.create', $vehicle) }}" class="booking-back-link">
             <i class="fa fa-arrow-left"></i> Kembali pilih tanggal
@@ -256,16 +256,16 @@
         <aside class="booking-checkout-side">
             <article class="booking-checkout-card">
                 <header class="booking-checkout-card-head">
-                    <h3>4. Metode Pembayaran</h3>
-                    <p>Sementara mendukung QRIS untuk proses DP.</p>
+                    <h3>4. Ringkasan Pembayaran</h3>
+                    <p>Metode pembayaran akan dipilih di halaman bayar melalui Midtrans (QRIS, e-wallet, VA, dan kartu).</p>
                 </header>
 
                 <div class="booking-payment-method">
                     <div class="booking-payment-method-row">
-                        <img src="{{ asset('images/logo-qris.png') }}" alt="QRIS" loading="lazy">
+                        <img src="{{ asset('images/logo-qris.png') }}" alt="Midtrans" loading="lazy">
                         <div>
-                            <strong>QRIS</strong>
-                            <p>Bayar DP 30% melalui scan QR code.</p>
+                            <strong>Midtrans Sandbox</strong>
+                            <p>Pilih metode pembayaran di langkah 2 (halaman bayar).</p>
                         </div>
                     </div>
                 </div>
