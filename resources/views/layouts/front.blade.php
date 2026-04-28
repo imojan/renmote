@@ -54,6 +54,7 @@
                         <div class="topbar-account-menu" id="topbarAccountMenu">
                             <a href="{{ route('user.account.index') }}" class="topbar-account-item">Akun Saya</a>
                             <a href="{{ route('user.bookings.index') }}" class="topbar-account-item">Riwayat Pemesanan</a>
+                            <a href="{{ route('notifications.index') }}" class="topbar-account-item">Notifikasi</a>
                             <form method="POST" action="{{ route('logout') }}"
                                 data-confirm-title="Logout dari akun?"
                                 data-confirm-message="Kamu yakin ingin keluar dari akun sekarang?"
@@ -82,6 +83,7 @@
 
                         <div class="topbar-account-menu" id="topbarAccountMenu">
                             <a href="{{ $dashboardRoute }}" class="topbar-account-item">{{ $dashboardLabel }}</a>
+                            <a href="{{ route('notifications.index') }}" class="topbar-account-item">Notifikasi</a>
                             <form method="POST" action="{{ route('logout') }}"
                                 data-confirm-title="Logout dari akun?"
                                 data-confirm-message="Kamu yakin ingin keluar dari akun sekarang?"
@@ -134,9 +136,19 @@
                 $wishlistUrl = route('login');
             }
         @endphp
+
+        @php
+            $notificationUrl = auth()->check() ? route('notifications.index') : route('login');
+            $notificationUnreadCount = auth()->check() ? auth()->user()->unreadNotifications()->count() : 0;
+        @endphp
         <div class="nav-icons">
             <a href="{{ $wishlistUrl }}" class="nav-icon"><i class="fa fa-heart"></i></a>
-            <a href="#" class="nav-icon" aria-label="Notifikasi"><i class="fa fa-bell"></i></a>
+            <a href="{{ $notificationUrl }}" class="nav-icon nav-icon-bell" aria-label="Notifikasi">
+                <i class="fa fa-bell"></i>
+                @if($notificationUnreadCount > 0)
+                    <span class="nav-icon-badge">{{ $notificationUnreadCount > 99 ? '99+' : $notificationUnreadCount }}</span>
+                @endif
+            </a>
         </div>
     </div>
 </nav>
@@ -175,10 +187,12 @@
                     @endif
                     {{ auth()->user()->name }}
                 </a>
+                <a href="{{ route('notifications.index') }}"><i class="fa fa-bell"></i> Notifikasi</a>
             @else
                 <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@else{{ route('vendor.dashboard') }}@endif">
                     <i class="fa fa-user-circle"></i> {{ auth()->user()->name }}
                 </a>
+                <a href="{{ route('notifications.index') }}"><i class="fa fa-bell"></i> Notifikasi</a>
             @endif
         @else
             <a href="{{ route('login') }}"><i class="fa fa-user-circle"></i> Masuk / Daftar</a>

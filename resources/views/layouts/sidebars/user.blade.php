@@ -1,5 +1,6 @@
 @php
     $userUnreadChats = \App\Models\Conversation::where('user_id', auth()->id())->sum('unread_user_count');
+    $userUnreadNotifications = auth()->user()->unreadNotifications()->count();
 @endphp
 
 <x-sidebar-link href="{{ route('user.dashboard') }}" :active="request()->routeIs('user.dashboard')">
@@ -29,6 +30,14 @@
     Chat
     @if($userUnreadChats > 0)
         <span class="dash-nav-badge">{{ $userUnreadChats }}</span>
+    @endif
+</x-sidebar-link>
+
+<x-sidebar-link href="{{ route('notifications.index') }}" :active="request()->routeIs('notifications.*')">
+    <i class="fa-solid fa-bell w-5 h-5 mr-3" aria-hidden="true"></i>
+    Notifikasi
+    @if($userUnreadNotifications > 0)
+        <span class="dash-nav-badge">{{ $userUnreadNotifications }}</span>
     @endif
 </x-sidebar-link>
 

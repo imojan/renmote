@@ -23,6 +23,14 @@
     @if($bookings->count() > 0)
         <div class="booking-history-grid">
             @foreach($bookings as $booking)
+                @php
+                    $paymentStatusLabel = $booking->payment
+                        ? strtoupper($booking->payment->payment_type) . ' - ' . ucfirst($booking->payment->status)
+                        : '-';
+                    $proofStatusLabel = $booking->payment
+                        ? ucfirst(str_replace('_', ' ', $booking->payment->proof_status ?? 'not_uploaded'))
+                        : '-';
+                @endphp
                 <article class="booking-history-card">
                     <div class="booking-history-top">
                         <div>
@@ -43,11 +51,7 @@
                         <div><span>Total</span> Rp {{ number_format($booking->total_price, 0, ',', '.') }}</div>
                         <div>
                             <span>Pembayaran</span>
-                            @if($booking->payment)
-                                {{ strtoupper($booking->payment->payment_type) }} - {{ ucfirst($booking->payment->status) }} ({{ ucfirst(str_replace('_', ' ', $booking->payment->proof_status ?? 'not_uploaded')) }})
-                            @else
-                                -
-                            @endif
+                            {{ $paymentStatusLabel }} ({{ $proofStatusLabel }})
                         </div>
                     </div>
 
@@ -56,6 +60,10 @@
 
                         @if($booking->payment && !$booking->payment->proof_path)
                             <a href="{{ route('user.bookings.payment', $booking) }}" class="booking-btn-primary">Lanjutkan Pembayaran</a>
+                        @endif
+
+                        @if($booking->payment && $booking->payment->proof_path)
+                            <a href="{{ route('user.bookings.invoice.download', $booking) }}" class="booking-btn-secondary">Download Invoice</a>
                         @endif
 
                         @if($booking->status === 'pending')

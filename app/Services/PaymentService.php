@@ -122,16 +122,23 @@ class PaymentService
         $fraudStatus = strtolower((string) ($payload['fraud_status'] ?? ''));
         $paymentType = strtolower((string) ($payload['payment_type'] ?? ''));
 
-        $gatewayStatus = 'pending';
-        $localStatus = 'pending';
-        $paidAt = null;
+        $gatewayStatus = $payment->gateway_status ?? 'pending';
+        $localStatus = $payment->status ?? 'pending';
+        $paidAt = $payment->paid_at;
 
-        if ($transactionStatus === 'settlement' || ($transactionStatus === 'capture' && $fraudStatus !== 'challenge')) {
-            $gatewayStatus = 'paid';
-            $localStatus = 'paid';
-            $paidAt = now();
-        } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny', 'failure'], true)) {
-            $gatewayStatus = 'failed';
+        // Status paid bersifat final, jangan diturunkan lagi oleh update webhook/polling yang terlambat.
+        if ($localStatus !== 'paid') {
+            $gatewayStatus = 'pending';
+            $localStatus = 'pending';
+            $paidAt = null;
+
+            if ($transactionStatus === 'settlement' || ($transactionStatus === 'capture' && $fraudStatus !== 'challenge')) {
+                $gatewayStatus = 'paid';
+                $localStatus = 'paid';
+                $paidAt = now();
+            } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny', 'failure'], true)) {
+                $gatewayStatus = 'failed';
+            }
         }
 
         $payment->update([

@@ -107,6 +107,7 @@
                     <a href="{{ route('user.bookings.payment', $booking) }}" class="booking-btn-primary">Lanjutkan Flow Pembayaran</a>
                 @else
                     <a href="{{ route('user.bookings.invoice', $booking) }}" class="booking-btn-primary">Lihat Invoice Selesai</a>
+                    <a href="{{ route('user.bookings.invoice.download', $booking) }}" class="booking-btn-secondary">Download Invoice PDF</a>
                     <a href="{{ route('documents.payment.proof.media', $booking->payment) }}" target="_blank" class="booking-btn-secondary">Lihat Bukti Bayar</a>
                 @endif
             </div>
@@ -119,7 +120,7 @@
                 data-confirm-confirm-text="Ya, Batalkan"
                 data-confirm-cancel-text="Tidak">
                 @csrf
-                <button type="submit" class="booking-btn-danger">Batalkan Booking</button>
+                <button type="submit" class="booking-btn-danger booking-btn-block">Batalkan Booking</button>
             </form>
         @endif
     </article>

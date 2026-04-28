@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Exports\VendorBookingsExport;
 use App\Models\Booking;
+use App\Services\BookingNotificationService;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -12,10 +13,12 @@ use Maatwebsite\Excel\Facades\Excel;
 class BookingController extends Controller
 {
     protected BookingService $bookingService;
+    protected BookingNotificationService $bookingNotificationService;
 
-    public function __construct(BookingService $bookingService)
+    public function __construct(BookingService $bookingService, BookingNotificationService $bookingNotificationService)
     {
         $this->bookingService = $bookingService;
+        $this->bookingNotificationService = $bookingNotificationService;
     }
 
     /**
@@ -83,6 +86,8 @@ class BookingController extends Controller
 
         if ($booking->status === 'pending') {
             $this->bookingService->updateBookingStatus($booking, 'confirmed');
+            $this->bookingNotificationService->notifyBookingStatusUpdated($booking, 'confirmed');
+
             return back()->with('success', 'Booking berhasil dikonfirmasi.');
         }
 
@@ -98,6 +103,8 @@ class BookingController extends Controller
 
         if (in_array($booking->status, ['pending', 'confirmed'], true)) {
             $this->bookingService->updateBookingStatus($booking, 'cancelled');
+            $this->bookingNotificationService->notifyBookingStatusUpdated($booking, 'cancelled');
+
             return back()->with('success', 'Booking berhasil ditolak.');
         }
 
@@ -113,6 +120,8 @@ class BookingController extends Controller
 
         if ($booking->status === 'confirmed') {
             $this->bookingService->updateBookingStatus($booking, 'completed');
+            $this->bookingNotificationService->notifyBookingStatusUpdated($booking, 'completed');
+
             return back()->with('success', 'Booking berhasil diselesaikan.');
         }
 
@@ -156,6 +165,12 @@ class BookingController extends Controller
             'proof_reviewer_role' => 'vendor',
         ]);
 
+        $this->bookingNotificationService->notifyPaymentProofReviewed(
+            $booking,
+            $booking->payment,
+            true
+        );
+
         return back()->with('success', 'Bukti pembayaran berhasil diverifikasi.');
     }
 
@@ -195,6 +210,12 @@ class BookingController extends Controller
             'proof_reviewed_at' => now(),
             'proof_reviewer_role' => 'vendor',
         ]);
+
+        $this->bookingNotificationService->notifyPaymentProofReviewed(
+            $booking,
+            $booking->payment,
+            false
+        );
 
         return back()->with('success', 'Bukti pembayaran ditolak. User diminta upload ulang.');
     }

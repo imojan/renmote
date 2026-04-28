@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DocumentMediaController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 // Front Controllers
@@ -85,6 +86,7 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     Route::get('/bookings/{booking}/payment-proof', [UserBookingController::class, 'paymentProof'])->name('bookings.payment.proof');
     Route::post('/bookings/{booking}/payment-proof', [UserBookingController::class, 'storePaymentProof'])->name('bookings.payment.proof.store');
     Route::get('/bookings/{booking}/invoice', [UserBookingController::class, 'invoice'])->name('bookings.invoice');
+    Route::get('/bookings/{booking}/invoice/download', [UserBookingController::class, 'downloadInvoicePdf'])->name('bookings.invoice.download');
     Route::get('/bookings/{id}', [UserBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{id}/cancel', [UserBookingController::class, 'cancel'])->name('bookings.cancel');
 
@@ -204,6 +206,11 @@ Route::get('/vendor-documents/{document}/serve', [VendorRegistrationController::
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
+
     Route::get('/documents/vendor/{document}/media', [DocumentMediaController::class, 'vendor'])->name('documents.vendor.media');
     Route::get('/documents/user/{document}/media', [DocumentMediaController::class, 'user'])->name('documents.user.media');
     Route::get('/documents/payment/{payment}/proof', [DocumentMediaController::class, 'paymentProof'])->name('documents.payment.proof.media');

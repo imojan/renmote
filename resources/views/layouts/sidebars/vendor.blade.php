@@ -3,6 +3,7 @@
     $vendorUnreadChats = $vendorId
         ? \App\Models\Conversation::where('vendor_id', $vendorId)->sum('unread_vendor_count')
         : 0;
+    $vendorUnreadNotifications = auth()->user()->unreadNotifications()->count();
 @endphp
 
 <x-sidebar-link href="{{ route('vendor.dashboard') }}" :active="request()->routeIs('vendor.dashboard')">
@@ -29,6 +30,14 @@
     Chat Pelanggan
     @if($vendorUnreadChats > 0)
         <span class="dash-nav-badge">{{ $vendorUnreadChats }}</span>
+    @endif
+</x-sidebar-link>
+
+<x-sidebar-link href="{{ route('notifications.index') }}" :active="request()->routeIs('notifications.*')">
+    <i class="fa-solid fa-bell w-5 h-5 mr-3" aria-hidden="true"></i>
+    Notifikasi
+    @if($vendorUnreadNotifications > 0)
+        <span class="dash-nav-badge">{{ $vendorUnreadNotifications }}</span>
     @endif
 </x-sidebar-link>
 

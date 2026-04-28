@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\User\ProfileController as UserProfileController;
 use App\Http\Controllers\Api\Vendor\ProfileController as VendorProfileController;
 use App\Http\Controllers\Api\Vendor\DocumentController as VendorDocumentController;
+use App\Http\Controllers\Webhook\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +15,9 @@ use Illuminate\Support\Facades\Route;
 | Prefix /api sudah otomatis diberikan oleh framework.
 |
 */
+
+Route::post('/midtrans/notifications', [MidtransWebhookController::class, 'handle'])
+    ->name('api.midtrans.notifications');
 
 Route::middleware(['web', 'auth'])->group(function () {
 

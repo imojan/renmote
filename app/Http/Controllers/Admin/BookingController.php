@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Exports\AdminBookingsExport;
 use App\Models\Booking;
+use App\Services\BookingNotificationService;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -12,10 +13,12 @@ use Maatwebsite\Excel\Facades\Excel;
 class BookingController extends Controller
 {
     protected BookingService $bookingService;
+    protected BookingNotificationService $bookingNotificationService;
 
-    public function __construct(BookingService $bookingService)
+    public function __construct(BookingService $bookingService, BookingNotificationService $bookingNotificationService)
     {
         $this->bookingService = $bookingService;
+        $this->bookingNotificationService = $bookingNotificationService;
     }
 
     /**
@@ -81,6 +84,11 @@ class BookingController extends Controller
             $this->normalizeStatus($request->status) ?? $request->status
         );
 
+        $this->bookingNotificationService->notifyBookingStatusUpdated(
+            $booking,
+            $this->normalizeStatus($request->status) ?? $request->status
+        );
+
         return back()->with('success', 'Status booking berhasil diupdate.');
     }
 
@@ -120,6 +128,12 @@ class BookingController extends Controller
             'proof_reviewer_role' => 'admin',
         ]);
 
+        $this->bookingNotificationService->notifyPaymentProofReviewed(
+            $booking,
+            $booking->payment,
+            true
+        );
+
         return back()->with('success', 'Bukti pembayaran berhasil diverifikasi.');
     }
 
@@ -158,6 +172,12 @@ class BookingController extends Controller
             'proof_reviewed_at' => now(),
             'proof_reviewer_role' => 'admin',
         ]);
+
+        $this->bookingNotificationService->notifyPaymentProofReviewed(
+            $booking,
+            $booking->payment,
+            false
+        );
 
         return back()->with('success', 'Bukti pembayaran ditolak. User diminta upload ulang.');
     }

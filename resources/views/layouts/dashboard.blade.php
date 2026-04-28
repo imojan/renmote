@@ -76,6 +76,17 @@
                 </div>
 
                 <div class="dash-topbar-right">
+                    @php
+                        $dashboardUnreadNotifications = auth()->user()->unreadNotifications()->count();
+                    @endphp
+
+                    <a href="{{ route('notifications.index') }}" class="dash-topbar-notification" aria-label="Notifikasi">
+                        <i class="fa fa-bell"></i>
+                        @if($dashboardUnreadNotifications > 0)
+                            <span class="dash-topbar-notification-badge">{{ $dashboardUnreadNotifications > 99 ? '99+' : $dashboardUnreadNotifications }}</span>
+                        @endif
+                    </a>
+
                     <!-- Date -->
                     <span class="dash-topbar-date">{{ now()->translatedFormat('l, d M Y') }}</span>
 

@@ -11,8 +11,10 @@ use App\Models\UserDocument;
 use App\Models\Vehicle;
 use App\Services\AvailabilityService;
 use App\Services\BookingService;
+use App\Services\BookingNotificationService;
 use App\Services\MidtransService;
 use App\Services\PaymentService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,18 +30,21 @@ class BookingController extends Controller
     protected PaymentService $paymentService;
     protected MidtransService $midtransService;
     protected AvailabilityService $availabilityService;
+    protected BookingNotificationService $bookingNotificationService;
 
     public function __construct(
         BookingService $bookingService,
         PaymentService $paymentService,
         MidtransService $midtransService,
-        AvailabilityService $availabilityService
+        AvailabilityService $availabilityService,
+        BookingNotificationService $bookingNotificationService
     )
     {
         $this->bookingService = $bookingService;
         $this->paymentService = $paymentService;
         $this->midtransService = $midtransService;
         $this->availabilityService = $availabilityService;
+        $this->bookingNotificationService = $bookingNotificationService;
     }
 
     /**
@@ -333,6 +338,8 @@ class BookingController extends Controller
         }
 
         $payment = $booking->payment;
+        $previousStatus = $payment->status;
+        $previousGatewayStatus = $payment->gateway_status;
 
         if ($payment->status === 'paid') {
             return redirect()
@@ -347,6 +354,7 @@ class BookingController extends Controller
         try {
             $statusPayload = $this->midtransService->getTransactionStatus((string) $payment->invoice_number);
             $payment = $this->paymentService->syncMidtransTransaction($payment, $statusPayload);
+            $this->dispatchPaymentNotificationByState($booking, $payment, $previousStatus, $previousGatewayStatus);
         } catch (\Throwable $exception) {
             Log::warning('Midtrans status check failed', [
                 'booking_id' => $booking->id,
@@ -399,6 +407,8 @@ class BookingController extends Controller
         ]);
 
         $payment = $booking->payment;
+        $previousStatus = $payment->status;
+        $previousGatewayStatus = $payment->gateway_status;
 
         if ((string) $payment->invoice_number !== (string) $validated['order_id']) {
             return response()->json([
@@ -418,6 +428,7 @@ class BookingController extends Controller
         }
 
         $payment = $this->paymentService->syncMidtransTransaction($payment, $statusPayload);
+        $this->dispatchPaymentNotificationByState($booking, $payment, $previousStatus, $previousGatewayStatus);
 
         if ($payment->status === 'paid') {
             return response()->json([
@@ -560,6 +571,33 @@ class BookingController extends Controller
         }
 
         return view('front.bookings.invoice', compact('booking'));
+    }
+
+    /**
+     * Download invoice PDF yang siap kirim/arsip.
+     */
+    public function downloadInvoicePdf(Booking $booking)
+    {
+        $this->authorizeOwnedBooking($booking);
+        $booking->load('user', 'vehicle.vendor', 'payment', 'address.district');
+
+        if (!$booking->payment) {
+            return redirect()->route('user.bookings.show', $booking->id)
+                ->with('error', 'Data pembayaran tidak ditemukan.');
+        }
+
+        if (!$booking->payment->proof_path) {
+            return redirect()->route('user.bookings.payment.proof', $booking)
+                ->with('error', 'Unggah bukti pembayaran terlebih dahulu sebelum mengunduh invoice PDF.');
+        }
+
+        $pdf = Pdf::loadView('front.bookings.invoice-pdf', [
+            'booking' => $booking,
+        ])->setPaper('a4', 'portrait');
+
+        $filename = 'invoice-' . $booking->payment->invoice_number . '.pdf';
+
+        return $pdf->download($filename);
     }
 
     /**
@@ -708,5 +746,23 @@ class BookingController extends Controller
         }
 
         return 'Widget pembayaran sedang tidak tersedia. Coba refresh halaman atau ajukan ulang pembayaran.';
+    }
+
+    private function dispatchPaymentNotificationByState(
+        Booking $booking,
+        \App\Models\Payment $payment,
+        ?string $previousStatus,
+        ?string $previousGatewayStatus
+    ): void
+    {
+        if ($payment->status === 'paid' && $previousStatus !== 'paid') {
+            $this->bookingNotificationService->notifyPaymentSuccess($booking, $payment);
+
+            return;
+        }
+
+        if ($payment->gateway_status === 'failed' && $previousGatewayStatus !== 'failed') {
+            $this->bookingNotificationService->notifyPaymentFailed($booking, $payment);
+        }
     }
 }

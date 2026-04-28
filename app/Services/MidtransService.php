@@ -90,6 +90,27 @@ class MidtransService
         return str_starts_with(strtolower($locale), 'id') ? 'id' : 'en';
     }
 
+    public function isValidNotificationSignature(array $payload): bool
+    {
+        if (!$this->isConfigured()) {
+            return false;
+        }
+
+        $orderId = (string) ($payload['order_id'] ?? '');
+        $statusCode = (string) ($payload['status_code'] ?? '');
+        $grossAmount = (string) ($payload['gross_amount'] ?? '');
+        $signatureKey = (string) ($payload['signature_key'] ?? '');
+
+        if ($orderId === '' || $statusCode === '' || $grossAmount === '' || $signatureKey === '') {
+            return false;
+        }
+
+        $raw = $orderId . $statusCode . $grossAmount . (string) config('services.midtrans.server_key');
+        $generated = hash('sha512', $raw);
+
+        return hash_equals(strtolower($generated), strtolower($signatureKey));
+    }
+
     private function configure(): void
     {
         if (!$this->isConfigured()) {

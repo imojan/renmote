@@ -65,7 +65,7 @@
 
             <div class="booking-invoice-actions">
                 <a href="{{ route('documents.payment.proof.media', $booking->payment) }}" target="_blank" class="booking-btn-secondary booking-btn-block">Lihat Bukti Pembayaran</a>
-                <button type="button" class="booking-btn-primary booking-btn-block" onclick="window.print()">Download Receipt (PDF)</button>
+                <a href="{{ route('user.bookings.invoice.download', $booking) }}" class="booking-btn-primary booking-btn-block">Download Receipt (PDF)</a>
                 <a href="{{ route('user.bookings.show', $booking->id) }}" class="booking-btn-secondary booking-btn-block">Lihat Detail Pesanan</a>
             </div>
         </article>
