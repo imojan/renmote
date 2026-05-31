@@ -169,20 +169,7 @@
                 </div>
                 <div class="motor-type">{{ ucfirst(str_replace('_', ' ', $vehicle->category)) }} &bull; {{ $vehicle->year }}cc</div>
                 <div class="motor-actions-row">
-                    @auth
-                        @if(auth()->user()->role === 'user')
-                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn-fav {{ in_array($vehicle->id, $wishlistedVehicleIds ?? [], true) ? 'is-active' : '' }}">
-                                    <i class="fa fa-heart"></i>
-                                </button>
-                            </form>
-                        @endif
-                    @else
-                        <a href="{{ route('login') }}" class="btn-fav"><i class="fa fa-heart"></i></a>
-                    @endauth
-
-                    <a href="{{ route('search', ['keyword' => $vehicle->name]) }}" class="btn-lihat motor-lihat-btn">Lihat Pilihan</a>
+                    <a href="{{ route('search', ['keyword' => $vehicle->name]) }}" class="btn-lihat motor-lihat-btn motor-lihat-btn-full">Lihat Pilihan</a>
                 </div>
             </div>
         </div>
@@ -213,14 +200,18 @@
 <div class="section">
     <div class="section-header">
         <h2 class="section-title">Vendor Andalan</h2>
-        <a href="{{ route('search') }}" class="see-all">Lihat Semua <i class="fa fa-arrow-right"></i></a>
+        <a href="{{ route('vendors.index') }}" class="see-all">Lihat Semua <i class="fa fa-arrow-right"></i></a>
     </div>
     <div class="vendor-grid">
         @forelse($vendors as $vendor)
         <div class="vendor-card">
             <div class="vendor-header">
                 <div class="vendor-logo">
-                    {{ strtoupper(substr($vendor->store_name, 0, 2)) }}
+                    @if($vendor->profile_photo)
+                        <img src="{{ Storage::url($vendor->profile_photo) }}" alt="{{ $vendor->store_name }}">
+                    @else
+                        {{ strtoupper(substr($vendor->store_name, 0, 2)) }}
+                    @endif
                 </div>
                 <div>
                     <div class="vendor-name">{{ $vendor->store_name }}</div>
@@ -229,15 +220,17 @@
             <div class="vendor-meta">
                 <div class="vendor-meta-row"><i class="fa fa-map-marker-alt"></i> {{ $vendor->district->name ?? 'Kecamatan' }}</div>
                 <div class="vendor-meta-row">
-                    <i class="fa fa-star"></i> <strong>4.8</strong> ({{ rand(80, 200) }})
-                    &nbsp;&bull;&nbsp;
+                    @if($vendor->rating)
+                        <i class="fa fa-star"></i> <strong>{{ number_format($vendor->rating, 1) }}</strong> ({{ number_format($vendor->rating_count ?? 0) }})
+                        &nbsp;&bull;&nbsp;
+                    @endif
                     <i class="fa fa-motorcycle"></i> {{ $vendor->vehicles->count() }}+ Unit Kendaraan
                 </div>
             </div>
             <div class="vendor-actions">
                 @auth
                     @if(auth()->user()->role === 'user')
-                        <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST">
+                        <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST" data-rn-wishlist>
                             @csrf
                             <button type="submit" class="btn-fav {{ in_array($vendor->id, $wishlistedVendorIds ?? [], true) ? 'is-active' : '' }}"><i class="fa fa-heart"></i></button>
                         </form>

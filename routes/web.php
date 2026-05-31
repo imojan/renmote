@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DocumentMediaController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 // Front Controllers
@@ -25,6 +26,7 @@ use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController
 use App\Http\Controllers\Vendor\VehicleController as VendorVehicleController;
 use App\Http\Controllers\Vendor\BookingController as VendorBookingController;
 use App\Http\Controllers\Vendor\VendorRegistrationController;
+use App\Http\Controllers\Vendor\ProfileController as VendorProfileController;
 
 // Admin Controllers
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -44,11 +46,19 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/kategori/{categorySlug}', [SearchController::class, 'index'])->name('search.category');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 Route::get('/vehicles/{vehicle}', [FrontVehicleController::class, 'show'])->name('vehicles.show');
+Route::get('/vendors', [FrontVendorController::class, 'index'])->name('vendors.index');
 Route::get('/vendors/{vendor}', [FrontVendorController::class, 'show'])->name('vendors.show');
 Route::get('/articles', [FrontArticleController::class, 'index'])->name('articles.index');
 Route::get('/articles/{article}', [FrontArticleController::class, 'show'])->name('articles.show');
 Route::view('/cara-sewa', 'front.rent-guide')->name('rent.guide');
 Route::view('/syarat-ketentuan-sewa', 'front.rental-terms')->name('rent.terms');
+Route::view('/tentang-kami', 'front.about')->name('about');
+Route::view('/bantuan', 'front.help')->name('help');
+Route::view('/kontak-kami', 'front.contact')->name('contact');
+
+Route::get('/locale/{locale}', [LocaleController::class, 'switch'])
+    ->where('locale', '[a-zA-Z-]+')
+    ->name('locale.switch');
 
 /*
 |--------------------------------------------------------------------------
@@ -107,6 +117,7 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
 // Vendor Registration (auth only, no role check — user registers as vendor)
 Route::middleware('auth')->get('/vendor/register', [VendorRegistrationController::class, 'create'])->name('vendor.register');
 Route::middleware('auth')->post('/vendor/register', [VendorRegistrationController::class, 'store'])->name('vendor.register.store');
+Route::middleware(['auth', 'role:vendor'])->post('/vendor/documents/{document}/resubmit', [VendorRegistrationController::class, 'resubmitDocument'])->name('vendor.documents.resubmit');
 
 Route::middleware(['auth', 'role:vendor'])->prefix('vendor')->name('vendor.')->group(function () {
     Route::get('/dashboard', [VendorDashboardController::class, 'index'])->name('dashboard');
@@ -121,6 +132,8 @@ Route::middleware(['auth', 'role:vendor'])->prefix('vendor')->name('vendor.')->g
     
     // Bookings
     Route::get('/bookings', [VendorBookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/manual', [VendorBookingController::class, 'manualCreate'])->name('bookings.manual.create');
+    Route::post('/bookings/manual', [VendorBookingController::class, 'manualStore'])->name('bookings.manual.store');
     Route::get('/bookings/export', [VendorBookingController::class, 'export'])->name('bookings.export');
     Route::get('/bookings/{booking}', [VendorBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{booking}/payment-proof/approve', [VendorBookingController::class, 'approvePaymentProof'])->name('bookings.paymentProof.approve');
@@ -128,6 +141,19 @@ Route::middleware(['auth', 'role:vendor'])->prefix('vendor')->name('vendor.')->g
     Route::post('/bookings/{booking}/confirm', [VendorBookingController::class, 'confirm'])->name('bookings.confirm');
     Route::post('/bookings/{booking}/reject', [VendorBookingController::class, 'reject'])->name('bookings.reject');
     Route::post('/bookings/{booking}/complete', [VendorBookingController::class, 'complete'])->name('bookings.complete');
+
+    // Profile (vendor)
+    Route::get('/profile', [VendorProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [VendorProfileController::class, 'updateProfile'])->name('profile.update');
+    Route::patch('/profile/store', [VendorProfileController::class, 'updateStore'])->name('profile.store.update');
+    Route::patch('/profile/bank', [VendorProfileController::class, 'updateBank'])->name('profile.bank.update');
+    Route::patch('/profile/rating', [VendorProfileController::class, 'updateRating'])->name('profile.rating.update');
+    Route::post('/profile/cover', [VendorProfileController::class, 'updateCover'])->name('profile.cover.update');
+    Route::delete('/profile/cover', [VendorProfileController::class, 'destroyCover'])->name('profile.cover.destroy');
+    Route::post('/profile/documents/{type}', [VendorProfileController::class, 'uploadDocument'])->name('profile.document.upload');
+    Route::delete('/profile/documents/doc/{document}', [VendorProfileController::class, 'destroyDocument'])->name('profile.document.destroy');
+    Route::patch('/profile/password', [VendorProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::delete('/profile/account', [VendorProfileController::class, 'destroyAccount'])->name('profile.account.destroy');
 });
 
 /*

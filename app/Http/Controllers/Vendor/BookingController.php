@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Exports\VendorBookingsExport;
 use App\Models\Booking;
+use App\Models\Vehicle;
+use App\Services\AvailabilityService;
 use App\Services\BookingNotificationService;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class BookingController extends Controller
@@ -19,6 +23,77 @@ class BookingController extends Controller
     {
         $this->bookingService = $bookingService;
         $this->bookingNotificationService = $bookingNotificationService;
+    }
+
+    /**
+     * Form catat booking walk-in (offline) dari vendor.
+     *
+     * Use case: pelanggan datang langsung ke tempat vendor dan menyewa motor.
+     * Vendor mencatat di sistem supaya tanggal tersebut otomatis terblokir di
+     * pencarian online (AvailabilityService sudah cek semua booking yang
+     * statusnya bukan "cancelled").
+     */
+    public function manualCreate(Request $request)
+    {
+        $vendor = auth()->user()->vendor;
+        $vehicles = $vendor->vehicles()->where('status', 'available')->orderBy('name')->get();
+
+        return view('vendor.bookings.manual', compact('vehicles'));
+    }
+
+    /**
+     * Simpan booking walk-in.
+     */
+    public function manualStore(Request $request)
+    {
+        $vendor = auth()->user()->vendor;
+
+        $validated = $request->validate([
+            'vehicle_id' => [
+                'required',
+                Rule::exists('vehicles', 'id')->where('vendor_id', $vendor->id),
+            ],
+            'start_date' => ['required', 'date', 'after_or_equal:today'],
+            'end_date' => ['required', 'date', 'after:start_date'],
+            'customer_name' => ['nullable', 'string', 'max:120'],
+            'customer_phone' => ['nullable', 'string', 'max:30'],
+            'walkin_notes' => ['nullable', 'string', 'max:500'],
+        ], [
+            'vehicle_id.required' => 'Kendaraan wajib dipilih.',
+            'vehicle_id.exists' => 'Kendaraan tidak valid.',
+            'start_date.after_or_equal' => 'Tanggal mulai tidak boleh sebelum hari ini.',
+            'end_date.after' => 'Tanggal selesai harus setelah tanggal mulai.',
+        ]);
+
+        $vehicle = Vehicle::query()
+            ->where('id', $validated['vehicle_id'])
+            ->where('vendor_id', $vendor->id)
+            ->firstOrFail();
+
+        try {
+            $booking = $this->bookingService->createBooking(
+                auth()->user(),
+                $vehicle,
+                $validated['start_date'],
+                $validated['end_date'],
+                [
+                    'status' => 'confirmed',
+                    'source' => 'walk_in',
+                    'customer_name' => $validated['customer_name'] ?? null,
+                    'customer_phone' => $validated['customer_phone'] ?? null,
+                    'walkin_notes' => $validated['walkin_notes'] ?? null,
+                    'fulfillment_method' => 'pickup',
+                ]
+            );
+        } catch (\Exception $e) {
+            throw ValidationException::withMessages([
+                'start_date' => $e->getMessage(),
+            ]);
+        }
+
+        return redirect()
+            ->route('vendor.bookings.index')
+            ->with('success', 'Booking offline berhasil dicatat. Tanggal tersebut sekarang terblokir di sistem.');
     }
 
     /**

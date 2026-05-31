@@ -1,6 +1,7 @@
 @extends('layouts.front')
 
 @section('title', 'Pembayaran Booking')
+@section('hideSearchBar', true)
 
 @section('content')
 <section class="section booking-front-section booking-checkout-section">

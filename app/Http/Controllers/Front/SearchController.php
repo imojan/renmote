@@ -63,13 +63,13 @@ class SearchController extends Controller
             }
         }
         
-        $query = Vehicle::with('vendor.district')
+        $vehicleQuery = Vehicle::with('vendor.district')
             ->where('status', 'available');
 
         // Filter by keyword (search by name, category, description)
         if ($request->filled('keyword')) {
             $keyword = $request->keyword;
-            $query->where(function ($q) use ($keyword) {
+            $vehicleQuery->where(function ($q) use ($keyword) {
                 $q->where('name', 'like', "%{$keyword}%")
                   ->orWhere('category', 'like', "%{$keyword}%")
                   ->orWhere('description', 'like', "%{$keyword}%");
@@ -78,7 +78,7 @@ class SearchController extends Controller
 
         // Filter by district
         if ($request->filled('district_id')) {
-            $query->whereHas('vendor', function ($q) use ($request) {
+            $vehicleQuery->whereHas('vendor', function ($q) use ($request) {
                 $q->where('district_id', $request->district_id);
             });
         }
@@ -87,21 +87,23 @@ class SearchController extends Controller
         $categoryFilter = $resolvedCategory ?? $rawCategory;
         if ($categoryFilter !== null && $categoryFilter !== '') {
             $normalizedCategory = $this->normalizeCategorySlug($categoryFilter);
-            $query->whereRaw("LOWER(REPLACE(REPLACE(category, ' ', '-'), '_', '-')) = ?", [$normalizedCategory]);
+            $vehicleQuery->whereRaw("LOWER(REPLACE(REPLACE(category, ' ', '-'), '_', '-')) = ?", [$normalizedCategory]);
         }
 
-        $vehicles = $query->get();
-
-        // Filter by availability (date range)
+        // If a date range is supplied, exclude bikes that are already booked
+        // for that range so pagination still reflects real availability.
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $vehicles = $vehicles->filter(function ($vehicle) use ($request) {
-                return $this->availabilityService->checkAvailability(
-                    $vehicle->id,
-                    $request->start_date,
-                    $request->end_date
-                );
+            $startDate = $request->start_date;
+            $endDate = $request->end_date;
+
+            $vehicleQuery->whereDoesntHave('bookings', function ($bookingQuery) use ($startDate, $endDate) {
+                $bookingQuery->where('status', '!=', 'cancelled')
+                    ->where('start_date', '<', $endDate)
+                    ->where('end_date', '>', $startDate);
             });
         }
+
+        $vehicles = $vehicleQuery->latest()->paginate(9)->withQueryString();
 
         $selectedCategorySlug = $resolvedCategory !== null
             ? $this->categoryToSlug($resolvedCategory)

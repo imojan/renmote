@@ -44,7 +44,7 @@ class WishlistController extends Controller
     /**
      * Toggle wishlist untuk kendaraan.
      */
-    public function toggleVehicle(Request $request, Vehicle $vehicle): RedirectResponse
+    public function toggleVehicle(Request $request, Vehicle $vehicle)
     {
         $this->ensureUserRole($request);
 
@@ -62,13 +62,23 @@ class WishlistController extends Controller
             ]);
         }
 
-        return back()->with('success', $deleted ? 'Kendaraan dihapus dari wishlist.' : 'Kendaraan ditambahkan ke wishlist.');
+        $message = $deleted ? 'Kendaraan dihapus dari wishlist.' : 'Kendaraan ditambahkan ke wishlist.';
+
+        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'wishlisted' => $deleted === 0,
+                'message' => $message,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
      * Toggle wishlist untuk vendor.
      */
-    public function toggleVendor(Request $request, Vendor $vendor): RedirectResponse
+    public function toggleVendor(Request $request, Vendor $vendor)
     {
         $this->ensureUserRole($request);
 
@@ -86,7 +96,17 @@ class WishlistController extends Controller
             ]);
         }
 
-        return back()->with('success', $deleted ? 'Vendor dihapus dari wishlist.' : 'Vendor ditambahkan ke wishlist.');
+        $message = $deleted ? 'Vendor dihapus dari wishlist.' : 'Vendor ditambahkan ke wishlist.';
+
+        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'wishlisted' => $deleted === 0,
+                'message' => $message,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
     private function ensureUserRole(Request $request): void

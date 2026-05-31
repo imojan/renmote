@@ -4,33 +4,51 @@
 
 @section('content')
     <section class="section front-content-section front-vendor-section">
-        <!-- Vendor Header -->
-        <div class="bg-white rounded-lg shadow p-6 mb-8">
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex items-center">
-                <div class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mr-6">
-                    <span class="text-3xl font-bold text-gray-600">{{ substr($vendor->store_name, 0, 1) }}</span>
+        <!-- Vendor Header (with cover photo background) -->
+        <div class="overflow-hidden rounded-lg shadow mb-8 bg-white">
+            @if($vendor->cover_photo)
+                <div class="h-44 sm:h-56 w-full">
+                    <img src="{{ Storage::url($vendor->cover_photo) }}" alt="{{ $vendor->store_name }}" class="h-full w-full object-cover">
                 </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">
-                        {{ $vendor->store_name }}
-                        @if($vendor->verified)
-                            <span class="ml-2 px-2 py-1 text-sm bg-green-100 text-green-800 rounded-full">✓ Terverifikasi</span>
-                        @endif
-                    </h1>
-                    <p class="text-gray-500">{{ $vendor->district->name }}</p>
-                    @if($vendor->description)
-                        <p class="text-gray-600 mt-2">{{ $vendor->description }}</p>
-                    @endif
-                </div>
-                </div>
+            @endif
+
+            <div class="p-6">
+                <div class="flex items-start justify-between gap-4 flex-wrap">
+                    <div class="flex items-center">
+                        <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center mr-6 shrink-0 {{ $vendor->cover_photo ? '-mt-16 border-4 border-white shadow' : '' }}">
+                            @if($vendor->profile_photo)
+                                <img src="{{ Storage::url($vendor->profile_photo) }}" alt="{{ $vendor->store_name }}" class="h-full w-full object-cover">
+                            @else
+                                <span class="text-3xl font-bold text-gray-600">{{ strtoupper(substr($vendor->store_name, 0, 1)) }}</span>
+                            @endif
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">
+                                {{ $vendor->store_name }}
+                                @if($vendor->verified)
+                                    <span class="ml-2 px-2 py-1 text-sm bg-green-100 text-green-800 rounded-full">✓ Terverifikasi</span>
+                                @endif
+                            </h1>
+                            <p class="text-gray-500"><i class="fa fa-map-marker-alt text-xs"></i> {{ $vendor->district->name }}</p>
+                            @if($vendor->rating)
+                                <p class="mt-1 text-sm font-semibold text-gray-700">
+                                    <i class="fa fa-star text-amber-400"></i>
+                                    {{ number_format($vendor->rating, 1) }}
+                                    <span class="text-xs font-normal text-gray-500">({{ number_format($vendor->rating_count ?? 0) }} review)</span>
+                                </p>
+                            @endif
+                            @if($vendor->description)
+                                <p class="text-gray-600 mt-2">{{ $vendor->description }}</p>
+                            @endif
+                        </div>
+                    </div>
 
                 @auth
                     @if(auth()->user()->role === 'user')
                         <div class="flex items-center gap-2">
-                            <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST">
+                            <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST" data-rn-wishlist>
                                 @csrf
-                                <button type="submit" class="w-11 h-11 rounded-xl border {{ $isWishlistedVendor ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
+                                <button type="submit" class="btn-fav w-11 h-11 rounded-xl border {{ $isWishlistedVendor ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
                                     <i class="fa fa-heart"></i>
                                 </button>
                             </form>
@@ -62,6 +80,7 @@
                     </div>
                 @endauth
             </div>
+        </div>
         </div>
 
         <!-- Vehicles -->
@@ -103,9 +122,9 @@
                                 <div class="flex items-center gap-2">
                                     @auth
                                         @if(auth()->user()->role === 'user')
-                                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST">
+                                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST" data-rn-wishlist>
                                                 @csrf
-                                                <button type="submit" class="w-10 h-10 rounded-lg border {{ in_array($vehicle->id, $wishlistedVehicleIds ?? [], true) ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
+                                                <button type="submit" class="btn-fav w-10 h-10 rounded-lg border {{ in_array($vehicle->id, $wishlistedVehicleIds ?? [], true) ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
                                                     <i class="fa fa-heart"></i>
                                                 </button>
                                             </form>

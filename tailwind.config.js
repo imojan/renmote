@@ -16,6 +16,7 @@ export default {
                 poppins: ['Poppins', 'sans-serif'],
                 roboto: ['Roboto', 'sans-serif'],
                 montserrat: ['Montserrat', 'sans-serif'],
+                jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
             },
             colors: {
                 primary: {
@@ -29,6 +30,30 @@ export default {
                     700: '#0b4a9a',
                     800: '#0a3d7f',
                     900: '#082f61',
+                },
+                /**
+                 * Renmote brand palette.
+                 * Mirrors CSS variables defined in resources/css/front-layout.css (:root)
+                 * so utility classes and legacy `var(--rn-*)` references stay in sync.
+                 */
+                rn: {
+                    blue: {
+                        DEFAULT: '#0058BC',
+                        dark: '#004299',
+                    },
+                    primary: {
+                        DEFAULT: '#1565C0',
+                        dark: '#0D47A1',
+                    },
+                    accent: '#FF6B00',
+                    green: {
+                        DEFAULT: '#22C55E',
+                        dark: '#16a34a',
+                    },
+                    text: '#1a1a2e',
+                    muted: '#6b7280',
+                    border: '#e5e7eb',
+                    bg: '#f8fafc',
                 },
             },
         },

@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Vehicle extends Model
 {
+    /** Available vehicle categories. Mirrors the search slug map. */
+    public const CATEGORIES = [
+        'matic'           => 'Matic',
+        'manual'          => 'Manual',
+        'sport'           => 'Sport',
+        'bebek'           => 'Bebek',
+        'trail'           => 'Trail',
+        'skutik_premium'  => 'Skutik Premium',
+        'bigbike'         => 'Big Bike',
+    ];
+
     protected $fillable = [
         'vendor_id',
         'name',

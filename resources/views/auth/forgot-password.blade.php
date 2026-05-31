@@ -1,48 +1,36 @@
 <x-guest-layout>
     @section('title', 'Lupa Password')
 
-    <h1 class="auth-title">Lupa password?</h1>
-    <p class="auth-subtitle">Masukkan email kamu dan kami akan kirimkan link untuk reset password.</p>
+    <x-auth.title subtitle="Masukkan email kamu dan kami akan kirimkan link untuk reset password.">
+        Lupa password?
+    </x-auth.title>
 
     @if (session('status'))
-        <div class="auth-alert success">{{ session('status') }}</div>
+        <x-auth.alert type="success">{{ session('status') }}</x-auth.alert>
     @endif
 
     @if ($errors->any())
-        <div class="auth-alert error">
+        <x-auth.alert type="error">
             @foreach ($errors->all() as $error)
                 <div>{{ $error }}</div>
             @endforeach
-        </div>
+        </x-auth.alert>
     @endif
 
-    <form method="POST" action="{{ route('password.email') }}" id="forgotForm">
+    <form method="POST" action="{{ route('password.email') }}" data-rn-loading>
         @csrf
 
-        <div class="auth-field">
-            <label for="email">Email</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}"
-                   placeholder="nama@email.com" required autofocus>
-        </div>
+        <x-auth.field label="Email" for="email">
+            <x-auth.input id="email" type="email" name="email"
+                          value="{{ old('email') }}"
+                          placeholder="nama@email.com"
+                          required autofocus />
+        </x-auth.field>
 
-        <button type="submit" class="auth-submit-btn" id="forgotBtn">
-            <span class="btn-text">Kirim Link Reset</span>
-            <span class="spinner"></span>
-        </button>
+        <x-auth.submit-button>Kirim Link Reset</x-auth.submit-button>
     </form>
 
-    <div class="auth-footer">
-        <p>Ingat password kamu?</p>
+    <x-auth.footer text="Ingat password kamu?">
         <a href="{{ route('login') }}">Kembali ke login</a>
-    </div>
-
-    @push('scripts')
-    <script>
-        document.getElementById('forgotForm').addEventListener('submit', function() {
-            const btn = document.getElementById('forgotBtn');
-            btn.classList.add('loading');
-            btn.disabled = true;
-        });
-    </script>
-    @endpush
+    </x-auth.footer>
 </x-guest-layout>

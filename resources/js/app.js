@@ -640,12 +640,35 @@ function initPasswordToggles() {
 	});
 }
 
+function initLoadingForms() {
+	const FORM_SELECTOR = 'form[data-rn-loading]';
+
+	document.querySelectorAll(FORM_SELECTOR).forEach((formEl) => {
+		if (formEl.dataset.rnLoadingReady === 'true') {
+			return;
+		}
+
+		formEl.addEventListener('submit', () => {
+			const buttonEl = formEl.querySelector('button[type="submit"]');
+			if (!buttonEl) {
+				return;
+			}
+
+			buttonEl.classList.add('is-loading');
+			buttonEl.disabled = true;
+		});
+
+		formEl.dataset.rnLoadingReady = 'true';
+	});
+}
+
 function initGlobalFormEnhancements() {
 	initUnifiedSelectStyle();
 	initReusableDropdowns();
 	initGlobalDatePickers();
 	initUploadPreviews();
 	initPasswordToggles();
+	initLoadingForms();
 	bindConfirmModalEvents();
 }
 
@@ -655,4 +678,145 @@ if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', initGlobalFormEnhancements);
 } else {
 	initGlobalFormEnhancements();
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────
+   Scroll reveal: any element with [data-rn-reveal] gets a one-time
+   "is-visible" class once it enters the viewport. Pairs with the CSS
+   block in resources/css/app.css.
+   ────────────────────────────────────────────────────────────────────── */
+function initScrollReveal() {
+	const supportsObserver = typeof window !== 'undefined' && 'IntersectionObserver' in window;
+	const elements = document.querySelectorAll('[data-rn-reveal]:not(.is-visible)');
+
+	if (!elements.length) {
+		return;
+	}
+
+	if (!supportsObserver) {
+		elements.forEach((el) => el.classList.add('is-visible'));
+		return;
+	}
+
+	const observer = new IntersectionObserver((entries, obs) => {
+		entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+				entry.target.classList.add('is-visible');
+				obs.unobserve(entry.target);
+			}
+		});
+	}, {
+		root: null,
+		rootMargin: '0px 0px -10% 0px',
+		threshold: 0.1,
+	});
+
+	elements.forEach((el) => observer.observe(el));
+}
+
+/* Soft page-load fade — runs once on DOMContentLoaded and on bfcache restore.
+   We deliberately apply the animation to the FIRST direct child of <body>
+   instead of <body> itself, so position: fixed children (like the floating
+   chat FAB) are not turned into transform-bound elements. */
+function applyPageFadeClass() {
+	if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		return;
+	}
+
+	const candidates = Array.from(document.body.children).filter((el) => {
+		if (!(el instanceof HTMLElement)) return false;
+		const tag = el.tagName.toLowerCase();
+		return tag !== 'script' && tag !== 'noscript';
+	});
+
+	const target = candidates[0];
+	if (target) {
+		target.classList.add('rn-page-fade-target');
+	}
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', () => {
+		applyPageFadeClass();
+		initScrollReveal();
+	});
+} else {
+	applyPageFadeClass();
+	initScrollReveal();
+}
+
+window.addEventListener('pageshow', (event) => {
+	if (event.persisted) {
+		applyPageFadeClass();
+		initScrollReveal();
+	}
+});
+
+
+/* ──────────────────────────────────────────────────────────────────────
+   Wishlist toggle (AJAX) — keeps the user on the same page when they
+   click a heart icon. Forms must be marked with [data-rn-wishlist] and
+   contain a child element with class .btn-fav (or pass it via a button
+   inside). The form posts the original action URL with X-Requested-With
+   so the server-side controller still works (it returns redirect on
+   non-AJAX, but we suppress the navigation here).
+   ────────────────────────────────────────────────────────────────────── */
+function initWishlistToggle() {
+	document.querySelectorAll('form[data-rn-wishlist]').forEach((form) => {
+		if (form.dataset.rnWishlistReady === 'true') {
+			return;
+		}
+
+		form.addEventListener('submit', async (event) => {
+			const isAuthenticated = form.dataset.authenticated !== 'false';
+			if (!isAuthenticated) {
+				return; // let the form submit normally → redirects to login
+			}
+
+			event.preventDefault();
+			const button = form.querySelector('.btn-fav, button[type="submit"]');
+			if (button) {
+				button.disabled = true;
+				button.classList.add('is-loading');
+			}
+
+			try {
+				const response = await fetch(form.action, {
+					method: form.method || 'POST',
+					headers: {
+						'Accept': 'application/json',
+						'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+						'X-Requested-With': 'XMLHttpRequest',
+					},
+					body: new FormData(form),
+				});
+
+				if (response.ok || response.status === 302) {
+					// Toggle visual state regardless of redirect/json. Server
+					// just flips the wishlist row.
+					if (button) {
+						button.classList.toggle('is-active');
+					}
+				}
+			} catch (error) {
+				// Fallback to native submit if AJAX failed
+				form.submit();
+				return;
+			} finally {
+				if (button) {
+					button.disabled = false;
+					button.classList.remove('is-loading');
+				}
+			}
+		});
+
+		form.dataset.rnWishlistReady = 'true';
+	});
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', initWishlistToggle);
+} else {
+	initWishlistToggle();
 }

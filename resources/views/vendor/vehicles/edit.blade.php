@@ -1,146 +1,76 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Edit Kendaraan')
-
-@section('sidebar')
-    <x-sidebar-link href="{{ route('vendor.dashboard') }}">
-        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-        </svg>
-        Dashboard
-    </x-sidebar-link>
-    
-    <x-sidebar-link href="{{ route('vendor.vehicles.index') }}" :active="true">
-        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-        </svg>
-        Kendaraan
-    </x-sidebar-link>
-    
-    <x-sidebar-link href="{{ route('vendor.bookings.index') }}">
-        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-        </svg>
-        Pesanan
-    </x-sidebar-link>
-@endsection
+@section('title', __('Edit Kendaraan'))
 
 @section('content')
-    <div class="max-w-2xl mx-auto">
-        <a href="{{ route('vendor.vehicles.index') }}" class="text-blue-600 hover:underline mb-4 inline-block">← Kembali</a>
-        
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Kendaraan</h2>
+<div class="mx-auto max-w-3xl">
+    <a href="{{ route('vendor.vehicles.index') }}"
+       class="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-rn-primary hover:underline">
+        <i class="fa fa-arrow-left text-xs"></i> {{ __('Kembali') }}
+    </a>
 
-            <form action="{{ route('vendor.vehicles.update', $vehicle) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kendaraan</label>
-                        <input type="text" name="name" value="{{ old('name', $vehicle->name) }}" required
-                               class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('name') border-red-500 @enderror">
-                        @error('name')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+    <x-dashboard.card title="{{ __('Edit Kendaraan') }}">
+        <form action="{{ route('vendor.vehicles.update', $vehicle) }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+            @csrf
+            @method('PUT')
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                            <select name="category" required
-                                    class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('category') border-red-500 @enderror">
-                                <option value="matic" {{ old('category', $vehicle->category) == 'matic' ? 'selected' : '' }}>Matic</option>
-                                <option value="manual" {{ old('category', $vehicle->category) == 'manual' ? 'selected' : '' }}>Manual</option>
-                                <option value="sport" {{ old('category', $vehicle->category) == 'sport' ? 'selected' : '' }}>Sport</option>
-                            </select>
-                            @error('category')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+            <x-dashboard.field label="{{ __('Nama Kendaraan') }}" for="name" :error="$errors->first('name')">
+                <x-dashboard.input id="name" name="name" :value="old('name', $vehicle->name)" required />
+            </x-dashboard.field>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CC Mesin</label>
-                            <input type="number" name="engine_cc" value="{{ old('engine_cc', $vehicle->engine_cc) }}" required min="50" max="3000"
-                                   class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('engine_cc') border-red-500 @enderror"
-                                   placeholder="125">
-                            @error('engine_cc')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
-                            <input type="number" name="year" value="{{ old('year', $vehicle->year) }}" required min="2000" max="{{ date('Y') + 1 }}"
-                                   class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('year') border-red-500 @enderror">
-                            @error('year')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
+            <div class="grid gap-4 md:grid-cols-3">
+                <x-dashboard.field label="{{ __('Kategori') }}" for="category" :error="$errors->first('category')">
+                    <x-dashboard.select id="category" name="category" required>
+                        @foreach (\App\Models\Vehicle::CATEGORIES as $value => $label)
+                            <option value="{{ $value }}" @selected(old('category', $vehicle->category) === $value)>{{ $label }}</option>
+                        @endforeach
+                    </x-dashboard.select>
+                </x-dashboard.field>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                        <textarea name="description" rows="3"
-                                  class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('description') border-red-500 @enderror">{{ old('description', $vehicle->description) }}</textarea>
-                        @error('description')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <x-dashboard.field label="{{ __('CC Mesin') }}" for="engine_cc" :error="$errors->first('engine_cc')">
+                    <x-dashboard.input id="engine_cc" type="number" name="engine_cc" :value="old('engine_cc', $vehicle->engine_cc)" required min="50" max="3000" />
+                </x-dashboard.field>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Harga per Hari (Rp)</label>
-                            <input type="number" name="price_per_day" value="{{ old('price_per_day', $vehicle->price_per_day) }}" required min="0"
-                                   class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('price_per_day') border-red-500 @enderror">
-                            @error('price_per_day')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Stok / Jumlah Unit</label>
-                            <input type="number" name="stock" value="{{ old('stock', $vehicle->stock) }}" required min="1"
-                                   class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('stock') border-red-500 @enderror">
-                            @error('stock')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
+                <x-dashboard.field label="{{ __('Tahun') }}" for="year" :error="$errors->first('year')">
+                    <x-dashboard.input id="year" type="number" name="year" :value="old('year', $vehicle->year)" required min="2000" max="{{ date('Y') + 1 }}" />
+                </x-dashboard.field>
+            </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Foto Kendaraan</label>
-                        @if($vehicle->image)
-                            <div class="mb-2">
-                                <img src="{{ Storage::url($vehicle->image) }}" alt="{{ $vehicle->name }}" class="w-32 h-32 object-cover rounded-lg">
-                            </div>
-                        @endif
-                        <input type="file" name="image" accept="image/*"
-                               class="w-full border border-gray-300 rounded-lg p-2 @error('image') border-red-500 @enderror">
-                        <p class="text-sm text-gray-500 mt-1">Kosongkan jika tidak ingin mengubah foto</p>
-                        @error('image')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+            <x-dashboard.field label="{{ __('Deskripsi') }}" for="description" :error="$errors->first('description')">
+                <textarea id="description" name="description" rows="3"
+                          class="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-rn-text placeholder:text-slate-400 transition focus:border-rn-primary focus:outline-none focus:ring-2 focus:ring-rn-primary/15">{{ old('description', $vehicle->description) }}</textarea>
+            </x-dashboard.field>
 
-                    <div class="flex items-center">
-                        <select name="status" class="border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                            <option value="available" {{ old('status', $vehicle->status) === 'available' ? 'selected' : '' }}>Tersedia</option>
-                            <option value="unavailable" {{ old('status', $vehicle->status) === 'unavailable' ? 'selected' : '' }}>Tidak Tersedia</option>
-                        </select>
-                    </div>
-                </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                <x-dashboard.field label="{{ __('Harga per Hari (Rp)') }}" for="price_per_day" :error="$errors->first('price_per_day')">
+                    <x-dashboard.input id="price_per_day" type="number" name="price_per_day" :value="old('price_per_day', $vehicle->price_per_day)" required min="0" />
+                </x-dashboard.field>
 
-                <div class="mt-6 flex space-x-4">
-                    <button type="submit" class="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">
-                        Update Kendaraan
-                    </button>
-                    <a href="{{ route('vendor.vehicles.index') }}" class="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 text-center">
-                        Batal
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
+                <x-dashboard.field label="{{ __('Stok / Jumlah Unit') }}" for="stock" :error="$errors->first('stock')">
+                    <x-dashboard.input id="stock" type="number" name="stock" :value="old('stock', $vehicle->stock)" required min="1" />
+                </x-dashboard.field>
+            </div>
+
+            <x-dashboard.field label="{{ __('Foto Kendaraan') }}" for="image" :error="$errors->first('image')" hint="{{ __('Kosongkan jika tidak ingin mengubah foto') }}">
+                @if($vehicle->image)
+                    <img src="{{ Storage::url($vehicle->image) }}" alt="{{ $vehicle->name }}" class="mb-2 h-32 w-32 rounded-xl object-cover">
+                @endif
+                <input id="image" type="file" name="image" accept="image/*"
+                       class="block w-full rounded-xl border border-dashed border-slate-300 bg-slate-50 p-2.5 text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-rn-primary/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-rn-primary">
+            </x-dashboard.field>
+
+            <x-dashboard.field label="{{ __('Status') }}" for="status">
+                <x-dashboard.select id="status" name="status">
+                    <option value="available" @selected(old('status', $vehicle->status) === 'available')>{{ __('Tersedia') }}</option>
+                    <option value="unavailable" @selected(old('status', $vehicle->status) === 'unavailable')>{{ __('Tidak Tersedia') }}</option>
+                </x-dashboard.select>
+            </x-dashboard.field>
+
+            <div class="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
+                <x-dashboard.btn variant="primary" icon="fa-floppy-disk" type="submit">{{ __('Update Kendaraan') }}</x-dashboard.btn>
+                <x-dashboard.btn variant="secondary" :href="route('vendor.vehicles.index')">{{ __('Batal') }}</x-dashboard.btn>
+            </div>
+        </form>
+    </x-dashboard.card>
+</div>
 @endsection

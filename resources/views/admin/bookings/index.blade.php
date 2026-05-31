@@ -1,178 +1,135 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Semua Booking')
-
-@section('sidebar')
-    <x-sidebar-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
-        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-        </svg>
-        Dashboard
-    </x-sidebar-link>
-    
-    <x-sidebar-link href="{{ route('admin.vendors.index') }}" :active="request()->routeIs('admin.vendors.*')">
-        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-        </svg>
-        Vendor
-    </x-sidebar-link>
-    
-    <x-sidebar-link href="{{ route('admin.vehicles.index') }}" :active="request()->routeIs('admin.vehicles.*')">
-        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-        </svg>
-        Kendaraan
-    </x-sidebar-link>
-    
-    <x-sidebar-link href="{{ route('admin.bookings.index') }}" :active="request()->routeIs('admin.bookings.*')">
-        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-        </svg>
-        Booking
-    </x-sidebar-link>
-@endsection
+@section('title', __('Semua Pemesanan'))
 
 @section('content')
-    @php
-        $currentStatus = request('status');
-        $currentSortBy = $sortBy ?? request('sort_by', 'id');
-        $currentSortDir = $sortDir ?? request('sort_dir', 'desc');
-        $nextSortDir = $currentSortDir === 'asc' ? 'desc' : 'asc';
-        $directionLabel = $currentSortDir === 'asc' ? 'Ascending' : 'Descending';
-        $toggleDirectionLabel = $currentSortDir === 'asc' ? 'Ubah ke Desc' : 'Ubah ke Asc';
-        $sortIconClass = $currentSortDir === 'asc' ? 'fa-arrow-up-wide-short' : 'fa-arrow-down-wide-short';
+@php
+    $currentStatus = request('status');
+    $currentSortBy = $sortBy ?? request('sort_by', 'id');
+    $currentSortDir = $sortDir ?? request('sort_dir', 'desc');
+    $nextSortDir = $currentSortDir === 'asc' ? 'desc' : 'asc';
 
-        $statusOptions = [
-            '' => 'Semua',
-            'pending' => 'Pending',
-            'confirmed' => 'Confirmed',
-            'declined' => 'Declined',
-            'completed' => 'Completed',
-        ];
+    $statusOptions = [
+        ''          => __('Semua'),
+        'pending'   => __('Pending'),
+        'confirmed' => __('Confirmed'),
+        'declined'  => __('Declined'),
+        'completed' => __('Completed'),
+    ];
 
-        $sortOptions = [
-            'id' => 'ID',
-            'customer_name' => 'Pelanggan',
-            'vehicle_name' => 'Kendaraan',
-            'vendor_name' => 'Vendor',
-            'booking_date' => 'Tanggal',
-            'total_paid' => 'Total',
-        ];
-    @endphp
+    $sortOptions = [
+        'id'             => __('ID'),
+        'customer_name'  => __('Pelanggan'),
+        'vehicle_name'   => __('Kendaraan'),
+        'vendor_name'    => __('Vendor'),
+        'booking_date'   => __('Tanggal'),
+        'total_paid'     => __('Total'),
+    ];
+@endphp
 
-    <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
-        <h2 class="text-xl font-semibold text-gray-800">Semua Booking</h2>
+<x-dashboard.card padded="false">
+    <x-slot name="title">{{ __('Daftar Pemesanan') }}</x-slot>
+    <x-slot name="actions">
+        <x-dashboard.btn variant="primary" icon="fa-file-excel"
+                         :href="route('admin.bookings.export', request()->only(['status', 'sort_by', 'sort_dir']))">
+            Export XLSX
+        </x-dashboard.btn>
+    </x-slot>
 
-        <div class="flex items-center gap-2">
-            <a href="{{ route('admin.bookings.export', request()->only(['status', 'sort_by', 'sort_dir'])) }}"
-               class="px-3 py-1 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700">
-                Export XLSX
-            </a>
-        </div>
-    </div>
+    <div class="border-b border-slate-100 p-4 sm:p-6">
+        <form action="{{ route('admin.bookings.index') }}" method="GET">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
+                <x-dashboard.field label="{{ __('Status') }}" for="status">
+                    <x-dashboard.select id="status" name="status">
+                        @foreach($statusOptions as $val => $label)
+                            <option value="{{ $val }}" @selected(($currentStatus ?? '') === $val)>{{ $label }}</option>
+                        @endforeach
+                    </x-dashboard.select>
+                </x-dashboard.field>
 
-    <div class="mb-6 bg-white border border-gray-200 rounded-lg p-4">
-        <form action="{{ route('admin.bookings.index') }}" method="GET" class="flex flex-wrap items-end gap-3">
-            <div>
-                <label for="status" class="block text-xs font-medium text-gray-600 mb-1">Status</label>
-                <select id="status" name="status" class="h-12 px-3 rounded-lg border border-gray-300 text-sm text-gray-700 min-w-40">
-                    @foreach($statusOptions as $statusValue => $statusLabel)
-                        <option value="{{ $statusValue }}" {{ ($currentStatus ?? '') === $statusValue ? 'selected' : '' }}>
-                            {{ $statusLabel }}
-                        </option>
-                    @endforeach
-                </select>
+                <x-dashboard.field label="{{ __('Urut Berdasarkan') }}" for="sort_by">
+                    <x-dashboard.select id="sort_by" name="sort_by">
+                        @foreach($sortOptions as $key => $label)
+                            <option value="{{ $key }}" @selected($currentSortBy === $key)>{{ $label }}</option>
+                        @endforeach
+                    </x-dashboard.select>
+                </x-dashboard.field>
+
+                <input type="hidden" name="sort_dir" value="{{ $currentSortDir }}">
+
+                <x-dashboard.field label="{{ __('Aksi Filter') }}">
+                    <x-dashboard.btn variant="primary" type="submit" icon="fa-filter" class="w-full">
+                        {{ __('Terapkan') }}
+                    </x-dashboard.btn>
+                </x-dashboard.field>
+
+                <x-dashboard.field label="{{ __('Urutan') }}">
+                    <a href="{{ route('admin.bookings.index', array_filter([
+                            'status' => $currentStatus,
+                            'sort_by' => $currentSortBy,
+                            'sort_dir' => $nextSortDir,
+                        ], fn ($value) => $value !== null && $value !== '')) }}"
+                       class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-rn-text transition hover:border-rn-primary/40 hover:text-rn-primary">
+                        <i class="fa-solid {{ $currentSortDir === 'asc' ? 'fa-arrow-up-wide-short' : 'fa-arrow-down-wide-short' }}"></i>
+                        {{ $currentSortDir === 'asc' ? __('Ascending') : __('Descending') }}
+                    </a>
+                </x-dashboard.field>
             </div>
-
-            <div>
-                <label for="sort_by" class="block text-xs font-medium text-gray-600 mb-1">Urut Berdasarkan</label>
-                <select id="sort_by" name="sort_by" class="h-12 px-3 rounded-lg border border-gray-300 text-sm text-gray-700 min-w-44">
-                    @foreach($sortOptions as $sortKey => $sortLabel)
-                        <option value="{{ $sortKey }}" {{ $currentSortBy === $sortKey ? 'selected' : '' }}>
-                            {{ $sortLabel }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <input type="hidden" name="sort_dir" value="{{ $currentSortDir }}">
-
-            <button type="submit" class="h-12 px-5 rounded-lg text-sm font-semibold bg-slate-800 text-white hover:bg-slate-900">
-                Terapkan
-            </button>
-
-            <a href="{{ route('admin.bookings.index', array_filter([
-                'status' => $currentStatus,
-                'sort_by' => $currentSortBy,
-                'sort_dir' => $nextSortDir,
-            ], fn ($value) => $value !== null && $value !== '')) }}"
-               class="h-12 px-5 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center gap-2">
-                <i class="fa-solid {{ $sortIconClass }}" aria-hidden="true"></i>
-                <span>{{ $directionLabel }} ({{ $toggleDirectionLabel }})</span>
-            </a>
         </form>
     </div>
 
-    <div class="bg-white rounded-lg shadow">
-        @if($bookings->count() > 0)
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pelanggan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kendaraan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+    @if($bookings->count() > 0)
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50/80 text-left">
+                    <tr>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">ID</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Pelanggan') }}</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Kendaraan') }}</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Vendor') }}</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Tanggal') }}</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Total') }}</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Status') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Aksi') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach($bookings as $booking)
+                        @php
+                            $tone = match ($booking->status) {
+                                'confirmed' => 'success',
+                                'completed' => 'info',
+                                'cancelled' => 'danger',
+                                default => 'warning',
+                            };
+                            $statusLabel = $booking->status === 'cancelled' ? __('Declined') : ucfirst($booking->status);
+                        @endphp
+                        <tr class="transition hover:bg-slate-50/60">
+                            <td class="whitespace-nowrap px-6 py-3 text-slate-500">#{{ $booking->id }}</td>
+                            <td class="whitespace-nowrap px-6 py-3">
+                                <div class="font-semibold text-rn-text">{{ $booking->user?->name ?? '-' }}</div>
+                                <div class="text-xs text-slate-500">{{ $booking->user?->email ?? '-' }}</div>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-3 text-slate-700">{{ $booking->vehicle?->name ?? '-' }}</td>
+                            <td class="whitespace-nowrap px-6 py-3 text-slate-700">{{ $booking->vehicle?->vendor?->store_name ?? '-' }}</td>
+                            <td class="whitespace-nowrap px-6 py-3 text-xs text-slate-500">
+                                {{ \Carbon\Carbon::parse($booking->start_date)->locale(app()->getLocale())->translatedFormat('d M') }} -
+                                {{ \Carbon\Carbon::parse($booking->end_date)->locale(app()->getLocale())->translatedFormat('d M Y') }}
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-3 font-semibold text-rn-text">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</td>
+                            <td class="whitespace-nowrap px-6 py-3">
+                                <x-dashboard.badge :tone="$tone">{{ $statusLabel }}</x-dashboard.badge>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-3 text-right">
+                                <x-dashboard.btn variant="secondary" size="sm" :href="route('admin.bookings.show', $booking)" icon="fa-arrow-up-right-from-square">{{ __('Detail') }}</x-dashboard.btn>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($bookings as $booking)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    #{{ $booking->id }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $booking->user?->name ?? '-' }}</div>
-                                    <div class="text-sm text-gray-500">{{ $booking->user?->email ?? '-' }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $booking->vehicle?->name ?? '-' }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $booking->vehicle?->vendor?->store_name ?? '-' }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ \Carbon\Carbon::parse($booking->start_date)->format('d M') }} - 
-                                    {{ \Carbon\Carbon::parse($booking->end_date)->format('d M Y') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    Rp {{ number_format($booking->total_price, 0, ',', '.') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full
-                                        @if($booking->status === 'pending') bg-yellow-100 text-yellow-800
-                                        @elseif($booking->status === 'confirmed') bg-green-100 text-green-800
-                                        @elseif($booking->status === 'completed') bg-blue-100 text-blue-800
-                                        @else bg-red-100 text-red-800 @endif">
-                                        {{ $booking->status === 'cancelled' ? 'Declined' : ucfirst($booking->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <a href="{{ route('admin.bookings.show', $booking) }}" class="text-blue-600 hover:text-blue-900">Detail</a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <div class="p-8 text-center">
-                <p class="text-gray-500">Tidak ada booking ditemukan.</p>
-            </div>
-        @endif
-    </div>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <x-dashboard.empty icon="fa-clipboard-list" message="{{ __('Tidak ada booking ditemukan.') }}" />
+    @endif
+</x-dashboard.card>
 @endsection

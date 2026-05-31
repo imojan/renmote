@@ -45,15 +45,15 @@
                 <div class="mb-6 flex items-center gap-2">
                     @auth
                         @if(auth()->user()->role === 'user')
-                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST">
+                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST" data-rn-wishlist>
                                 @csrf
-                                <button type="submit" class="px-4 py-2 rounded-lg border {{ $isWishlistedVehicle ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600' }} hover:border-red-300 hover:text-red-600 text-sm font-semibold">
+                                <button type="submit" class="btn-fav px-4 py-2 rounded-lg border {{ $isWishlistedVehicle ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600' }} hover:border-red-300 hover:text-red-600 text-sm font-semibold">
                                     <i class="fa fa-heart mr-1"></i> Favoritkan Kendaraan
                                 </button>
                             </form>
-                            <form action="{{ route('user.wishlist.vendors.toggle', $vehicle->vendor) }}" method="POST">
+                            <form action="{{ route('user.wishlist.vendors.toggle', $vehicle->vendor) }}" method="POST" data-rn-wishlist>
                                 @csrf
-                                <button type="submit" class="px-4 py-2 rounded-lg border {{ $isWishlistedVendor ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600' }} hover:border-red-300 hover:text-red-600 text-sm font-semibold">
+                                <button type="submit" class="btn-fav px-4 py-2 rounded-lg border {{ $isWishlistedVendor ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600' }} hover:border-red-300 hover:text-red-600 text-sm font-semibold">
                                     <i class="fa fa-heart mr-1"></i> Favoritkan Vendor
                                 </button>
                             </form>

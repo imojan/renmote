@@ -5,163 +5,268 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Renmote') }} - @yield('title', 'Dashboard')</title>
+    <title>{{ config('app.name', 'Renmote') }} - @yield('title', __('dashboard.topbar.title'))</title>
     <link rel="icon" type="image/png" href="{{ asset('images/renmote-icon.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
-<body class="font-sans antialiased">
-    <div class="dash-wrapper" id="dashWrapper">
-        <!-- ── Mobile Overlay ─────────────────────────────── -->
-        <div class="dash-overlay" id="dashOverlay" onclick="toggleSidebar()"></div>
+<body class="font-sans antialiased bg-rn-bg text-rn-text" x-data="{ mobileNav: false, userMenu: false }">
 
-        <!-- ── Sidebar ────────────────────────────────────── -->
-        <aside class="dash-sidebar" id="dashSidebar">
-            <!-- Brand -->
-            <div class="dash-sidebar-brand">
-                <a href="{{ route('home') }}" class="dash-brand-link">
-                    <img src="{{ asset('images/renmote-logo.png') }}" alt="Renmote" class="dash-brand-logo">
+@php
+    $role = auth()->user()->role;
+    $sidebarPartial = match ($role) {
+        'admin'  => 'layouts.sidebars.admin',
+        'vendor' => 'layouts.sidebars.vendor',
+        default  => 'layouts.sidebars.user',
+    };
+    $dashboardUnreadNotifications = auth()->user()->unreadNotifications()->count();
+
+    // Display avatar: vendor uses business profile photo when set, others fall
+    // back to user.profile_photo_path, then to letter avatar.
+    $vendorRecord = $role === 'vendor' ? auth()->user()->vendor : null;
+    $avatarUrl = null;
+    if ($vendorRecord && $vendorRecord->profile_photo) {
+        $avatarUrl = \Illuminate\Support\Facades\Storage::url($vendorRecord->profile_photo);
+    } elseif (auth()->user()->profile_photo_path ?? null) {
+        $avatarUrl = \Illuminate\Support\Facades\Storage::url(auth()->user()->profile_photo_path);
+    }
+
+    /**
+     * Centralised top-nav definition. Each entry: label, route, active match.
+     * Different role gets different list.
+     */
+    $navItemsByRole = [
+        'admin' => [
+            ['label' => __('dashboard.sidebar.home'),      'route' => 'admin.dashboard',       'icon' => 'fa-house',         'active' => 'admin.dashboard'],
+            ['label' => __('dashboard.sidebar.vendors'),   'route' => 'admin.vendors.index',   'icon' => 'fa-store',         'active' => 'admin.vendors.*'],
+            ['label' => __('dashboard.sidebar.users'),     'route' => 'admin.users.index',     'icon' => 'fa-id-card',       'active' => 'admin.users.*'],
+            ['label' => __('dashboard.sidebar.vehicles'),  'route' => 'admin.vehicles.index',  'icon' => 'fa-motorcycle',    'active' => 'admin.vehicles.*'],
+            ['label' => __('dashboard.sidebar.bookings_admin'), 'route' => 'admin.bookings.index', 'icon' => 'fa-clipboard-list', 'active' => 'admin.bookings.*'],
+            ['label' => __('dashboard.sidebar.articles'),  'route' => 'admin.articles.index',  'icon' => 'fa-newspaper',     'active' => 'admin.articles.*'],
+            ['label' => __('dashboard.sidebar.documents'), 'route' => 'admin.documents.index', 'icon' => 'fa-folder-open',   'active' => 'admin.documents.*'],
+            ['label' => __('dashboard.sidebar.settings'),  'route' => 'admin.settings.index',  'icon' => 'fa-gear',          'active' => 'admin.settings.*'],
+        ],
+        'vendor' => [
+            ['label' => __('dashboard.sidebar.home'),     'route' => 'vendor.dashboard',         'icon' => 'fa-house',         'active' => 'vendor.dashboard'],
+            ['label' => __('dashboard.sidebar.vehicles'), 'route' => 'vendor.vehicles.index',    'icon' => 'fa-motorcycle',    'active' => 'vendor.vehicles.*'],
+            ['label' => __('dashboard.sidebar.bookings'), 'route' => 'vendor.bookings.index',    'icon' => 'fa-clipboard-list', 'active' => 'vendor.bookings.*'],
+            ['label' => __('dashboard.sidebar.profile'),  'route' => 'vendor.profile.edit',      'icon' => 'fa-user',          'active' => 'vendor.profile.*'],
+        ],
+        'user' => [
+            ['label' => __('dashboard.sidebar.home'),      'route' => 'user.dashboard',          'icon' => 'fa-house',         'active' => 'user.dashboard'],
+            ['label' => __('dashboard.sidebar.bookings'),  'route' => 'user.bookings.index',     'icon' => 'fa-clipboard-list', 'active' => 'user.bookings.*'],
+            ['label' => __('dashboard.sidebar.addresses'), 'route' => 'user.addresses.index',    'icon' => 'fa-map-pin',       'active' => 'user.addresses.*'],
+            ['label' => __('dashboard.sidebar.profile'),   'route' => 'profile.edit',            'icon' => 'fa-user',          'active' => 'profile.*'],
+        ],
+    ];
+
+    $navItems = $navItemsByRole[$role] ?? $navItemsByRole['user'];
+@endphp
+
+{{-- ── Top Navigation Bar ──────────────────────────────────────── --}}
+<header class="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-md">
+    <div class="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4 sm:px-6 lg:px-10">
+
+        {{-- Brand --}}
+        <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2">
+            <img src="{{ asset('images/renmote-biru.png') }}" alt="{{ config('app.name') }}" class="h-9 w-auto">
+        </a>
+
+        {{-- Desktop nav --}}
+        <nav class="hidden flex-1 items-center justify-center gap-1 lg:flex">
+            @foreach ($navItems as $item)
+                @php $isActive = request()->routeIs($item['active']); @endphp
+                <a href="{{ route($item['route']) }}"
+                   class="inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold transition xl:px-4
+                          {{ $isActive
+                              ? 'bg-rn-primary/10 text-rn-primary'
+                              : 'text-slate-500 hover:bg-slate-100 hover:text-rn-text' }}">
+                    <i class="fa-solid {{ $item['icon'] }} text-[13px]"></i>
+                    {{ $item['label'] }}
                 </a>
-                <button class="dash-sidebar-close" onclick="toggleSidebar()" aria-label="Close sidebar">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
+            @endforeach
+        </nav>
 
-            <!-- Navigation Label -->
-            <div class="dash-nav-label">MENU</div>
+        {{-- Right cluster --}}
+        <div class="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
 
-            <!-- Navigation -->
-            <nav class="dash-nav">
-                @if(auth()->user()->role === 'admin')
-                    @include('layouts.sidebars.admin')
-                @elseif(auth()->user()->role === 'vendor')
-                    @include('layouts.sidebars.vendor')
-                @else
-                    @include('layouts.sidebars.user')
+            <x-dashboard.locale-switch class="hidden sm:inline-flex" />
+
+            <a href="{{ route('notifications.index') }}"
+               class="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-rn-text"
+               aria-label="{{ __('dashboard.topbar.notifications_aria') }}">
+                <i class="fa fa-bell"></i>
+                @if($dashboardUnreadNotifications > 0)
+                    <span class="absolute -top-0.5 -right-0.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                        {{ $dashboardUnreadNotifications > 99 ? '99+' : $dashboardUnreadNotifications }}
+                    </span>
                 @endif
-            </nav>
+            </a>
 
-            <!-- Sidebar Footer -->
-            <div class="dash-sidebar-footer">
-                <div class="dash-sidebar-user">
-                    <div class="dash-sidebar-avatar">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                    </div>
-                    <div class="dash-sidebar-user-info">
-                        <div class="dash-sidebar-user-name">{{ auth()->user()->name }}</div>
-                        <div class="dash-sidebar-user-role">{{ ucfirst(auth()->user()->role) }}</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- ── Main ───────────────────────────────────────── -->
-        <div class="dash-main">
-            <!-- Topbar -->
-            <header class="dash-topbar">
-                <div class="dash-topbar-left">
-                    <button class="dash-menu-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
-                        <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-                        </svg>
-                    </button>
-                    <h1 class="dash-page-title">@yield('title', 'Dashboard')</h1>
-                </div>
-
-                <div class="dash-topbar-right">
-                    @php
-                        $dashboardUnreadNotifications = auth()->user()->unreadNotifications()->count();
-                    @endphp
-
-                    <a href="{{ route('notifications.index') }}" class="dash-topbar-notification" aria-label="Notifikasi">
-                        <i class="fa fa-bell"></i>
-                        @if($dashboardUnreadNotifications > 0)
-                            <span class="dash-topbar-notification-badge">{{ $dashboardUnreadNotifications > 99 ? '99+' : $dashboardUnreadNotifications }}</span>
+            {{-- User dropdown --}}
+            <div class="relative" @click.outside="userMenu = false">
+                <button type="button"
+                        @click="userMenu = !userMenu"
+                        class="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 transition hover:bg-slate-50">
+                    <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-rn-primary text-sm font-bold text-white">
+                        @if($avatarUrl)
+                            <img src="{{ $avatarUrl }}" alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
+                        @else
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                         @endif
+                    </span>
+                    <span class="hidden text-left leading-tight sm:block">
+                        <span class="block max-w-[120px] truncate text-xs font-semibold text-rn-text">{{ auth()->user()->name }}</span>
+                        <span class="block text-[10px] uppercase tracking-wide text-slate-500">{{ ucfirst($role) }}</span>
+                    </span>
+                    <i class="fa fa-chevron-down hidden text-[10px] text-slate-400 sm:block"></i>
+                </button>
+
+                <div x-show="userMenu" x-cloak x-transition.opacity
+                     class="absolute right-0 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                    <div class="px-3 py-2">
+                        <p class="text-sm font-semibold text-rn-text">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-slate-500">{{ auth()->user()->email }}</p>
+                    </div>
+                    <div class="mx-1 h-px bg-slate-100"></div>
+                    <a href="{{ route('profile.edit') }}"
+                       class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-rn-text">
+                        <i class="fa fa-user text-xs text-slate-400"></i>
+                        {{ __('dashboard.topbar.profile') }}
                     </a>
-
-                    <!-- Date -->
-                    <span class="dash-topbar-date">{{ now()->translatedFormat('l, d M Y') }}</span>
-
-                    <!-- User Dropdown -->
-                    <div class="dash-user-dropdown" id="userDropdown">
-                        <button class="dash-user-btn" onclick="toggleUserMenu()">
-                            <div class="dash-topbar-avatar">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                            </div>
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    <div class="mx-1 h-px bg-slate-100"></div>
+                    <form method="POST" action="{{ route('logout') }}"
+                          data-confirm-title="{{ __('nav.logout_confirm_title') }}"
+                          data-confirm-message="{{ __('nav.logout_confirm_message') }}"
+                          data-confirm-confirm-text="{{ __('nav.logout_confirm_yes') }}"
+                          data-confirm-cancel-text="{{ __('nav.logout_confirm_no') }}">
+                        @csrf
+                        <button type="submit"
+                                class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 transition hover:bg-red-50">
+                            <i class="fa fa-right-from-bracket text-xs"></i>
+                            {{ __('dashboard.topbar.logout') }}
                         </button>
-                        <div class="dash-dropdown-menu" id="userMenu">
-                            <div class="dash-dropdown-header">
-                                <strong>{{ auth()->user()->name }}</strong>
-                                <small>{{ auth()->user()->email }}</small>
-                            </div>
-                            <div class="dash-dropdown-divider"></div>
-                            <a href="{{ route('profile.edit') }}" class="dash-dropdown-item">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                Profil
-                            </a>
-                            <div class="dash-dropdown-divider"></div>
-                            <form method="POST" action="{{ route('logout') }}"
-                                data-confirm-title="Logout dari dashboard?"
-                                data-confirm-message="Kamu yakin ingin keluar dari akun sekarang?"
-                                data-confirm-confirm-text="Ya, Logout"
-                                data-confirm-cancel-text="Batal">
-                                @csrf
-                                <button type="submit" class="dash-dropdown-item dash-dropdown-logout">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                                    Logout
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                    </form>
                 </div>
-            </header>
+            </div>
 
-            <!-- Page Content -->
-            <main class="dash-content">
-                <!-- Flash Messages -->
-                @if(session('success'))
-                    <div class="dash-alert dash-alert-success">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="dash-alert dash-alert-error">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        {{ session('error') }}
-                    </div>
-                @endif
-
-                @yield('content')
-            </main>
+            {{-- Hamburger (mobile/tablet) --}}
+            <button type="button" @click="mobileNav = true"
+                    class="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 lg:hidden"
+                    aria-label="Open navigation">
+                <i class="fa fa-bars"></i>
+            </button>
         </div>
     </div>
+</header>
 
-    <script>
-        function toggleSidebar() {
-            document.getElementById('dashWrapper').classList.toggle('sidebar-open');
-        }
-        function toggleUserMenu() {
-            document.getElementById('userMenu').classList.toggle('show');
-        }
-        // Close dropdown on outside click
-        document.addEventListener('click', function(e) {
-            const dd = document.getElementById('userDropdown');
-            if (dd && !dd.contains(e.target)) {
-                document.getElementById('userMenu').classList.remove('show');
-            }
-        });
-    </script>
-    @stack('scripts')
+{{-- ── Mobile drawer ────────────────────────────────────────── --}}
+<div x-cloak x-show="mobileNav" class="lg:hidden">
+    <div x-show="mobileNav" x-transition.opacity @click="mobileNav = false"
+         class="fixed inset-0 z-40 bg-black/40"></div>
+
+    <aside x-show="mobileNav"
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="-translate-x-full"
+           x-transition:enter-end="translate-x-0"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="translate-x-0"
+           x-transition:leave-end="-translate-x-full"
+           class="fixed inset-y-0 left-0 z-50 flex w-72 flex-col overflow-y-auto bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+            <a href="{{ route('home') }}" class="flex items-center gap-2">
+                <img src="{{ asset('images/renmote-biru.png') }}" alt="Renmote" class="h-8 w-auto">
+            </a>
+            <button type="button" @click="mobileNav = false"
+                    class="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100">
+                <i class="fa fa-xmark"></i>
+            </button>
+        </div>
+
+        <nav class="flex-1 px-3 py-4">
+            <p class="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                {{ __('dashboard.sidebar.menu_label') }}
+            </p>
+            <div class="space-y-1">
+                @foreach ($navItems as $item)
+                    @php $isActive = request()->routeIs($item['active']); @endphp
+                    <a href="{{ route($item['route']) }}"
+                       class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition
+                              {{ $isActive
+                                  ? 'bg-rn-primary/10 text-rn-primary'
+                                  : 'text-slate-600 hover:bg-slate-50 hover:text-rn-text' }}">
+                        <span class="flex h-6 w-6 items-center justify-center"><i class="fa-solid {{ $item['icon'] }} text-[14px]"></i></span>
+                        {{ $item['label'] }}
+                    </a>
+                @endforeach
+            </div>
+        </nav>
+
+        <div class="border-t border-slate-200 p-4">
+            <x-dashboard.locale-switch class="w-full justify-center" />
+            <div class="mt-4 flex items-center gap-3">
+                <span class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-rn-primary text-sm font-bold text-white">
+                    @if($avatarUrl)
+                        <img src="{{ $avatarUrl }}" alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
+                    @else
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    @endif
+                </span>
+                <div class="leading-tight">
+                    <p class="text-sm font-semibold text-rn-text">{{ auth()->user()->name }}</p>
+                    <p class="text-xs uppercase tracking-wide text-slate-500">{{ ucfirst($role) }}</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+{{-- ── Main content ─────────────────────────────────────────── --}}
+<main class="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-10">
+    <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-extrabold text-rn-text sm:text-3xl">@yield('title', __('dashboard.topbar.title'))</h1>
+            <p class="mt-1 text-sm text-slate-500">{{ now()->locale(app()->getLocale())->translatedFormat('l, d F Y') }}</p>
+        </div>
+        @hasSection('headerActions')
+            <div class="flex flex-wrap items-center gap-2">@yield('headerActions')</div>
+        @endif
+    </div>
+
+    @if(session('success'))
+        <div class="mb-4 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            <i class="fa fa-circle-check mt-0.5"></i>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <i class="fa fa-circle-exclamation mt-0.5"></i>
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
+    @if(session('info'))
+        <div class="mb-4 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+            <i class="fa fa-circle-info mt-0.5"></i>
+            <span>{{ session('info') }}</span>
+        </div>
+    @endif
+
+    @yield('content')
+</main>
+
+{{-- Floating chat for vendor & user dashboards --}}
+@if(in_array($role, ['user', 'vendor'], true))
+    @include('chat.panel', ['mode' => 'floating'])
+@endif
+
+@stack('scripts')
 </body>
 </html>

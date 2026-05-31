@@ -1,323 +1,271 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Dashboard')
+@section('title', __('dashboard.admin.page_title'))
 
-@section('sidebar')
-    <x-sidebar-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-        </svg>
-        Dashboard
-    </x-sidebar-link>
-
-    <x-sidebar-link href="{{ route('admin.vendors.index') }}" :active="request()->routeIs('admin.vendors.*')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-        </svg>
-        Vendors
+@section('headerActions')
+    <a href="{{ route('admin.vendors.index', ['status' => 'pending']) }}"
+       class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-rn-primary/40 hover:text-rn-primary">
+        <i class="fa fa-bell text-xs"></i>
+        {{ __('Vendor Pending') }}
         @if($pendingVendors > 0)
-            <span class="dash-nav-badge">{{ $pendingVendors }}</span>
+            <span class="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-100 px-1.5 text-[11px] font-bold text-amber-700">{{ $pendingVendors }}</span>
         @endif
-    </x-sidebar-link>
-
-    <x-sidebar-link href="{{ route('admin.vehicles.index') }}" :active="request()->routeIs('admin.vehicles.*')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-        </svg>
-        Kendaraan
-    </x-sidebar-link>
-
-    <x-sidebar-link href="{{ route('admin.bookings.index') }}" :active="request()->routeIs('admin.bookings.*')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-        </svg>
-        Bookings
-    </x-sidebar-link>
-
-    <x-sidebar-link href="{{ route('profile.edit') }}">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-        Pengaturan
-    </x-sidebar-link>
+    </a>
+    <a href="{{ route('admin.articles.create') }}"
+       class="inline-flex items-center gap-2 rounded-full bg-rn-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rn-primary-dark">
+        <i class="fa fa-plus text-xs"></i>
+        {{ __('Artikel Baru') }}
+    </a>
 @endsection
 
 @section('content')
-    {{-- ── Welcome Banner ──────────────────────────────────── --}}
-    <div class="dash-welcome-banner">
-        <h2>Selamat datang, {{ auth()->user()->name }}! 👋</h2>
-        <p>Berikut ringkasan sistem Renmote hari ini.</p>
-    </div>
+    @php
+        $stats = [
+            [
+                'label' => __('dashboard.admin.stat_total_users'),
+                'value' => number_format($totalUsers),
+                'icon' => 'fa-users',
+                'color' => 'bg-sky-50 text-sky-600',
+                'sub' => __('dashboard.admin.stat_total_users_sub'),
+                'href' => route('admin.users.index'),
+            ],
+            [
+                'label' => __('dashboard.admin.stat_total_vendors'),
+                'value' => number_format($totalVendors),
+                'icon' => 'fa-store',
+                'color' => 'bg-emerald-50 text-emerald-600',
+                'sub' => __('dashboard.admin.stat_total_vendors_sub', ['count' => $pendingVendors]),
+                'href' => route('admin.vendors.index'),
+            ],
+            [
+                'label' => __('dashboard.admin.stat_total_vehicles'),
+                'value' => number_format($totalVehicles),
+                'icon' => 'fa-motorcycle',
+                'color' => 'bg-indigo-50 text-indigo-600',
+                'sub' => __('dashboard.admin.stat_total_vehicles_sub'),
+                'href' => route('admin.vehicles.index'),
+            ],
+            [
+                'label' => __('dashboard.admin.stat_total_bookings'),
+                'value' => number_format($totalBookings),
+                'icon' => 'fa-clipboard-list',
+                'color' => 'bg-violet-50 text-violet-600',
+                'sub' => __('dashboard.admin.stat_total_bookings_sub'),
+                'href' => route('admin.bookings.index'),
+            ],
+        ];
 
-    {{-- ── Stat Cards ──────────────────────────────────────── --}}
-    <div class="dash-stats">
-        {{-- Users --}}
-        <div class="dash-stat-card">
-            <div class="dash-stat-icon blue">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                </svg>
-            </div>
-            <div class="dash-stat-info">
-                <div class="dash-stat-label">Total Penyewa</div>
-                <div class="dash-stat-value">{{ number_format($totalUsers) }}</div>
-                <div class="dash-stat-sub">Pengguna terdaftar</div>
-            </div>
-        </div>
+        $statusBadgeMap = [
+            'pending'   => ['cls' => 'bg-amber-100 text-amber-700',   'label' => __('dashboard.admin.badge_pending')],
+            'confirmed' => ['cls' => 'bg-emerald-100 text-emerald-700', 'label' => __('dashboard.admin.badge_confirmed')],
+            'completed' => ['cls' => 'bg-sky-100 text-sky-700',        'label' => __('dashboard.admin.badge_completed')],
+            'cancelled' => ['cls' => 'bg-red-100 text-red-700',        'label' => __('dashboard.admin.badge_cancelled')],
+        ];
+    @endphp
 
-        {{-- Vendors --}}
-        <div class="dash-stat-card">
-            <div class="dash-stat-icon green">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                </svg>
-            </div>
-            <div class="dash-stat-info">
-                <div class="dash-stat-label">Total Vendor</div>
-                <div class="dash-stat-value">{{ number_format($totalVendors) }}</div>
-                <div class="dash-stat-sub">{{ $pendingVendors }} menunggu verifikasi</div>
-            </div>
-        </div>
+    <div class="grid gap-6 lg:grid-cols-3">
+        {{-- Main column --}}
+        <div class="space-y-6 lg:col-span-2">
 
-        {{-- Vehicles --}}
-        <div class="dash-stat-card">
-            <div class="dash-stat-icon indigo">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                </svg>
-            </div>
-            <div class="dash-stat-info">
-                <div class="dash-stat-label">Total Kendaraan</div>
-                <div class="dash-stat-value">{{ number_format($totalVehicles) }}</div>
-                <div class="dash-stat-sub">Terdaftar di platform</div>
-            </div>
-        </div>
+            {{-- Welcome banner --}}
+            <section class="overflow-hidden rounded-2xl bg-gradient-to-br from-rn-primary to-rn-primary-dark p-6 text-white shadow-sm sm:p-8" data-rn-reveal>
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-xl font-extrabold sm:text-2xl">{{ __('dashboard.admin.welcome', ['name' => auth()->user()->name]) }}</h2>
+                        <p class="mt-1 text-sm text-white/80">{{ __('dashboard.admin.welcome_subtitle') }}</p>
+                    </div>
+                    <div class="hidden h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/15 sm:flex">
+                        <i class="fa fa-bolt-lightning text-2xl"></i>
+                    </div>
+                </div>
+            </section>
 
-        {{-- Bookings --}}
-        <div class="dash-stat-card">
-            <div class="dash-stat-icon purple">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-            </div>
-            <div class="dash-stat-info">
-                <div class="dash-stat-label">Total Booking</div>
-                <div class="dash-stat-value">{{ number_format($totalBookings) }}</div>
-                <div class="dash-stat-sub">Transaksi tercatat</div>
-            </div>
-        </div>
+            {{-- Stat grid --}}
+            <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-rn-reveal>
+                @foreach($stats as $stat)
+                    <a href="{{ $stat['href'] }}"
+                       class="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-rn-primary/30 hover:shadow-md">
+                        <div class="flex items-start justify-between">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl {{ $stat['color'] }}">
+                                <i class="fa-solid {{ $stat['icon'] }}"></i>
+                            </div>
+                            <i class="fa fa-arrow-up-right-from-square text-xs text-slate-300 transition group-hover:text-rn-primary"></i>
+                        </div>
+                        <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $stat['label'] }}</p>
+                        <p class="mt-1 text-2xl font-extrabold text-rn-text">{{ $stat['value'] }}</p>
+                        <p class="mt-1 text-xs text-slate-400">{{ $stat['sub'] }}</p>
+                    </a>
+                @endforeach
+            </section>
 
-        {{-- Pending Documents --}}
-        <a href="{{ route('admin.documents.index', ['status' => 'pending']) }}" class="dash-stat-card dash-stat-card-link">
-            <div class="dash-stat-icon orange">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-            </div>
-            <div class="dash-stat-info">
-                <div class="dash-stat-label">Dokumen Pending</div>
-                <div class="dash-stat-value">{{ number_format($pendingDocuments) }}</div>
-                <div class="dash-stat-sub">Butuh review</div>
-            </div>
-        </a>
-    </div>
-
-    {{-- ── Two-column grid ─────────────────────────────────── --}}
-    <div class="dash-grid dash-grid-2">
-
-        {{-- ── Pending Vendors ─────────────────────────────── --}}
-        <div class="dash-card">
-            <div class="dash-card-header">
-                <h3 class="dash-card-title">Vendor Menunggu Verifikasi</h3>
-                <a href="{{ route('admin.vendors.index', ['status' => 'pending']) }}" class="dash-card-action">Lihat Semua →</a>
-            </div>
-            <div class="dash-card-body" style="padding: 0;">
-                @if($pendingVendorList->count() > 0)
-                  <div class="dash-table-wrap">
-                    <table class="dash-table">
-                        <thead>
-                            <tr>
-                                <th>Vendor</th>
-                                <th>Toko</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($pendingVendorList as $vendor)
+            {{-- Recent bookings --}}
+            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" data-rn-reveal>
+                <header class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                    <h3 class="text-base font-bold text-rn-text">{{ __('dashboard.admin.recent_bookings') }}</h3>
+                    <a href="{{ route('admin.bookings.index') }}" class="text-xs font-semibold text-rn-primary hover:underline">{{ __('dashboard.admin.view_all') }}</a>
+                </header>
+                @if($recentBookings->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50/80 text-left">
                                 <tr>
-                                    <td>
-                                        <div style="font-weight: 600; color: #0f172a;">{{ $vendor->user->name ?? '-' }}</div>
-                                        <div style="font-size: 0.75rem; color: #94a3b8;">{{ $vendor->user->email ?? '-' }}</div>
-                                    </td>
-                                    <td>{{ $vendor->store_name ?? '-' }}</td>
-                                    <td>
-                                        <span class="dash-badge warning">Pending</span>
-                                    </td>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('dashboard.admin.col_renter') }}</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('dashboard.admin.col_vehicle') }}</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('dashboard.admin.col_status') }}</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('dashboard.admin.col_date') }}</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                  </div>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                @foreach($recentBookings as $booking)
+                                    @php $st = $statusBadgeMap[$booking->status ?? 'pending'] ?? $statusBadgeMap['pending']; @endphp
+                                    <tr class="transition hover:bg-slate-50/60">
+                                        <td class="whitespace-nowrap px-6 py-3 font-semibold text-rn-text">{{ $booking->user->name ?? '-' }}</td>
+                                        <td class="whitespace-nowrap px-6 py-3 text-slate-600">{{ $booking->vehicle->name ?? '-' }}</td>
+                                        <td class="whitespace-nowrap px-6 py-3">
+                                            <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $st['cls'] }}">{{ $st['label'] }}</span>
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-3 text-xs text-slate-500">{{ $booking->created_at->locale(app()->getLocale())->diffForHumans() }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @else
-                    <div class="dash-empty">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <p>Semua vendor sudah diverifikasi</p>
+                    <div class="flex flex-col items-center gap-2 px-6 py-10 text-center text-sm text-slate-500">
+                        <i class="fa fa-clipboard-list text-3xl text-slate-300"></i>
+                        <span>{{ __('dashboard.admin.no_bookings') }}</span>
                     </div>
                 @endif
-            </div>
+            </section>
+
+            {{-- Recent users --}}
+            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" data-rn-reveal>
+                <header class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                    <h3 class="text-base font-bold text-rn-text">{{ __('dashboard.admin.recent_users') }}</h3>
+                    <a href="{{ route('admin.users.index') }}" class="text-xs font-semibold text-rn-primary hover:underline">{{ __('dashboard.admin.view_all') }}</a>
+                </header>
+                @if($recentUsers->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50/80 text-left">
+                                <tr>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('dashboard.admin.col_name') }}</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('dashboard.admin.col_email') }}</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('dashboard.admin.col_role') }}</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('dashboard.admin.col_joined') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                @foreach($recentUsers as $user)
+                                    @php
+                                        $roleLabel = match ($user->role) {
+                                            'admin' => ['cls' => 'bg-red-100 text-red-700', 'label' => __('dashboard.admin.role_admin')],
+                                            'vendor' => ['cls' => 'bg-sky-100 text-sky-700', 'label' => __('dashboard.admin.role_vendor')],
+                                            default => ['cls' => 'bg-emerald-100 text-emerald-700', 'label' => __('dashboard.admin.role_user')],
+                                        };
+                                    @endphp
+                                    <tr class="transition hover:bg-slate-50/60">
+                                        <td class="whitespace-nowrap px-6 py-3 font-semibold text-rn-text">{{ $user->name }}</td>
+                                        <td class="whitespace-nowrap px-6 py-3 text-slate-600">{{ $user->email }}</td>
+                                        <td class="whitespace-nowrap px-6 py-3">
+                                            <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $roleLabel['cls'] }}">{{ $roleLabel['label'] }}</span>
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-3 text-xs text-slate-500">{{ $user->created_at->locale(app()->getLocale())->diffForHumans() }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="flex flex-col items-center gap-2 px-6 py-10 text-center text-sm text-slate-500">
+                        <i class="fa fa-users text-3xl text-slate-300"></i>
+                        <span>{{ __('dashboard.admin.no_users') }}</span>
+                    </div>
+                @endif
+            </section>
         </div>
 
-        {{-- ── Quick Actions ───────────────────────────────── --}}
-        <div class="dash-card">
-            <div class="dash-card-header">
-                <h3 class="dash-card-title">Menu Cepat</h3>
-            </div>
-            <div class="dash-card-body" style="padding: 8px 12px;">
-                <div class="dash-action-list">
-                    <a href="{{ route('admin.vendors.index') }}" class="dash-action-item">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                        </svg>
-                        Kelola Vendor
-                        <svg class="action-arrow" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <a href="{{ route('admin.vehicles.index') }}" class="dash-action-item">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                        </svg>
-                        Kelola Kendaraan
-                        <svg class="action-arrow" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <a href="{{ route('admin.bookings.index') }}" class="dash-action-item">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
-                        Kelola Booking
-                        <svg class="action-arrow" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <a href="{{ route('admin.documents.index') }}" class="dash-action-item">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Arsip Dokumen
-                        <svg class="action-arrow" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <a href="{{ route('profile.edit') }}" class="dash-action-item">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        Pengaturan Akun
-                        <svg class="action-arrow" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </a>
+        {{-- Side column --}}
+        <aside class="space-y-6">
+
+            {{-- Pending vendors --}}
+            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" data-rn-reveal>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-base font-bold text-rn-text">{{ __('dashboard.admin.pending_vendors_title') }}</h3>
+                    <a href="{{ route('admin.vendors.index', ['status' => 'pending']) }}" class="text-xs font-semibold text-rn-primary hover:underline">{{ __('dashboard.admin.view_all') }}</a>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ── Recent Users ────────────────────────────────────── --}}
-    <div class="dash-card" style="margin-top: 20px;">
-        <div class="dash-card-header">
-            <h3 class="dash-card-title">User Terbaru</h3>
-        </div>
-        <div class="dash-card-body" style="padding: 0;">
-            @if($recentUsers->count() > 0)
-              <div class="dash-table-wrap">
-                <table class="dash-table">
-                    <thead>
-                        <tr>
-                            <th>Nama</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Bergabung</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($recentUsers as $user)
-                            <tr>
-                                <td style="font-weight: 600; color: #0f172a;">{{ $user->name }}</td>
-                                <td>{{ $user->email }}</td>
-                                <td>
-                                    @switch($user->role)
-                                        @case('admin')
-                                            <span class="dash-badge danger">Admin</span>
-                                            @break
-                                        @case('vendor')
-                                            <span class="dash-badge info">Vendor</span>
-                                            @break
-                                        @default
-                                            <span class="dash-badge success">Penyewa</span>
-                                    @endswitch
-                                </td>
-                                <td>{{ $user->created_at->diffForHumans() }}</td>
-                            </tr>
+                @if($pendingVendorList->count() > 0)
+                    <div class="mt-4 space-y-3">
+                        @foreach($pendingVendorList as $vendor)
+                            <a href="{{ route('admin.vendors.show', $vendor) }}"
+                               class="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-3 transition hover:border-rn-primary/40 hover:bg-rn-primary/5">
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rn-primary/10 text-rn-primary">
+                                    {{ strtoupper(substr($vendor->user->name ?? 'V', 0, 1)) }}
+                                </span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate text-sm font-semibold text-rn-text">{{ $vendor->store_name ?? '-' }}</span>
+                                    <span class="block truncate text-xs text-slate-500">{{ $vendor->user->name ?? '-' }}</span>
+                                </span>
+                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                                    {{ __('dashboard.admin.badge_pending') }}
+                                </span>
+                            </a>
                         @endforeach
-                    </tbody>
-                </table>
-              </div>
-            @else
-                <div class="dash-empty">
-                    <p>Belum ada user terdaftar</p>
-                </div>
-            @endif
-        </div>
-    </div>
+                    </div>
+                @else
+                    <div class="mt-4 flex flex-col items-center gap-2 px-2 py-6 text-center text-sm text-slate-500">
+                        <i class="fa fa-check-circle text-2xl text-emerald-400"></i>
+                        <span>{{ __('dashboard.admin.pending_vendors_empty') }}</span>
+                    </div>
+                @endif
+            </section>
 
-    {{-- ── Recent Bookings ─────────────────────────────────── --}}
-    <div class="dash-card" style="margin-top: 20px;">
-        <div class="dash-card-header">
-            <h3 class="dash-card-title">Booking Terbaru</h3>
-            <a href="{{ route('admin.bookings.index') }}" class="dash-card-action">Lihat Semua →</a>
-        </div>
-        <div class="dash-card-body" style="padding: 0;">
-            @if($recentBookings->count() > 0)
-              <div class="dash-table-wrap">
-                <table class="dash-table">
-                    <thead>
-                        <tr>
-                            <th>Penyewa</th>
-                            <th>Kendaraan</th>
-                            <th>Status</th>
-                            <th>Tanggal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($recentBookings as $booking)
-                            <tr>
-                                <td style="font-weight: 600; color: #0f172a;">{{ $booking->user->name ?? '-' }}</td>
-                                <td>{{ $booking->vehicle->name ?? '-' }}</td>
-                                <td>
-                                    @switch($booking->status ?? 'pending')
-                                        @case('confirmed')
-                                            <span class="dash-badge success">Dikonfirmasi</span>
-                                            @break
-                                        @case('completed')
-                                            <span class="dash-badge info">Selesai</span>
-                                            @break
-                                        @case('cancelled')
-                                            <span class="dash-badge danger">Dibatalkan</span>
-                                            @break
-                                        @default
-                                            <span class="dash-badge warning">Pending</span>
-                                    @endswitch
-                                </td>
-                                <td>{{ $booking->created_at->diffForHumans() }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-              </div>
-            @else
-                <div class="dash-empty">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
-                    <p>Belum ada booking</p>
+            {{-- Quick menu --}}
+            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" data-rn-reveal>
+                <h3 class="text-base font-bold text-rn-text">{{ __('dashboard.admin.quick_menu') }}</h3>
+                <div class="mt-4 grid gap-2">
+                    @php
+                        $quickMenu = [
+                            ['href' => route('admin.vendors.index'),   'icon' => 'fa-store',         'label' => __('dashboard.admin.quick_manage_vendors'),   'color' => 'bg-emerald-50 text-emerald-600'],
+                            ['href' => route('admin.vehicles.index'),  'icon' => 'fa-motorcycle',    'label' => __('dashboard.admin.quick_manage_vehicles'),  'color' => 'bg-indigo-50 text-indigo-600'],
+                            ['href' => route('admin.bookings.index'),  'icon' => 'fa-clipboard-list','label' => __('dashboard.admin.quick_manage_bookings'),  'color' => 'bg-violet-50 text-violet-600'],
+                            ['href' => route('admin.documents.index'), 'icon' => 'fa-folder-open',   'label' => __('dashboard.admin.quick_documents'),        'color' => 'bg-amber-50 text-amber-600'],
+                            ['href' => route('profile.edit'),          'icon' => 'fa-gear',          'label' => __('dashboard.admin.quick_settings'),         'color' => 'bg-slate-50 text-slate-600'],
+                        ];
+                    @endphp
+                    @foreach($quickMenu as $item)
+                        <a href="{{ $item['href'] }}"
+                           class="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition hover:bg-slate-50">
+                            <span class="flex items-center gap-3">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-lg {{ $item['color'] }}">
+                                    <i class="fa-solid {{ $item['icon'] }} text-sm"></i>
+                                </span>
+                                <span class="text-sm font-semibold text-rn-text">{{ $item['label'] }}</span>
+                            </span>
+                            <i class="fa fa-chevron-right text-xs text-slate-400"></i>
+                        </a>
+                    @endforeach
                 </div>
+            </section>
+
+            {{-- Pending docs banner --}}
+            @if($pendingDocuments > 0)
+                <section class="rounded-2xl border border-amber-200 bg-amber-50 p-5" data-rn-reveal>
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                            <i class="fa fa-folder-open"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-amber-900">{{ $pendingDocuments }} {{ __('dashboard.admin.stat_pending_documents') }}</p>
+                            <p class="mt-1 text-xs text-amber-800">{{ __('dashboard.admin.stat_pending_documents_sub') }}</p>
+                            <a href="{{ route('admin.documents.index', ['status' => 'pending']) }}"
+                               class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 hover:underline">
+                                {{ __('dashboard.admin.view_all') }} <i class="fa fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                </section>
             @endif
-        </div>
+        </aside>
     </div>
 @endsection

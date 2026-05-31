@@ -1,76 +1,71 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Kelola Artikel')
+@section('title', __('Kelola Artikel'))
 
 @section('content')
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h2 class="text-2xl font-bold text-slate-800">Daftar Artikel</h2>
-            <p class="text-sm text-slate-500">Kelola konten artikel yang tampil di beranda.</p>
-        </div>
-        <a href="{{ route('admin.articles.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Tambah Artikel
-        </a>
-    </div>
+<x-dashboard.card padded="false">
+    <x-slot name="title">{{ __('Daftar Artikel') }}</x-slot>
+    <x-slot name="subtitle">{{ __('Kelola konten artikel yang tampil di beranda.') }}</x-slot>
+    <x-slot name="actions">
+        <x-dashboard.btn variant="primary" icon="fa-plus" :href="route('admin.articles.create')">{{ __('Tambah Artikel') }}</x-dashboard.btn>
+    </x-slot>
 
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    @if($articles->count() > 0)
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200">
-                <thead class="bg-slate-50">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50/80 text-left">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Judul</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Slug</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Dipublikasikan</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase">Aksi</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Judul') }}</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Slug') }}</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Status') }}</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Dipublikasikan') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Aksi') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
-                    @forelse($articles as $article)
-                        <tr>
-                            <td class="px-6 py-4">
-                                <div class="font-semibold text-slate-800">{{ $article->title }}</div>
-                                <div class="text-sm text-slate-500">Oleh {{ $article->author->name ?? 'Admin' }}</div>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach($articles as $article)
+                        <tr class="transition hover:bg-slate-50/60">
+                            <td class="max-w-xs px-6 py-3">
+                                <div class="font-semibold text-rn-text">{{ $article->title }}</div>
+                                <div class="text-xs text-slate-500">{{ __('Oleh') }} {{ $article->author->name ?? 'Admin' }}</div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-slate-600">{{ $article->slug }}</td>
-                            <td class="px-6 py-4">
+                            <td class="max-w-xs px-6 py-3 text-xs text-slate-500 break-all">{{ $article->slug }}</td>
+                            <td class="whitespace-nowrap px-6 py-3">
                                 @if($article->is_published)
-                                    <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">Published</span>
+                                    <x-dashboard.badge tone="success">Published</x-dashboard.badge>
                                 @else
-                                    <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Draft</span>
+                                    <x-dashboard.badge tone="warning">Draft</x-dashboard.badge>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-slate-600">
-                                {{ optional($article->published_at)->format('d M Y H:i') ?? '-' }}
+                            <td class="whitespace-nowrap px-6 py-3 text-xs text-slate-500">
+                                {{ optional($article->published_at)->locale(app()->getLocale())->translatedFormat('d M Y H:i') ?: '-' }}
                             </td>
-                            <td class="px-6 py-4 text-right text-sm">
-                                <div class="inline-flex items-center gap-3">
-                                    <a href="{{ route('articles.show', $article) }}" target="_blank" class="text-slate-600 hover:text-slate-800">Lihat</a>
-                                    <a href="{{ route('admin.articles.edit', $article) }}" class="text-blue-600 hover:text-blue-800">Edit</a>
-                                    <form action="{{ route('admin.articles.destroy', $article) }}" method="POST"
-                                        data-confirm-title="Hapus artikel?"
-                                        data-confirm-message="Artikel ini akan dihapus permanen."
-                                        data-confirm-confirm-text="Ya, Hapus"
-                                        data-confirm-cancel-text="Batal">
+                            <td class="whitespace-nowrap px-6 py-3 text-right">
+                                <div class="inline-flex items-center gap-2">
+                                    <x-dashboard.btn variant="ghost" size="sm" :href="route('articles.show', $article)" target="_blank">{{ __('Lihat') }}</x-dashboard.btn>
+                                    <x-dashboard.btn variant="secondary" size="sm" :href="route('admin.articles.edit', $article)" icon="fa-pen">{{ __('Edit') }}</x-dashboard.btn>
+                                    <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="inline"
+                                          data-confirm-title="{{ __('Hapus artikel?') }}"
+                                          data-confirm-message="{{ __('Artikel ini akan dihapus permanen.') }}"
+                                          data-confirm-confirm-text="{{ __('Ya, Hapus') }}"
+                                          data-confirm-cancel-text="{{ __('Batal') }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800">Hapus</button>
+                                        <x-dashboard.btn variant="danger" size="sm" type="submit" icon="fa-trash">{{ __('Hapus') }}</x-dashboard.btn>
                                     </form>
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-slate-500">Belum ada artikel.</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
 
         @if($articles->hasPages())
-            <div class="px-6 py-4 border-t border-slate-200">{{ $articles->links() }}</div>
+            <div class="border-t border-slate-100 px-6 py-4">{{ $articles->links() }}</div>
         @endif
-    </div>
+    @else
+        <x-dashboard.empty icon="fa-newspaper" message="{{ __('Belum ada artikel.') }}" />
+    @endif
+</x-dashboard.card>
 @endsection

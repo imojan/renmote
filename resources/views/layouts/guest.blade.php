@@ -15,23 +15,26 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body>
-        <div class="auth-page">
-            <div class="auth-container">
-                <!-- Logo -->
-                <div class="auth-logo">
+    <body class="font-poppins text-rn-text antialiased">
+        <div class="flex min-h-screen flex-col items-center bg-white">
+            {{-- Top brand accent stripe --}}
+            <div class="h-1 w-full flex-shrink-0 bg-gradient-to-r from-rn-blue via-rn-primary to-rn-accent"></div>
+
+            <div class="mx-auto w-full max-w-[420px] px-5 pb-9 pt-7 sm:px-8 sm:pb-12 sm:pt-10">
+                {{-- Logo --}}
+                <div class="mb-7 flex justify-center">
                     <a href="/">
-                        <img src="{{ asset('images/renmote-biru.png') }}" alt="{{ config('app.name') }}">
+                        <img src="{{ asset('images/renmote-biru.png') }}" alt="{{ config('app.name') }}" class="h-12 w-auto object-contain">
                     </a>
                 </div>
 
                 {{ $slot }}
             </div>
 
-            <div class="auth-disclaimer">
-                Dengan melanjutkan, kamu menyetujui
-                <a href="#">Syarat & Ketentuan</a> dan
-                <a href="#">Kebijakan Privasi</a> Renmote.
+            <div class="w-full max-w-[420px] px-8 pb-8 pt-6 text-center text-xs leading-relaxed text-gray-400">
+                {{ __('auth_extra.agree_prefix') }}
+                <a href="{{ route('rent.terms') }}" class="text-gray-500 underline underline-offset-2 transition-colors hover:text-rn-text">{{ __('auth_extra.agree_terms') }}</a> {{ __('auth_extra.agree_and') }}
+                <a href="{{ route('about') }}#privacy" class="text-gray-500 underline underline-offset-2 transition-colors hover:text-rn-text">{{ __('auth_extra.agree_privacy') }}</a> {{ __('auth_extra.agree_brand') }}
             </div>
         </div>
         @stack('scripts')

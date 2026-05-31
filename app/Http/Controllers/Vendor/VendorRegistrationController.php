@@ -245,18 +245,58 @@ class VendorRegistrationController extends Controller
     /**
      * Serve a vendor document file via signed URL (local storage).
      */
-    public function serveDocument(Request $request, VendorDocument $document)
+    /**
+     * Resubmit a single rejected vendor document.
+     * The vendor uploads a new file; the matching VendorDocument row is
+     * updated and put back to pending so admins can re-review it.
+     */
+    public function resubmitDocument(Request $request, VendorDocument $document)
     {
-        if (!$request->hasValidSignature()) {
-            abort(403, 'Link tidak valid atau sudah kadaluarsa.');
+        $user = $request->user();
+        abort_unless($user && $user->role === 'vendor', 403);
+
+        $vendor = $user->vendor;
+        abort_unless($vendor && $vendor->id === $document->vendor_id, 403);
+
+        $allowed = ['ktp', 'permit', 'photo'];
+        abort_unless(in_array($document->type, $allowed, true), 422);
+
+        $request->validate([
+            'document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+        ], [
+            'document.required' => 'File dokumen baru wajib diunggah.',
+            'document.mimes' => 'Format dokumen harus JPG, JPEG, PNG, atau PDF.',
+            'document.max' => 'Ukuran maksimum dokumen adalah 2MB.',
+        ]);
+
+        try {
+            $newPath = $this->storeDocument($request->file('document'), $document->type, $vendor->id);
+        } catch (\InvalidArgumentException $exception) {
+            return back()->with('error', $exception->getMessage());
         }
 
-        $path = storage_path('app/private/' . $document->file_path);
-
-        if (!file_exists($path)) {
-            abort(404, 'File tidak ditemukan.');
+        if ($document->file_path) {
+            Storage::disk('local')->delete($document->file_path);
         }
 
-        return response()->file($path);
+        $document->update([
+            'file_path' => $newPath,
+            'status' => 'pending',
+            'notes' => null,
+        ]);
+
+        // If vendor was previously rejected and is reuploading documents,
+        // move them back into "pending" so the admin can re-evaluate.
+        if ($vendor->status === 'rejected') {
+            $vendor->update([
+                'status' => 'pending',
+                'verified' => false,
+                'rejection_reason' => null,
+            ]);
+        }
+
+        return back()->with('success', 'Dokumen berhasil diunggah ulang. Menunggu review admin.');
     }
 }
+
+

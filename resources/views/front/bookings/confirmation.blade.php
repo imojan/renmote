@@ -257,18 +257,8 @@
             <article class="booking-checkout-card">
                 <header class="booking-checkout-card-head">
                     <h3>4. Ringkasan Pembayaran</h3>
-                    <p>Metode pembayaran akan dipilih di halaman bayar melalui Midtrans (QRIS, e-wallet, VA, dan kartu).</p>
+                    <p>Pilih metode pembayaran (QRIS, e-wallet, VA, atau kartu) di langkah berikutnya.</p>
                 </header>
-
-                <div class="booking-payment-method">
-                    <div class="booking-payment-method-row">
-                        <img src="{{ asset('images/logo-qris.png') }}" alt="Midtrans" loading="lazy">
-                        <div>
-                            <strong>Midtrans Sandbox</strong>
-                            <p>Pilih metode pembayaran di langkah 2 (halaman bayar).</p>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="booking-price-breakdown">
                     <div><span>Total Sewa</span><strong>Rp {{ number_format($summary['total_price'], 0, ',', '.') }}</strong></div>

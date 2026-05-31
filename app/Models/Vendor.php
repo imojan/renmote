@@ -18,10 +18,23 @@ class Vendor extends Model
         'address',
         'bank_name',
         'bank_account',
+        'profile_photo',
+        'cover_photo',
+        'rating',
+        'rating_count',
         'status',
         'verified',
         'rejection_reason',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'rating' => 'decimal:2',
+            'rating_count' => 'integer',
+            'verified' => 'boolean',
+        ];
+    }
 
     /**
      * Vendor dimiliki oleh satu User

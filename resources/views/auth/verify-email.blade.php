@@ -1,25 +1,26 @@
 <x-guest-layout>
     @section('title', 'Verifikasi Email')
 
-    <h1 class="auth-title">Verifikasi email</h1>
-    <p class="auth-subtitle">Terima kasih telah mendaftar! Silakan verifikasi email kamu dengan klik link yang telah kami kirim. Belum menerima email?</p>
+    <x-auth.title subtitle="Terima kasih telah mendaftar! Silakan verifikasi email kamu dengan klik link yang telah kami kirim. Belum menerima email?">
+        Verifikasi email
+    </x-auth.title>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="auth-alert success">Link verifikasi baru telah dikirim ke email kamu.</div>
+        <x-auth.alert type="success">Link verifikasi baru telah dikirim ke email kamu.</x-auth.alert>
     @endif
 
-    <form method="POST" action="{{ route('verification.send') }}">
+    <form method="POST" action="{{ route('verification.send') }}" data-rn-loading>
         @csrf
-        <button type="submit" class="auth-submit-btn">
-            <span class="btn-text">Kirim Ulang Email Verifikasi</span>
-            <span class="spinner"></span>
-        </button>
+        <x-auth.submit-button>Kirim Ulang Email Verifikasi</x-auth.submit-button>
     </form>
 
-    <div class="auth-footer">
-        <form method="POST" action="{{ route('logout') }}">
+    <x-auth.footer>
+        <form method="POST" action="{{ route('logout') }}" class="inline">
             @csrf
-            <button type="submit" style="background:none;border:none;font-size:0.9375rem;font-weight:700;color:#1a1a2e;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-family:inherit;">Keluar</button>
+            <button type="submit"
+                    class="cursor-pointer border-0 bg-transparent font-poppins text-[0.9375rem] font-bold text-rn-text underline underline-offset-[3px] transition-colors hover:text-rn-primary">
+                Keluar
+            </button>
         </form>
-    </div>
+    </x-auth.footer>
 </x-guest-layout>

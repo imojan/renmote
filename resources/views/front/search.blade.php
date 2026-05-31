@@ -55,7 +55,7 @@
 
         <!-- Results -->
         <div class="mb-4">
-            <p class="text-gray-600">Ditemukan {{ $vehicles->count() }} motor</p>
+            <p class="text-gray-600">{{ __('Ditemukan') }} {{ $vehicles->total() }} {{ __('motor') }}</p>
         </div>
         
         @if($vehicles->count() > 0)
@@ -92,9 +92,9 @@
                                 <div class="flex items-center gap-2">
                                     @auth
                                         @if(auth()->user()->role === 'user')
-                                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST">
+                                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST" data-rn-wishlist>
                                                 @csrf
-                                                <button type="submit" class="w-10 h-10 rounded-lg border {{ in_array($vehicle->id, $wishlistedVehicleIds ?? [], true) ? 'border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
+                                                <button type="submit" class="btn-fav w-10 h-10 rounded-lg border {{ in_array($vehicle->id, $wishlistedVehicleIds ?? [], true) ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
                                                     <i class="fa fa-heart"></i>
                                                 </button>
                                             </form>
@@ -114,6 +114,10 @@
                     </div>
                 @endforeach
             </div>
+
+            @if($vehicles->hasPages())
+                <div class="mt-8">{{ $vehicles->links() }}</div>
+            @endif
         @else
             <div class="bg-white rounded-lg shadow p-8 text-center">
                 <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

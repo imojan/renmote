@@ -23,7 +23,7 @@ class StoreVehicleRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'category' => 'required|in:matic,manual,sport',
+            'category' => ['required', 'in:' . implode(',', array_keys(\App\Models\Vehicle::CATEGORIES))],
             'price_per_day' => 'required|numeric|min:0',
             'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'engine_cc' => 'required|integer|min:50|max:3000',
