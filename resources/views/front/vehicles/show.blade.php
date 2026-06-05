@@ -42,27 +42,32 @@
                     <span class="text-gray-500">/hari</span>
                 </div>
 
-                <div class="mb-6 flex items-center gap-2">
-                    @auth
-                        @if(auth()->user()->role === 'user')
-                            <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST" data-rn-wishlist>
-                                @csrf
-                                <button type="submit" class="btn-fav px-4 py-2 rounded-lg border {{ $isWishlistedVehicle ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600' }} hover:border-red-300 hover:text-red-600 text-sm font-semibold">
-                                    <i class="fa fa-heart mr-1"></i> Favoritkan Kendaraan
-                                </button>
-                            </form>
-                            <form action="{{ route('user.wishlist.vendors.toggle', $vehicle->vendor) }}" method="POST" data-rn-wishlist>
-                                @csrf
-                                <button type="submit" class="btn-fav px-4 py-2 rounded-lg border {{ $isWishlistedVendor ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600' }} hover:border-red-300 hover:text-red-600 text-sm font-semibold">
-                                    <i class="fa fa-heart mr-1"></i> Favoritkan Vendor
-                                </button>
-                            </form>
-                        @endif
-                    @else
-                        <a href="{{ route('login') }}" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:border-red-300 hover:text-red-600 text-sm font-semibold">
-                            <i class="fa fa-heart mr-1"></i> Login untuk Wishlist
-                        </a>
-                    @endauth
+                <div class="mb-6">
+                    <div class="flex flex-wrap gap-3">
+                        @auth
+                            @if(auth()->user()->role === 'user')
+                                <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST" data-rn-wishlist>
+                                    @csrf
+                                    <button type="submit" class="btn-fav inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-all {{ $isWishlistedVehicle ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600 bg-white hover:border-red-300 hover:text-red-600' }} text-sm font-medium">
+                                        <i class="fa fa-heart"></i>
+                                        <span>{{ $isWishlistedVehicle ? 'Difavoritkan' : 'Favoritkan' }}</span>
+                                    </button>
+                                </form>
+                                <form action="{{ route('user.wishlist.vendors.toggle', $vehicle->vendor) }}" method="POST" data-rn-wishlist>
+                                    @csrf
+                                    <button type="submit" class="btn-fav inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-all {{ $isWishlistedVendor ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600 bg-white hover:border-red-300 hover:text-red-600' }} text-sm font-medium">
+                                        <i class="fa fa-store"></i>
+                                        <span>{{ $isWishlistedVendor ? 'Vendor Difavoritkan' : 'Favoritkan Vendor' }}</span>
+                                    </button>
+                                </form>
+                            @endif
+                        @else
+                            <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-600 bg-white hover:border-red-300 hover:text-red-600 transition-all text-sm font-medium">
+                                <i class="fa fa-heart"></i>
+                                <span>Login untuk Wishlist</span>
+                            </a>
+                        @endauth
+                    </div>
                 </div>
 
                 @if($vehicle->description)
@@ -75,18 +80,32 @@
                 <!-- Vendor Info -->
                 <div class="border-t pt-6 mb-6">
                     <h3 class="font-semibold text-gray-900 mb-3">Penyedia</h3>
-                    <a href="{{ route('vendors.show', $vehicle->vendor) }}" class="flex items-center hover:bg-gray-50 p-3 rounded-lg -mx-3">
-                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mr-4">
-                            <span class="text-xl font-bold text-gray-600">{{ substr($vehicle->vendor->store_name, 0, 1) }}</span>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-900">
+                    <a href="{{ route('vendors.show', $vehicle->vendor) }}" class="flex items-center hover:bg-gray-50 p-3 rounded-lg -mx-3 transition">
+                        @php
+                            $vendorInitial = strtoupper(substr($vehicle->vendor->store_name, 0, 1));
+                        @endphp
+                        
+                        @if($vehicle->vendor->profile_photo)
+                            <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 mr-4">
+                                <img src="{{ \Illuminate\Support\Facades\Storage::url($vehicle->vendor->profile_photo) }}" 
+                                     alt="{{ $vehicle->vendor->store_name }}"
+                                     class="w-full h-full object-cover"
+                                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center\'><span class=\'text-xl font-bold text-white\'>{{ $vendorInitial }}</span></div>';">
+                            </div>
+                        @else
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mr-4">
+                                <span class="text-xl font-bold text-white">{{ $vendorInitial }}</span>
+                            </div>
+                        @endif
+                        
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-gray-900 truncate">
                                 {{ $vehicle->vendor->store_name }}
                                 @if($vehicle->vendor->verified)
-                                    <span class="ml-1 text-green-500">✓</span>
+                                    <span class="ml-1 text-green-500" title="Terverifikasi"><i class="fa fa-check-circle"></i></span>
                                 @endif
                             </p>
-                            <p class="text-sm text-gray-500">{{ $vehicle->vendor->district->name }}</p>
+                            <p class="text-sm text-gray-500 truncate">{{ $vehicle->vendor->district->name }}</p>
                         </div>
                     </a>
                 </div>

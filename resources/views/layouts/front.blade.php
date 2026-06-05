@@ -136,17 +136,96 @@
         @endphp
 
         @php
-            $notificationUrl = auth()->check() ? route('notifications.index') : route('login');
             $notificationUnreadCount = auth()->check() ? auth()->user()->unreadNotifications()->count() : 0;
         @endphp
         <div class="nav-icons">
             <a href="{{ $wishlistUrl }}" class="nav-icon" aria-label="{{ __('nav.wishlist') }}"><i class="fa fa-heart"></i></a>
-            <a href="{{ $notificationUrl }}" class="nav-icon nav-icon-bell" aria-label="{{ __('nav.notifications') }}">
-                <i class="fa fa-bell"></i>
-                @if($notificationUnreadCount > 0)
-                    <span class="nav-icon-badge">{{ $notificationUnreadCount > 99 ? '99+' : $notificationUnreadCount }}</span>
-                @endif
-            </a>
+            @auth
+                <div x-data="{ open: false }" @click.outside="open = false" class="relative">
+                    <button @click="open = !open" class="nav-icon nav-icon-bell" aria-label="{{ __('nav.notifications') }}">
+                        <i class="fa fa-bell"></i>
+                        @if($notificationUnreadCount > 0)
+                            <span class="nav-icon-badge">{{ $notificationUnreadCount > 99 ? '99+' : $notificationUnreadCount }}</span>
+                        @endif
+                    </button>
+                    
+                    <div x-show="open"
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-3 w-80 sm:w-96 origin-top-right z-[9999]">
+                        
+                        <div class="rounded-2xl border-2 border-slate-200 bg-white shadow-2xl overflow-hidden">
+                            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4 text-white">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-bold">Notifikasi</h3>
+                                    @if($notificationUnreadCount > 0)
+                                        <span class="rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold">
+                                            {{ $notificationUnreadCount }} baru
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <div class="max-h-96 overflow-y-auto">
+                                @forelse(auth()->user()->notifications()->latest()->limit(5)->get() as $notification)
+                                    <a href="{{ route('notifications.show', $notification) }}"
+                                       @click="open = false"
+                                       class="block border-b border-slate-100 px-5 py-4 transition hover:bg-slate-50 {{ is_null($notification->read_at) ? 'bg-blue-50/50' : '' }}">
+                                        <div class="flex items-start gap-3">
+                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full 
+                                                {{ is_null($notification->read_at) ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500' }}">
+                                                <i class="fa {{ $notification->data['icon'] ?? 'fa-bell' }} text-sm"></i>
+                                            </div>
+                                            
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-semibold text-slate-800 mb-1 line-clamp-2">
+                                                    {{ $notification->data['title'] ?? 'Notifikasi Baru' }}
+                                                </p>
+                                                <p class="text-xs text-slate-600 mb-2 line-clamp-2">
+                                                    {{ $notification->data['message'] ?? '' }}
+                                                </p>
+                                                <p class="text-xs text-slate-400">
+                                                    <i class="fa fa-clock mr-1"></i>{{ $notification->created_at->diffForHumans() }}
+                                                </p>
+                                            </div>
+                                            
+                                            @if(is_null($notification->read_at))
+                                                <div class="h-2 w-2 shrink-0 rounded-full bg-blue-600"></div>
+                                            @endif
+                                        </div>
+                                    </a>
+                                @empty
+                                    <div class="flex flex-col items-center justify-center py-12 px-5">
+                                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                                            <i class="fa fa-bell-slash text-2xl text-slate-400"></i>
+                                        </div>
+                                        <p class="text-sm font-medium text-slate-600">Tidak ada notifikasi</p>
+                                        <p class="text-xs text-slate-500 mt-1">Anda akan menerima notifikasi di sini</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                            
+                            <div class="border-t border-slate-200 bg-slate-50 px-5 py-3">
+                                <a href="{{ route('notifications.index') }}"
+                                   @click="open = false"
+                                   class="flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50">
+                                    <span>Lihat Semua Notifikasi</span>
+                                    <i class="fa fa-arrow-right text-xs"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <a href="{{ route('login') }}" class="nav-icon nav-icon-bell" aria-label="{{ __('nav.notifications') }}">
+                    <i class="fa fa-bell"></i>
+                </a>
+            @endauth
         </div>
     </div>
 </nav>
@@ -214,6 +293,9 @@
 @endauth
 
 <x-front.footer />
+
+{{-- Notification Modal --}}
+<x-notification-modal />
 
 @stack('scripts')
 <script>

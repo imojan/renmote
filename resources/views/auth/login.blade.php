@@ -1,8 +1,8 @@
 <x-guest-layout>
-    @section('title', 'Masuk')
+    @section('title', __('auth.login_title'))
 
-    <x-auth.title subtitle="Masuk ke akun Renmote kamu">
-        Selamat datang<br>kembali
+    <x-auth.title :subtitle="__('auth.login_subtitle')">
+        {!! __('auth.login_welcome') !!}
     </x-auth.title>
 
     @if (session('status'))
@@ -20,14 +20,14 @@
     <form method="POST" action="{{ route('login') }}" data-rn-loading>
         @csrf
 
-        <x-auth.field label="Email" for="email">
+        <x-auth.field :label="__('auth.login_email')" for="email">
             <x-auth.input id="email" type="email" name="email"
                           value="{{ old('email') }}"
-                          placeholder="nama@email.com"
+                          :placeholder="__('auth.register_email_placeholder')"
                           required autofocus autocomplete="username" />
         </x-auth.field>
 
-        <x-auth.field label="Password" for="password">
+        <x-auth.field :label="__('auth.login_password')" for="password">
             <x-auth.password-input id="password"
                                    placeholder="••••••••"
                                    required autocomplete="current-password" />
@@ -37,20 +37,20 @@
             <label class="flex cursor-pointer items-center gap-2">
                 <input type="checkbox" name="remember"
                        class="h-4 w-4 cursor-pointer rounded border-[1.5px] border-gray-300 text-rn-primary accent-rn-primary focus:ring-0">
-                <span class="font-medium text-gray-700">Ingat saya</span>
+                <span class="font-medium text-gray-700">{{ __('auth.login_remember') }}</span>
             </label>
             @if (Route::has('password.request'))
                 <a href="{{ route('password.request') }}"
                    class="font-medium text-gray-500 underline underline-offset-2 transition-colors hover:text-rn-text">
-                    Lupa password?
+                    {{ __('auth.login_forgot') }}
                 </a>
             @endif
         </div>
 
-        <x-auth.submit-button>Masuk</x-auth.submit-button>
+        <x-auth.submit-button>{{ __('auth.login_button') }}</x-auth.submit-button>
     </form>
 
-    <x-auth.divider>atau</x-auth.divider>
+    <x-auth.divider>{{ __('auth.login_or') }}</x-auth.divider>
 
     <x-auth.social-button :href="url('/auth/google')">
         <svg width="22" height="22" viewBox="0 0 24 24" class="h-[22px] w-[22px] flex-shrink-0">
@@ -59,10 +59,10 @@
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        Masuk dengan Google
+        {{ __('auth.login_google') }}
     </x-auth.social-button>
 
-    <x-auth.footer text="Belum punya akun?">
-        <a href="{{ route('register') }}">Daftar sekarang</a>
+    <x-auth.footer :text="__('auth.login_no_account')">
+        <a href="{{ route('register') }}">{{ __('auth.login_register_now') }}</a>
     </x-auth.footer>
 </x-guest-layout>

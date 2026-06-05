@@ -14,22 +14,24 @@
 
             <div class="p-6">
                 <div class="flex items-start justify-between gap-4 flex-wrap">
-                    <div class="flex items-center">
-                        <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center mr-6 shrink-0 {{ $vendor->cover_photo ? '-mt-16 border-4 border-white shadow' : '' }}">
+                    <div class="flex items-start gap-4">
+                        <div class="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0 {{ $vendor->cover_photo ? '-mt-16 border-4 border-white shadow' : '' }}">
                             @if($vendor->profile_photo)
                                 <img src="{{ Storage::url($vendor->profile_photo) }}" alt="{{ $vendor->store_name }}" class="h-full w-full object-cover">
                             @else
-                                <span class="text-3xl font-bold text-gray-600">{{ strtoupper(substr($vendor->store_name, 0, 1)) }}</span>
+                                <span class="text-3xl font-bold text-white">{{ strtoupper(substr($vendor->store_name, 0, 1)) }}</span>
                             @endif
                         </div>
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900">
-                                {{ $vendor->store_name }}
+                        <div class="flex-1 min-w-0">
+                            <h1 class="text-2xl font-bold text-gray-900 flex items-center flex-wrap gap-2">
+                                <span>{{ $vendor->store_name }}</span>
                                 @if($vendor->verified)
-                                    <span class="ml-2 px-2 py-1 text-sm bg-green-100 text-green-800 rounded-full">✓ Terverifikasi</span>
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full inline-flex items-center gap-1">
+                                        <i class="fa fa-check-circle"></i> Terverifikasi
+                                    </span>
                                 @endif
                             </h1>
-                            <p class="text-gray-500"><i class="fa fa-map-marker-alt text-xs"></i> {{ $vendor->district->name }}</p>
+                            <p class="text-gray-500 mt-1"><i class="fa fa-map-marker-alt text-xs mr-1"></i>{{ $vendor->district->name }}</p>
                             @if($vendor->rating)
                                 <p class="mt-1 text-sm font-semibold text-gray-700">
                                     <i class="fa fa-star text-amber-400"></i>
@@ -38,49 +40,52 @@
                                 </p>
                             @endif
                             @if($vendor->description)
-                                <p class="text-gray-600 mt-2">{{ $vendor->description }}</p>
+                                <p class="text-gray-600 mt-2 text-sm">{{ $vendor->description }}</p>
                             @endif
                         </div>
                     </div>
 
-                @auth
-                    @if(auth()->user()->role === 'user')
-                        <div class="flex items-center gap-2">
-                            <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST" data-rn-wishlist>
-                                @csrf
-                                <button type="submit" class="btn-fav w-11 h-11 rounded-xl border {{ $isWishlistedVendor ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500' }} hover:border-red-300 hover:text-red-600">
-                                    <i class="fa fa-heart"></i>
-                                </button>
-                            </form>
+                    @auth
+                        @if(auth()->user()->role === 'user')
+                            <div class="flex items-center gap-3">
+                                <form action="{{ route('user.wishlist.vendors.toggle', $vendor) }}" method="POST" data-rn-wishlist>
+                                    @csrf
+                                    <button type="submit" class="btn-fav flex items-center justify-center w-11 h-11 rounded-xl border transition-all {{ $isWishlistedVendor ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600' }}">
+                                        <i class="fa fa-heart text-lg"></i>
+                                    </button>
+                                </form>
 
-                            <a
-                                href="{{ route('chat.index', ['vendor' => $vendor->id]) }}"
-                                class="inline-flex items-center gap-2 px-4 h-11 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700"
-                                data-chat-vendor-id="{{ $vendor->id }}"
-                            >
+                                <a
+                                    href="{{ route('chat.index', ['vendor' => $vendor->id]) }}"
+                                    class="inline-flex items-center justify-center gap-2 px-5 h-11 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-all whitespace-nowrap"
+                                    data-chat-vendor-id="{{ $vendor->id }}"
+                                >
+                                    <i class="fa-solid fa-comments"></i>
+                                    <span class="hidden sm:inline">Chat Vendor</span>
+                                    <span class="sm:hidden">Chat</span>
+                                </a>
+                            </div>
+                        @else
+                            <a href="{{ route('chat.index') }}" class="inline-flex items-center justify-center gap-2 px-5 h-11 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-all whitespace-nowrap">
                                 <i class="fa-solid fa-comments"></i>
-                                Chat Vendor
+                                <span class="hidden sm:inline">Chat Vendor</span>
+                                <span class="sm:hidden">Chat</span>
+                            </a>
+                        @endif
+                    @else
+                        <div class="flex items-center gap-3">
+                            <a href="{{ route('login') }}" class="flex items-center justify-center w-11 h-11 rounded-xl border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 transition-all">
+                                <i class="fa fa-heart text-lg"></i>
+                            </a>
+                            <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-2 px-5 h-11 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-all whitespace-nowrap">
+                                <i class="fa-solid fa-comments"></i>
+                                <span class="hidden sm:inline">Chat Vendor</span>
+                                <span class="sm:hidden">Chat</span>
                             </a>
                         </div>
-                    @else
-                        <a href="{{ route('chat.index') }}" class="inline-flex items-center gap-2 px-4 h-11 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700">
-                            <i class="fa-solid fa-comments"></i>
-                            Chat Vendor
-                        </a>
-                    @endif
-                @else
-                    <div class="flex items-center gap-2">
-                        <a href="{{ route('login') }}" class="w-11 h-11 rounded-xl border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-600 flex items-center justify-center">
-                            <i class="fa fa-heart"></i>
-                        </a>
-                        <a href="{{ route('login') }}" class="inline-flex items-center gap-2 px-4 h-11 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700">
-                            <i class="fa-solid fa-comments"></i>
-                            Chat Vendor
-                        </a>
-                    </div>
-                @endauth
+                    @endauth
+                </div>
             </div>
-        </div>
         </div>
 
         <!-- Vehicles -->

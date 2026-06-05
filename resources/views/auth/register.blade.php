@@ -1,8 +1,8 @@
 <x-guest-layout>
-    @section('title', 'Daftar')
+    @section('title', __('auth.register_title'))
 
-    <x-auth.title subtitle="Daftar gratis di Renmote">
-        Buat akun untuk<br>mulai sewa
+    <x-auth.title :subtitle="__('auth.register_subtitle')">
+        {!! __('auth.register_welcome') !!}
     </x-auth.title>
 
     @if ($errors->any())
@@ -20,25 +20,25 @@
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        Daftar dengan Google
+        {{ __('auth.register_google') }}
     </x-auth.social-button>
 
-    <x-auth.divider>atau</x-auth.divider>
+    <x-auth.divider>{{ __('auth.register_or') }}</x-auth.divider>
 
     <form method="POST" action="{{ route('register') }}" data-rn-loading>
         @csrf
 
         {{-- Role picker --}}
-        <x-auth.field label="Daftar sebagai" :error="$errors->first('role')">
+        <x-auth.field :label="__('auth.register_as')" :error="$errors->first('role')">
             <div class="grid grid-cols-2 gap-3">
-                <x-auth.role-card name="role" value="user" title="Penyewa" description="Sewa motor mudah"
+                <x-auth.role-card name="role" value="user" :title="__('auth.register_renter')" :description="__('auth.register_renter_desc')"
                                   :checked="old('role', 'user') === 'user'">
                     <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
                 </x-auth.role-card>
 
-                <x-auth.role-card name="role" value="vendor" title="Vendor" description="Sewakan motor Anda"
+                <x-auth.role-card name="role" value="vendor" :title="__('auth.register_vendor')" :description="__('auth.register_vendor_desc')"
                                   :checked="old('role') === 'vendor'">
                     <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -47,43 +47,43 @@
             </div>
         </x-auth.field>
 
-        <x-auth.field label="Nama lengkap" for="name" :error="$errors->first('name')">
+        <x-auth.field :label="__('auth.register_name')" for="name" :error="$errors->first('name')">
             <x-auth.input id="name" type="text" name="name"
                           value="{{ old('name') }}"
-                          placeholder="Masukkan nama lengkap"
+                          :placeholder="__('auth.register_name_placeholder')"
                           required autofocus autocomplete="name" />
         </x-auth.field>
 
-        <x-auth.field label="Email" for="email" :error="$errors->first('email')">
+        <x-auth.field :label="__('auth.register_email')" for="email" :error="$errors->first('email')">
             <x-auth.input id="email" type="email" name="email"
                           value="{{ old('email') }}"
-                          placeholder="nama@email.com"
+                          :placeholder="__('auth.register_email_placeholder')"
                           required autocomplete="username" />
         </x-auth.field>
 
-        <x-auth.field label="Nomor HP" for="phone_number" :error="$errors->first('phone_number')">
+        <x-auth.field :label="__('auth.register_phone')" for="phone_number" :error="$errors->first('phone_number')">
             <x-auth.input id="phone_number" type="tel" name="phone_number"
                           value="{{ old('phone_number') }}"
-                          placeholder="08xxxxxxxxxx"
+                          :placeholder="__('auth.register_phone_placeholder')"
                           autocomplete="tel" />
         </x-auth.field>
 
-        <x-auth.field label="Password" for="reg_password" :error="$errors->first('password')">
+        <x-auth.field :label="__('auth.register_password')" for="reg_password" :error="$errors->first('password')">
             <x-auth.password-input id="reg_password"
-                                   placeholder="Minimal 8 karakter"
+                                   :placeholder="__('auth.register_password_placeholder')"
                                    required autocomplete="new-password" />
         </x-auth.field>
 
-        <x-auth.field label="Konfirmasi password" for="password_confirmation">
+        <x-auth.field :label="__('auth.register_password_confirm')" for="password_confirmation">
             <x-auth.password-input id="password_confirmation" name="password_confirmation"
-                                   placeholder="Ulangi password"
+                                   :placeholder="__('auth.register_password_confirm_placeholder')"
                                    required autocomplete="new-password" />
         </x-auth.field>
 
-        <x-auth.submit-button>Daftar</x-auth.submit-button>
+        <x-auth.submit-button>{{ __('auth.register_button') }}</x-auth.submit-button>
     </form>
 
-    <x-auth.footer text="Sudah punya akun?">
-        <a href="{{ route('login') }}">Masuk</a>
+    <x-auth.footer :text="__('auth.register_have_account')">
+        <a href="{{ route('login') }}">{{ __('auth.register_login') }}</a>
     </x-auth.footer>
 </x-guest-layout>

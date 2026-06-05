@@ -162,24 +162,27 @@
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Upload KTP <span class="text-red-500">*</span></label>
-                    <input type="file" name="ktp" accept=".jpg,.jpeg,.png,.pdf" required class="w-full text-sm text-slate-700">
+                    <input type="file" name="ktp" accept=".jpg,.jpeg,.png,.pdf" required class="w-full text-sm text-slate-700" data-max-size="2" data-file-input>
                     <p class="text-xs text-slate-500 mt-1">Format: JPG/PNG/PDF, max 2MB</p>
+                    <p class="text-xs text-red-600 mt-1 hidden" data-error-ktp></p>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Upload Surat Izin</label>
-                    <input type="file" name="permit" accept=".jpg,.jpeg,.png,.pdf" class="w-full text-sm text-slate-700">
+                    <input type="file" name="permit" accept=".jpg,.jpeg,.png,.pdf" class="w-full text-sm text-slate-700" data-max-size="2" data-file-input>
                     <p class="text-xs text-slate-500 mt-1">Format: JPG/PNG/PDF, max 2MB</p>
+                    <p class="text-xs text-red-600 mt-1 hidden" data-error-permit></p>
                 </div>
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Upload Foto Toko</label>
-                    <input type="file" name="photo" accept=".jpg,.jpeg,.png" class="w-full text-sm text-slate-700">
+                    <input type="file" name="photo" accept=".jpg,.jpeg,.png" class="w-full text-sm text-slate-700" data-max-size="2" data-file-input>
                     <p class="text-xs text-slate-500 mt-1">Format: JPG/PNG, max 2MB</p>
+                    <p class="text-xs text-red-600 mt-1 hidden" data-error-photo></p>
                 </div>
 
                 <div class="md:col-span-2 flex items-center gap-3 pt-2">
-                    <button type="submit" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors">
+                    <button type="submit" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors" data-submit-btn>
                         {{ isset($vendor) && $vendor ? 'Ajukan Ulang Vendor' : 'Kirim Pendaftaran Vendor' }}
                     </button>
                     <a href="{{ route('user.dashboard') }}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors">
@@ -190,3 +193,80 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const fileInputs = document.querySelectorAll('[data-file-input]');
+    const submitBtn = document.querySelector('[data-submit-btn]');
+    
+    let validationErrors = {};
+    
+    // Validate file size on change
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const maxSizeMB = parseFloat(this.dataset.maxSize || 2);
+            const maxSizeBytes = maxSizeMB * 1024 * 1024;
+            const file = this.files[0];
+            const fieldName = this.name;
+            const errorEl = document.querySelector(`[data-error-${fieldName}]`);
+            
+            if (file && file.size > maxSizeBytes) {
+                validationErrors[fieldName] = `Ukuran file ${fieldName.toUpperCase()} melebihi ${maxSizeMB}MB (${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
+                if (errorEl) {
+                    errorEl.textContent = validationErrors[fieldName];
+                    errorEl.classList.remove('hidden');
+                }
+                this.value = '';
+            } else {
+                delete validationErrors[fieldName];
+                if (errorEl) {
+                    errorEl.textContent = '';
+                    errorEl.classList.add('hidden');
+                }
+            }
+        });
+    });
+    
+    // Prevent form submission if there are validation errors
+    form.addEventListener('submit', function(e) {
+        // Re-validate all files before submit
+        fileInputs.forEach(input => {
+            const maxSizeMB = parseFloat(input.dataset.maxSize || 2);
+            const maxSizeBytes = maxSizeMB * 1024 * 1024;
+            const file = input.files[0];
+            const fieldName = input.name;
+            
+            if (file && file.size > maxSizeBytes) {
+                validationErrors[fieldName] = `Ukuran file ${fieldName.toUpperCase()} melebihi ${maxSizeMB}MB`;
+            }
+        });
+        
+        if (Object.keys(validationErrors).length > 0) {
+            e.preventDefault();
+            
+            // Show all errors
+            Object.keys(validationErrors).forEach(fieldName => {
+                const errorEl = document.querySelector(`[data-error-${fieldName}]`);
+                if (errorEl) {
+                    errorEl.textContent = validationErrors[fieldName];
+                    errorEl.classList.remove('hidden');
+                }
+            });
+            
+            // Show notification modal
+            if (window.showNotification) {
+                window.showNotification('error', 'File Terlalu Besar', 'Beberapa file melebihi ukuran maksimal 2MB. Silakan pilih file yang lebih kecil.');
+            }
+            
+            // Scroll to first error
+            const firstError = document.querySelector('[data-error-ktp]:not(.hidden), [data-error-permit]:not(.hidden), [data-error-photo]:not(.hidden)');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+});
+</script>
+@endpush

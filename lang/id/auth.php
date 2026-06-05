@@ -1,0 +1,64 @@
+<?php
+
+return [
+    // Login page
+    'login_title' => 'Masuk',
+    'login_welcome' => 'Selamat datang<br>kembali',
+    'login_subtitle' => 'Masuk ke akun Renmote kamu',
+    'login_email' => 'Email',
+    'login_password' => 'Password',
+    'login_remember' => 'Ingat saya',
+    'login_forgot' => 'Lupa password?',
+    'login_button' => 'Masuk',
+    'login_or' => 'atau',
+    'login_google' => 'Masuk dengan Google',
+    'login_no_account' => 'Belum punya akun?',
+    'login_register_now' => 'Daftar sekarang',
+    
+    // Register page
+    'register_title' => 'Daftar',
+    'register_welcome' => 'Buat akun untuk<br>mulai sewa',
+    'register_subtitle' => 'Daftar gratis di Renmote',
+    'register_as' => 'Daftar sebagai',
+    'register_renter' => 'Penyewa',
+    'register_renter_desc' => 'Sewa motor mudah',
+    'register_vendor' => 'Vendor',
+    'register_vendor_desc' => 'Sewakan motor Anda',
+    'register_name' => 'Nama lengkap',
+    'register_name_placeholder' => 'Masukkan nama lengkap',
+    'register_email' => 'Email',
+    'register_email_placeholder' => 'nama@email.com',
+    'register_phone' => 'Nomor HP',
+    'register_phone_placeholder' => '08xxxxxxxxxx',
+    'register_password' => 'Password',
+    'register_password_placeholder' => 'Minimal 8 karakter',
+    'register_password_confirm' => 'Konfirmasi password',
+    'register_password_confirm_placeholder' => 'Ulangi password',
+    'register_button' => 'Daftar',
+    'register_or' => 'atau',
+    'register_google' => 'Daftar dengan Google',
+    'register_have_account' => 'Sudah punya akun?',
+    'register_login' => 'Masuk',
+    
+    // Password reset
+    'forgot_password' => 'Lupa Password',
+    'forgot_password_title' => 'Lupa password?',
+    'forgot_password_subtitle' => 'Masukkan email kamu dan kami akan kirimkan link untuk reset password.',
+    'forgot_send_link' => 'Kirim Link Reset',
+    'forgot_remember' => 'Ingat password kamu?',
+    'forgot_back_login' => 'Kembali ke login',
+    
+    'reset_password' => 'Reset Password',
+    'reset_password_title' => 'Reset password',
+    'reset_password_subtitle' => 'Buat password baru untuk akun kamu.',
+    'reset_new_password' => 'Password baru',
+    'reset_button' => 'Reset Password',
+    
+    // Email verification
+    'verify_email' => 'Verifikasi Email',
+    'verify_email_title' => 'Verifikasi email',
+    'verify_email_subtitle' => 'Terima kasih telah mendaftar! Silakan verifikasi email kamu dengan klik link yang telah kami kirim. Belum menerima email?',
+    'verify_resend' => 'Kirim Ulang Email Verifikasi',
+    'verify_link_sent' => 'Link verifikasi baru telah dikirim ke email kamu.',
+    'verify_logout' => 'Keluar',
+];

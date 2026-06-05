@@ -1,0 +1,64 @@
+<?php
+
+return [
+    // Login page
+    'login_title' => 'Sign In',
+    'login_welcome' => 'Welcome<br>Back',
+    'login_subtitle' => 'Sign in to your Renmote account',
+    'login_email' => 'Email',
+    'login_password' => 'Password',
+    'login_remember' => 'Remember me',
+    'login_forgot' => 'Forgot password?',
+    'login_button' => 'Sign In',
+    'login_or' => 'or',
+    'login_google' => 'Sign in with Google',
+    'login_no_account' => 'Don\'t have an account?',
+    'login_register_now' => 'Register now',
+    
+    // Register page
+    'register_title' => 'Sign Up',
+    'register_welcome' => 'Create account to<br>start renting',
+    'register_subtitle' => 'Register for free at Renmote',
+    'register_as' => 'Register as',
+    'register_renter' => 'Renter',
+    'register_renter_desc' => 'Rent easily',
+    'register_vendor' => 'Vendor',
+    'register_vendor_desc' => 'Rent out your motorcycle',
+    'register_name' => 'Full name',
+    'register_name_placeholder' => 'Enter your full name',
+    'register_email' => 'Email',
+    'register_email_placeholder' => 'name@email.com',
+    'register_phone' => 'Phone number',
+    'register_phone_placeholder' => '08xxxxxxxxxx',
+    'register_password' => 'Password',
+    'register_password_placeholder' => 'Minimum 8 characters',
+    'register_password_confirm' => 'Confirm password',
+    'register_password_confirm_placeholder' => 'Re-enter password',
+    'register_button' => 'Sign Up',
+    'register_or' => 'or',
+    'register_google' => 'Sign up with Google',
+    'register_have_account' => 'Already have an account?',
+    'register_login' => 'Sign In',
+    
+    // Password reset
+    'forgot_password' => 'Forgot Password',
+    'forgot_password_title' => 'Forgot password?',
+    'forgot_password_subtitle' => 'Enter your email and we will send you a link to reset your password.',
+    'forgot_send_link' => 'Send Reset Link',
+    'forgot_remember' => 'Remember your password?',
+    'forgot_back_login' => 'Back to login',
+    
+    'reset_password' => 'Reset Password',
+    'reset_password_title' => 'Reset password',
+    'reset_password_subtitle' => 'Create a new password for your account.',
+    'reset_new_password' => 'New password',
+    'reset_button' => 'Reset Password',
+    
+    // Email verification
+    'verify_email' => 'Verify Email',
+    'verify_email_title' => 'Verify email',
+    'verify_email_subtitle' => 'Thanks for signing up! Please verify your email by clicking the link we sent you. Haven\'t received the email?',
+    'verify_resend' => 'Resend Verification Email',
+    'verify_link_sent' => 'A new verification link has been sent to your email.',
+    'verify_logout' => 'Log Out',
+];

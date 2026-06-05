@@ -44,8 +44,17 @@ class LoginRequest extends FormRequest
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
+            // Check if user exists
+            $userExists = \App\Models\User::where('email', $this->email)->exists();
+            
+            if (!$userExists) {
+                throw ValidationException::withMessages([
+                    'email' => 'Email ini belum terdaftar. Silakan daftar terlebih dahulu atau periksa kembali email Anda.',
+                ]);
+            }
+
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => 'Password yang Anda masukkan salah. Silakan coba lagi atau reset password Anda.',
             ]);
         }
 
@@ -66,12 +75,10 @@ class LoginRequest extends FormRequest
         event(new Lockout($this));
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
+        $minutes = ceil($seconds / 60);
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'email' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$minutes} menit.",
         ]);
     }
 

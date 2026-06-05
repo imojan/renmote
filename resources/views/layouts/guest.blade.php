@@ -37,6 +37,10 @@
                 <a href="{{ route('about') }}#privacy" class="text-gray-500 underline underline-offset-2 transition-colors hover:text-rn-text">{{ __('auth_extra.agree_privacy') }}</a> {{ __('auth_extra.agree_brand') }}
             </div>
         </div>
+
+        {{-- Notification Modal --}}
+        <x-notification-modal />
+
         @stack('scripts')
     </body>
 </html>

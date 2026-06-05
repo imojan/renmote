@@ -97,16 +97,7 @@
 
             <x-dashboard.locale-switch class="hidden sm:inline-flex" />
 
-            <a href="{{ route('notifications.index') }}"
-               class="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-rn-text"
-               aria-label="{{ __('dashboard.topbar.notifications_aria') }}">
-                <i class="fa fa-bell"></i>
-                @if($dashboardUnreadNotifications > 0)
-                    <span class="absolute -top-0.5 -right-0.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                        {{ $dashboardUnreadNotifications > 99 ? '99+' : $dashboardUnreadNotifications }}
-                    </span>
-                @endif
-            </a>
+            <x-notification-dropdown :unreadCount="$dashboardUnreadNotifications" />
 
             {{-- User dropdown --}}
             <div class="relative" @click.outside="userMenu = false">
@@ -239,23 +230,30 @@
     </div>
 
     @if(session('success'))
-        <div class="mb-4 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+        <div class="mb-4 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800" style="display: none;">
             <i class="fa fa-circle-check mt-0.5"></i>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="mb-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div class="mb-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" style="display: none;">
             <i class="fa fa-circle-exclamation mt-0.5"></i>
             <span>{{ session('error') }}</span>
         </div>
     @endif
 
     @if(session('info'))
-        <div class="mb-4 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+        <div class="mb-4 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800" style="display: none;">
             <i class="fa fa-circle-info mt-0.5"></i>
             <span>{{ session('info') }}</span>
+        </div>
+    @endif
+
+    @if(session('warning'))
+        <div class="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" style="display: none;">
+            <i class="fa fa-triangle-exclamation mt-0.5"></i>
+            <span>{{ session('warning') }}</span>
         </div>
     @endif
 
@@ -266,6 +264,9 @@
 @if(in_array($role, ['user', 'vendor'], true))
     @include('chat.panel', ['mode' => 'floating'])
 @endif
+
+{{-- Notification Modal --}}
+<x-notification-modal />
 
 @stack('scripts')
 </body>

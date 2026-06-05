@@ -1,8 +1,8 @@
 <x-guest-layout>
-    @section('title', 'Lupa Password')
+    @section('title', __('auth.forgot_password'))
 
-    <x-auth.title subtitle="Masukkan email kamu dan kami akan kirimkan link untuk reset password.">
-        Lupa password?
+    <x-auth.title :subtitle="__('auth.forgot_password_subtitle')">
+        {{ __('auth.forgot_password_title') }}
     </x-auth.title>
 
     @if (session('status'))
@@ -20,17 +20,17 @@
     <form method="POST" action="{{ route('password.email') }}" data-rn-loading>
         @csrf
 
-        <x-auth.field label="Email" for="email">
+        <x-auth.field :label="__('auth.login_email')" for="email">
             <x-auth.input id="email" type="email" name="email"
                           value="{{ old('email') }}"
-                          placeholder="nama@email.com"
+                          :placeholder="__('auth.register_email_placeholder')"
                           required autofocus />
         </x-auth.field>
 
-        <x-auth.submit-button>Kirim Link Reset</x-auth.submit-button>
+        <x-auth.submit-button>{{ __('auth.forgot_send_link') }}</x-auth.submit-button>
     </form>
 
-    <x-auth.footer text="Ingat password kamu?">
-        <a href="{{ route('login') }}">Kembali ke login</a>
+    <x-auth.footer :text="__('auth.forgot_remember')">
+        <a href="{{ route('login') }}">{{ __('auth.forgot_back_login') }}</a>
     </x-auth.footer>
 </x-guest-layout>

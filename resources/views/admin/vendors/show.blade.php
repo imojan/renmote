@@ -76,7 +76,36 @@
             <!-- Address -->
             <div class="mb-6 pb-6 border-b">
                 <h3 class="font-semibold text-gray-700 mb-3">Alamat</h3>
-                <p class="text-gray-600">{{ $vendor->address }}</p>
+                <p class="text-gray-600">{{ $vendor->address ?: 'Belum diisi' }}</p>
+            </div>
+
+            <!-- Business & Withdrawal Info -->
+            <div class="mb-6 pb-6 border-b">
+                <h3 class="font-semibold text-gray-700 mb-3">Informasi Bisnis & Pencairan</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Deskripsi Toko</p>
+                        <p class="font-medium text-gray-800">{{ $vendor->description ?: 'Belum diisi' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Status Verifikasi</p>
+                        <p class="font-medium">
+                            @if($vendor->verified)
+                                <span class="text-green-600"><i class="fa fa-check-circle"></i> Terverifikasi</span>
+                            @else
+                                <span class="text-yellow-600"><i class="fa fa-clock"></i> Belum Terverifikasi</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Metode Pencairan</p>
+                        <p class="font-medium text-gray-800">{{ $vendor->bank_name ?: 'Belum diisi' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Nomor Rekening/E-Wallet</p>
+                        <p class="font-medium text-gray-800">{{ $vendor->bank_account ?: 'Belum diisi' }}</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Statistics -->
