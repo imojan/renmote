@@ -43,26 +43,26 @@
                 </div>
 
                 <div class="mb-6">
-                    <div class="flex flex-wrap gap-3">
+                    <div class="flex flex-wrap gap-2">
                         @auth
                             @if(auth()->user()->role === 'user')
                                 <form action="{{ route('user.wishlist.vehicles.toggle', $vehicle) }}" method="POST" data-rn-wishlist>
                                     @csrf
-                                    <button type="submit" class="btn-fav inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-all {{ $isWishlistedVehicle ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600 bg-white hover:border-red-300 hover:text-red-600' }} text-sm font-medium">
+                                    <button type="submit" class="btn-fav-detail {{ $isWishlistedVehicle ? 'is-active' : '' }}">
                                         <i class="fa fa-heart"></i>
                                         <span>{{ $isWishlistedVehicle ? 'Difavoritkan' : 'Favoritkan' }}</span>
                                     </button>
                                 </form>
                                 <form action="{{ route('user.wishlist.vendors.toggle', $vehicle->vendor) }}" method="POST" data-rn-wishlist>
                                     @csrf
-                                    <button type="submit" class="btn-fav inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-all {{ $isWishlistedVendor ? 'is-active border-red-300 text-red-600 bg-red-50' : 'border-gray-300 text-gray-600 bg-white hover:border-red-300 hover:text-red-600' }} text-sm font-medium">
+                                    <button type="submit" class="btn-fav-detail {{ $isWishlistedVendor ? 'is-active' : '' }}">
                                         <i class="fa fa-store"></i>
                                         <span>{{ $isWishlistedVendor ? 'Vendor Difavoritkan' : 'Favoritkan Vendor' }}</span>
                                     </button>
                                 </form>
                             @endif
                         @else
-                            <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-600 bg-white hover:border-red-300 hover:text-red-600 transition-all text-sm font-medium">
+                            <a href="{{ route('login') }}" class="btn-fav-detail">
                                 <i class="fa fa-heart"></i>
                                 <span>Login untuk Wishlist</span>
                             </a>

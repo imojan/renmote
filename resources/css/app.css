@@ -236,6 +236,44 @@
         font-size: 14px;
         border-radius: 8px;
     }
+
+    /* Text-label favorite buttons (vehicle detail page) */
+    .btn-fav-detail {
+        @apply inline-flex items-center justify-center gap-2 cursor-pointer;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1.5px solid var(--rn-border);
+        border-radius: 10px;
+        color: #6b7280;
+        background: #fff;
+        transition: all .2s ease;
+        white-space: nowrap;
+        text-decoration: none;
+        line-height: 1;
+    }
+    .btn-fav-detail i {
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    .btn-fav-detail:hover {
+        border-color: #fca5a5;
+        color: #ef4444;
+        background: #fff5f5;
+    }
+    .btn-fav-detail.is-active {
+        border-color: #fca5a5;
+        color: #ef4444;
+        background: #fff1f2;
+    }
+    .btn-fav-detail.is-active i {
+        animation: fav-pulse .3s ease;
+    }
+    @keyframes fav-pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.25); }
+        100% { transform: scale(1); }
+    }
     .motor-lihat-btn {
         flex: 1;
     }
@@ -793,6 +831,156 @@
         .motor-img img {
             height: 110px;
         }
+    }
+}
+
+/* =====================================================================
+   Custom Pagination Component
+   ===================================================================== */
+
+.rn-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 0;
+    flex-wrap: wrap;
+}
+
+.rn-pagination__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--rn-primary, #1565c0);
+    background: #fff;
+    border: 1.5px solid var(--rn-border, #d7deea);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.rn-pagination__btn:hover:not(.is-disabled) {
+    background: #edf4ff;
+    border-color: var(--rn-primary, #1565c0);
+    color: var(--rn-primary, #1565c0);
+}
+
+.rn-pagination__btn.is-disabled {
+    color: #b0b8c4;
+    background: #f8fafc;
+    border-color: #e9ecf0;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.rn-pagination__btn svg {
+    flex-shrink: 0;
+}
+
+.rn-pagination__pages {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rn-pagination__page {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    background: #fff;
+    border: 1.5px solid var(--rn-border, #d7deea);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.rn-pagination__page:hover:not(.is-active) {
+    background: #f0f5ff;
+    border-color: #a3bce0;
+    color: var(--rn-primary, #1565c0);
+}
+
+.rn-pagination__page.is-active {
+    background: var(--rn-primary, #1565c0);
+    border-color: var(--rn-primary, #1565c0);
+    color: #fff;
+    cursor: default;
+    box-shadow: 0 2px 8px rgba(21, 101, 192, 0.25);
+}
+
+.rn-pagination__dots {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .rn-pagination {
+        gap: 4px;
+    }
+
+    .rn-pagination__btn {
+        padding: 8px 10px;
+        font-size: 12px;
+        gap: 4px;
+        border-radius: 8px;
+    }
+
+    .rn-pagination__page {
+        min-width: 32px;
+        height: 32px;
+        font-size: 12px;
+        border-radius: 8px;
+    }
+
+    .rn-pagination__dots {
+        min-width: 28px;
+        height: 32px;
+    }
+}
+
+@media (max-width: 420px) {
+    .rn-pagination__label {
+        display: none;
+    }
+
+    .rn-pagination__btn {
+        padding: 8px;
+        min-width: 34px;
+        min-height: 34px;
+        justify-content: center;
+    }
+
+    .rn-pagination__page {
+        min-width: 30px;
+        height: 30px;
+        font-size: 11px;
+    }
+
+    .rn-pagination__dots {
+        min-width: 22px;
+        height: 30px;
+        font-size: 12px;
     }
 }
 

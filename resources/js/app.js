@@ -775,7 +775,7 @@ function initWishlistToggle() {
 			}
 
 			event.preventDefault();
-			const button = form.querySelector('.btn-fav, button[type="submit"]');
+			const button = form.querySelector('.btn-fav, .btn-fav-detail, button[type="submit"]');
 			if (button) {
 				button.disabled = true;
 				button.classList.add('is-loading');
@@ -797,6 +797,22 @@ function initWishlistToggle() {
 					// just flips the wishlist row.
 					if (button) {
 						button.classList.toggle('is-active');
+
+						// Update label text for detail-style buttons
+						const labelEl = button.querySelector('span');
+						if (labelEl) {
+							const isNowActive = button.classList.contains('is-active');
+							const textMap = {
+								'Favoritkan': 'Difavoritkan',
+								'Difavoritkan': 'Favoritkan',
+								'Favoritkan Vendor': 'Vendor Difavoritkan',
+								'Vendor Difavoritkan': 'Favoritkan Vendor',
+							};
+							const currentText = labelEl.textContent.trim();
+							if (textMap[currentText]) {
+								labelEl.textContent = textMap[currentText];
+							}
+						}
 					}
 				}
 			} catch (error) {
