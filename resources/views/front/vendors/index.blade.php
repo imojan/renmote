@@ -54,19 +54,31 @@
                     </div>
 
                     <div class="flex flex-1 flex-col p-5">
-                        <h3 class="text-base font-bold text-rn-text line-clamp-1">{{ $vendor->store_name }}</h3>
-                        <p class="mt-1 flex items-center gap-1.5 text-sm text-rn-muted">
-                            <i class="fa fa-map-marker-alt text-xs"></i>
-                            {{ $vendor->district?->name ?? __('Lokasi belum diatur') }}
-                        </p>
-
-                        @if($vendor->rating)
-                            <p class="mt-2 flex items-center gap-1 text-sm font-semibold text-rn-text">
-                                <i class="fa fa-star text-amber-400"></i>
-                                {{ number_format($vendor->rating, 1) }}
-                                <span class="text-xs font-normal text-rn-muted">({{ number_format($vendor->rating_count ?? 0) }})</span>
-                            </p>
-                        @endif
+                        <div class="flex items-start gap-4">
+                            <div class="h-16 w-16 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm shrink-0">
+                                @if($vendor->profile_photo)
+                                    <img src="{{ Storage::url($vendor->profile_photo) }}" alt="{{ $vendor->store_name }}" class="h-full w-full object-cover">
+                                @else
+                                    <div class="flex h-full w-full items-center justify-center bg-red-100 font-bold text-red-600 text-lg">
+                                        {{ strtoupper(substr($vendor->store_name, 0, 2)) }}
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-base font-bold text-rn-text line-clamp-1">{{ $vendor->store_name }}</h3>
+                                <p class="mt-1 flex items-center gap-1.5 text-sm text-rn-muted">
+                                    <i class="fa fa-map-marker-alt text-xs"></i>
+                                    {{ $vendor->district?->name ?? __('Lokasi belum diatur') }}
+                                </p>
+                                @if($vendor->rating)
+                                    <p class="mt-1.5 flex items-center gap-1 text-sm font-semibold text-rn-text">
+                                        <i class="fa fa-star text-amber-400"></i>
+                                        {{ number_format($vendor->rating, 1) }}
+                                        <span class="text-xs font-normal text-rn-muted">({{ number_format($vendor->rating_count ?? 0) }})</span>
+                                    </p>
+                                @endif
+                            </div>
+                        </div>
 
                         @if($vendor->description)
                             <p class="mt-3 line-clamp-2 text-sm leading-relaxed text-rn-muted">

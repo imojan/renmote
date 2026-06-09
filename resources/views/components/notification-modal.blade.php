@@ -12,36 +12,51 @@
      class="fixed top-20 right-4 z-[9999] w-full max-w-sm"
      style="display: none;">
     
-    <div class="rounded-xl shadow-2xl border-l-4 overflow-hidden"
+    <div class="rounded-2xl border overflow-hidden backdrop-blur-sm"
          :class="{
-             'bg-white border-emerald-500': type === 'success',
-             'bg-white border-red-500': type === 'error',
-             'bg-white border-amber-500': type === 'warning',
-             'bg-white border-blue-500': type === 'info'
+             'bg-emerald-50/80 border-emerald-200': type === 'success',
+             'bg-red-50/80 border-red-200': type === 'error',
+             'bg-amber-50/80 border-amber-200': type === 'warning',
+             'bg-blue-50/80 border-blue-200': type === 'info'
+         }"
+         :style="{
+             boxShadow: type === 'success' ? '0 8px 32px -4px rgba(16, 185, 129, 0.12), 0 2px 8px -2px rgba(16, 185, 129, 0.08)' :
+                         type === 'error'   ? '0 8px 32px -4px rgba(239, 68, 68, 0.12), 0 2px 8px -2px rgba(239, 68, 68, 0.08)' :
+                         type === 'warning' ? '0 8px 32px -4px rgba(245, 158, 11, 0.12), 0 2px 8px -2px rgba(245, 158, 11, 0.08)' :
+                                              '0 8px 32px -4px rgba(59, 130, 246, 0.12), 0 2px 8px -2px rgba(59, 130, 246, 0.08)'
          }">
         
-        <div class="p-4">
+        <div class="px-4 py-3.5">
             <div class="flex items-start gap-3">
                 {{-- Icon --}}
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                      :class="{
-                         'bg-emerald-100 text-emerald-600': type === 'success',
-                         'bg-red-100 text-red-600': type === 'error',
-                         'bg-amber-100 text-amber-600': type === 'warning',
-                         'bg-blue-100 text-blue-600': type === 'info'
+                         'bg-emerald-500 text-white': type === 'success',
+                         'bg-red-500 text-white': type === 'error',
+                         'bg-amber-400 text-white': type === 'warning',
+                         'bg-blue-500 text-white': type === 'info'
                      }">
-                    <i class="text-lg"
-                       :class="{
-                           'fa fa-check': type === 'success',
-                           'fa fa-exclamation-triangle': type === 'error',
-                           'fa fa-exclamation-circle': type === 'warning',
-                           'fa fa-info-circle': type === 'info'
-                       }"></i>
+                    {{-- Success: Checkmark --}}
+                    <svg x-show="type === 'success'" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {{-- Error: X mark --}}
+                    <svg x-show="type === 'error'" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    {{-- Warning: Exclamation --}}
+                    <svg x-show="type === 'warning'" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                    {{-- Info: Info circle --}}
+                    <svg x-show="type === 'info'" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                    </svg>
                 </div>
                 
-                <div class="flex-1 min-w-0">
+                <div class="flex-1 min-w-0 pt-0.5">
                     {{-- Title --}}
-                    <h4 class="text-sm font-bold mb-1"
+                    <h4 class="text-[13.5px] font-bold leading-snug"
                         :class="{
                             'text-emerald-900': type === 'success',
                             'text-red-900': type === 'error',
@@ -51,33 +66,29 @@
                         x-text="title"></h4>
                     
                     {{-- Message --}}
-                    <p class="text-xs leading-relaxed"
+                    <p class="text-xs leading-relaxed mt-0.5"
                        :class="{
-                           'text-emerald-700': type === 'success',
-                           'text-red-700': type === 'error',
-                           'text-amber-700': type === 'warning',
-                           'text-blue-700': type === 'info'
+                           'text-emerald-700/80': type === 'success',
+                           'text-red-700/80': type === 'error',
+                           'text-amber-700/80': type === 'warning',
+                           'text-blue-700/80': type === 'info'
                        }"
                        x-text="message"></p>
                 </div>
                 
                 {{-- Close Button --}}
                 <button @click="close()" 
-                        class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-slate-100">
-                    <i class="fa fa-xmark text-xs text-slate-400"></i>
+                        class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors mt-0.5"
+                        :class="{
+                            'text-emerald-400 hover:text-emerald-600 hover:bg-emerald-100': type === 'success',
+                            'text-red-400 hover:text-red-600 hover:bg-red-100': type === 'error',
+                            'text-amber-400 hover:text-amber-600 hover:bg-amber-100': type === 'warning',
+                            'text-blue-400 hover:text-blue-600 hover:bg-blue-100': type === 'info'
+                        }">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
-            </div>
-            
-            {{-- Progress Bar --}}
-            <div class="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100">
-                <div class="h-full transition-all ease-linear"
-                     :class="{
-                         'bg-emerald-500': type === 'success',
-                         'bg-red-500': type === 'error',
-                         'bg-amber-500': type === 'warning',
-                         'bg-blue-500': type === 'info'
-                     }"
-                     :style="`width: ${progress}%`"></div>
             </div>
         </div>
     </div>
@@ -91,9 +102,7 @@ function toastNotification() {
         type: 'info',
         title: '',
         message: '',
-        progress: 100,
         autoCloseTimer: null,
-        progressInterval: null,
         duration: 5000, // 5 seconds
         
         handleNotification(detail) {
@@ -101,20 +110,9 @@ function toastNotification() {
             this.title = detail.title || this.getDefaultTitle(this.type);
             this.message = detail.message || '';
             this.show = true;
-            this.progress = 100;
             
             // Clear existing timers
             this.clearTimers();
-            
-            // Progress bar animation
-            const progressStep = 100 / (this.duration / 50);
-            this.progressInterval = setInterval(() => {
-                this.progress -= progressStep;
-                if (this.progress <= 0) {
-                    this.progress = 0;
-                    clearInterval(this.progressInterval);
-                }
-            }, 50);
             
             // Auto close
             this.autoCloseTimer = setTimeout(() => {
@@ -131,10 +129,6 @@ function toastNotification() {
             if (this.autoCloseTimer) {
                 clearTimeout(this.autoCloseTimer);
                 this.autoCloseTimer = null;
-            }
-            if (this.progressInterval) {
-                clearInterval(this.progressInterval);
-                this.progressInterval = null;
             }
         },
         

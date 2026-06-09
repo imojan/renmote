@@ -60,4 +60,15 @@ class Booking extends Model
     {
         return $this->belongsTo(Address::class);
     }
+
+    /**
+     * Get the duration in days.
+     */
+    public function getDurationDaysAttribute(): int
+    {
+        if (!$this->start_date || !$this->end_date) {
+            return 0;
+        }
+        return max(1, \Carbon\Carbon::parse($this->start_date)->diffInDays(\Carbon\Carbon::parse($this->end_date)));
+    }
 }

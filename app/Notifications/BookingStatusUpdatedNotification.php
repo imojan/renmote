@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Booking;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class BookingStatusUpdatedNotification extends Notification
@@ -18,8 +19,33 @@ class BookingStatusUpdatedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['mail', 'database'];
     }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $statusLabels = [
+            'confirmed' => 'Dikonfirmasi',
+            'cancelled' => 'Dibatalkan/Ditolak',
+            'completed' => 'Selesai',
+            'pending' => 'Menunggu',
+        ];
+
+        $statusLabel = $statusLabels[$this->status] ?? ucfirst($this->status);
+        $message = "Status penyewaan Anda untuk booking **#{$this->booking->id}** telah diperbarui menjadi: **{$statusLabel}**.";
+        
+        if ($this->note) {
+            $message .= " Catatan vendor: \"{$this->note}\"";
+        }
+
+        return (new MailMessage)
+            ->subject("Status Pemesanan Diperbarui - Booking #{$this->booking->id}")
+            ->greeting("Halo {$notifiable->name},")
+            ->line($message)
+            ->action('Lihat Detail Pemesanan', route('user.bookings.show', $this->booking))
+            ->line('Terima kasih telah menggunakan Renmote.');
+    }
+
 
     public function toArray(object $notifiable): array
     {

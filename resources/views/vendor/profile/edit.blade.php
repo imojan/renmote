@@ -44,9 +44,9 @@
                     @endif
                 </div>
             </div>
-            <div class="relative -mt-12 flex flex-col items-start gap-4 px-6 pb-6 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between sm:px-8">
+            <div class="relative flex flex-col items-start gap-4 px-6 pb-6 sm:flex-row sm:items-end sm:justify-between sm:px-8 pt-4">
                 <div class="flex items-end gap-4">
-                    <div class="h-24 w-24 shrink-0 overflow-hidden rounded-2xl border-4 border-white bg-slate-200 shadow-md sm:h-28 sm:w-28">
+                    <div class="h-24 w-24 shrink-0 overflow-hidden rounded-2xl border-4 border-white bg-slate-200 shadow-md sm:h-28 sm:w-28 {{ $vendor->cover_photo ? '-mt-12 sm:-mt-16' : '' }}">
                         @if($vendor->profile_photo)
                             <img src="{{ Storage::url($vendor->profile_photo) }}" alt="{{ $vendor->store_name }}" class="h-full w-full object-cover">
                         @else

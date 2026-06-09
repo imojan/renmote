@@ -34,6 +34,17 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Save credentials in encrypted cookies if remember me is checked
+        if ($request->boolean('remember')) {
+            cookie()->queue('remember_email', $request->email, 60 * 24 * 30);
+            cookie()->queue('remember_password', $request->password, 60 * 24 * 30);
+            cookie()->queue('remember_checked', 'checked', 60 * 24 * 30);
+        } else {
+            cookie()->queue(cookie()->forget('remember_email'));
+            cookie()->queue(cookie()->forget('remember_password'));
+            cookie()->queue(cookie()->forget('remember_checked'));
+        }
+
         // Redirect berdasarkan role
         $user = $request->user();
 

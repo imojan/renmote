@@ -27,9 +27,11 @@
                     <select name="category" class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Semua Kategori</option>
                         <option value="matic" {{ $activeCategorySlug === 'matic' ? 'selected' : '' }}>Matic</option>
-                        <option value="sport" {{ $activeCategorySlug === 'sport' ? 'selected' : '' }}>Sport</option>
                         <option value="bebek" {{ $activeCategorySlug === 'bebek' ? 'selected' : '' }}>Bebek</option>
+                        <option value="sport" {{ $activeCategorySlug === 'sport' ? 'selected' : '' }}>Sport</option>
                         <option value="trail" {{ $activeCategorySlug === 'trail' ? 'selected' : '' }}>Trail</option>
+                        <option value="skutik_premium" {{ $activeCategorySlug === 'skutik-premium' || $activeCategorySlug === 'skutik_premium' ? 'selected' : '' }}>Skutik Premium</option>
+                        <option value="bigbike" {{ $activeCategorySlug === 'bigbike' ? 'selected' : '' }}>Bigbike</option>
                     </select>
                 </div>
                 
@@ -75,17 +77,32 @@
                             <div class="flex items-start justify-between">
                                 <div>
                                     <h3 class="font-semibold text-gray-900">{{ $vehicle->name }}</h3>
-                                    <p class="text-sm text-gray-500">{{ $vehicle->category }} • {{ $vehicle->year }}</p>
+                                    <p class="text-sm text-gray-500">{{ $vehicle->category_label }} • {{ $vehicle->year }} • {{ $vehicle->engine_cc ? $vehicle->engine_cc . 'cc' : '-' }}</p>
                                 </div>
                                 @if($vehicle->vendor->verified)
-                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Verified</span>
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full inline-flex items-center gap-1 flex-shrink-0">
+                                        <i class="fa fa-check-circle"></i> Verified
+                                    </span>
                                 @endif
                             </div>
                             
-                            <a href="{{ route('vendors.show', $vehicle->vendor) }}" class="text-sm text-blue-600 hover:underline">
-                                {{ $vehicle->vendor->store_name }}
-                            </a>
-                            <p class="text-sm text-gray-500">{{ $vehicle->vendor->district->name }}</p>
+                            <div class="flex items-center gap-3 mt-4 mb-2">
+                                <div class="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-gray-100 bg-white shadow-sm flex items-center justify-center">
+                                    @if($vehicle->vendor->profile_photo)
+                                        <img src="{{ Storage::url($vehicle->vendor->profile_photo) }}" alt="{{ $vehicle->vendor->store_name }}" class="w-full h-full object-cover">
+                                    @else
+                                        <div class="w-full h-full bg-red-100 flex items-center justify-center text-[11px] font-bold text-red-600">
+                                            {{ strtoupper(substr($vehicle->vendor->store_name, 0, 2)) }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <a href="{{ route('vendors.show', $vehicle->vendor) }}" class="text-sm text-blue-600 hover:underline font-semibold block truncate">
+                                        {{ $vehicle->vendor->store_name }}
+                                    </a>
+                                    <p class="text-xs text-gray-500 truncate mt-0.5"><i class="fa fa-map-marker-alt text-[10px] mr-1 text-gray-400"></i>{{ $vehicle->vendor->district->name }}</p>
+                                </div>
+                            </div>
                             
                             <div class="mt-4 flex items-center justify-between gap-2">
                                 <span class="text-lg font-bold text-blue-600">Rp {{ number_format($vehicle->price_per_day, 0, ',', '.') }}/hari</span>

@@ -108,6 +108,11 @@ class DocumentController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
+        // Kirim notifikasi ke vendor jika status disetujui atau ditolak
+        if (in_array($validated['status'], ['approved', 'rejected'], true) && $document->vendor?->user) {
+            $document->vendor->user->notify(new \App\Notifications\VendorDocumentReviewed($document));
+        }
+
         return back()->with('success', 'Status dokumen vendor berhasil diperbarui.');
     }
 
@@ -125,6 +130,11 @@ class DocumentController extends Controller
             'status' => $validated['status'],
             'notes' => $validated['notes'] ?? null,
         ]);
+
+        // Kirim notifikasi ke user jika status disetujui atau ditolak
+        if (in_array($validated['status'], ['approved', 'rejected'], true) && $document->user) {
+            $document->user->notify(new \App\Notifications\UserDocumentReviewed($document));
+        }
 
         return back()->with('success', 'Status dokumen user berhasil diperbarui.');
     }

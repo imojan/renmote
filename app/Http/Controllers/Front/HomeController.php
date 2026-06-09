@@ -20,8 +20,8 @@ class HomeController extends Controller
         // Districts untuk filter pencarian
         $districts = District::all();
 
-        // Motor populer (vehicle dengan booking terbanyak / terbaru)
-        $popularVehicles = Vehicle::with('vendor.district')
+        // Motor baru ditambahkan
+        $newVehicles = Vehicle::with('vendor.district')
             ->where('status', 'available')
             ->latest()
             ->take(5)
@@ -60,7 +60,7 @@ class HomeController extends Controller
 
         return view('front.home', compact(
             'districts',
-            'popularVehicles',
+            'newVehicles',
             'vendors',
             'articles',
             'wishlistedVehicleIds',

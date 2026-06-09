@@ -13,34 +13,39 @@
             @endif
 
             <div class="p-6">
-                <div class="flex items-start justify-between gap-4 flex-wrap">
-                    <div class="flex items-start gap-4">
-                        <div class="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0 {{ $vendor->cover_photo ? '-mt-16 border-4 border-white shadow' : '' }}">
+                <div class="flex items-center justify-between gap-4 flex-wrap">
+                    <div class="flex flex-col sm:flex-row items-center gap-6">
+                        <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0 border border-gray-100 shadow-sm">
                             @if($vendor->profile_photo)
                                 <img src="{{ Storage::url($vendor->profile_photo) }}" alt="{{ $vendor->store_name }}" class="h-full w-full object-cover">
                             @else
-                                <span class="text-3xl font-bold text-white">{{ strtoupper(substr($vendor->store_name, 0, 1)) }}</span>
+                                <span class="text-4xl sm:text-5xl font-bold text-white">{{ strtoupper(substr($vendor->store_name, 0, 1)) }}</span>
                             @endif
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <h1 class="text-2xl font-bold text-gray-900 flex items-center flex-wrap gap-2">
+                        <div class="flex-1 min-w-0 text-center sm:text-left">
+                            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center justify-center sm:justify-start flex-wrap gap-2">
                                 <span>{{ $vendor->store_name }}</span>
                                 @if($vendor->verified)
-                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full inline-flex items-center gap-1">
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full inline-flex items-center gap-1 font-semibold">
                                         <i class="fa fa-check-circle"></i> Terverifikasi
                                     </span>
                                 @endif
                             </h1>
-                            <p class="text-gray-500 mt-1"><i class="fa fa-map-marker-alt text-xs mr-1"></i>{{ $vendor->district->name }}</p>
-                            @if($vendor->rating)
-                                <p class="mt-1 text-sm font-semibold text-gray-700">
-                                    <i class="fa fa-star text-amber-400"></i>
-                                    {{ number_format($vendor->rating, 1) }}
-                                    <span class="text-xs font-normal text-gray-500">({{ number_format($vendor->rating_count ?? 0) }} review)</span>
-                                </p>
-                            @endif
+                            
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1.5 mt-2 text-sm text-gray-500">
+                                <span class="flex items-center gap-1"><i class="fa fa-map-marker-alt text-gray-400"></i> {{ $vendor->district->name }}</span>
+                                @if($vendor->rating)
+                                    <span class="flex items-center gap-1">
+                                        <i class="fa fa-star text-amber-400"></i>
+                                        <strong class="text-gray-800">{{ number_format($vendor->rating, 1) }}</strong>
+                                        <span>({{ number_format($vendor->rating_count ?? 0) }} review)</span>
+                                    </span>
+                                @endif
+                                <span class="flex items-center gap-1"><i class="fa fa-motorcycle text-gray-400"></i> {{ $vendor->vehicles->count() }} Unit Kendaraan</span>
+                            </div>
+
                             @if($vendor->description)
-                                <p class="text-gray-600 mt-2 text-sm">{{ $vendor->description }}</p>
+                                <p class="text-gray-600 mt-3 text-sm leading-relaxed">{{ $vendor->description }}</p>
                             @endif
                         </div>
                     </div>
@@ -89,12 +94,34 @@
         </div>
 
         <!-- Vehicles -->
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Kendaraan ({{ $vendor->vehicles->count() }})</h2>
+        @php
+            $vendorCategories = $vendor->vehicles->pluck('category')->unique();
+        @endphp
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 mt-8">
+            <h2 class="text-xl font-bold text-gray-900">Kendaraan ({{ $vendor->vehicles->count() }})</h2>
+            
+            @if($vendor->vehicles->count() > 0)
+                <div class="flex flex-wrap gap-2" id="category-filters">
+                    <button class="category-filter-btn px-3.5 py-1.5 text-xs font-semibold rounded-lg border transition-all active bg-blue-600 text-white border-blue-600" data-category="all">
+                        Semua
+                    </button>
+                    @foreach($vendorCategories as $cat)
+                        @php
+                            $label = \App\Models\Vehicle::CATEGORIES[$cat] ?? ucfirst(str_replace('_', ' ', $cat));
+                        @endphp
+                        <button class="category-filter-btn px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all" data-category="{{ $cat }}">
+                            {{ $label }}
+                        </button>
+                    @endforeach
+                </div>
+            @endif
+        </div>
         
         @if($vendor->vehicles->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="vehicles-grid">
                 @foreach($vendor->vehicles as $vehicle)
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                    <div class="vehicle-card-item bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition" data-category="{{ $vehicle->category }}">
                         <div class="h-48 bg-gray-200 flex items-center justify-center">
                             @if($vehicle->image)
                                 <img src="{{ Storage::url($vehicle->image) }}" alt="{{ $vehicle->name }}" class="w-full h-full object-cover">
@@ -109,11 +136,7 @@
                                 <div>
                                     <h3 class="font-semibold text-gray-900">{{ $vehicle->name }}</h3>
                                     <p class="text-sm text-gray-500">
-                                        {{ ucfirst($vehicle->category) }}
-                                        @if($vehicle->engine_cc)
-                                            • {{ $vehicle->engine_cc }}cc
-                                        @endif
-                                        • {{ $vehicle->year }}
+                                        {{ $vehicle->category_label }} • {{ $vehicle->year }} • {{ $vehicle->engine_cc ? $vehicle->engine_cc . 'cc' : '-' }}
                                     </p>
                                 </div>
                                 <span class="px-2 py-1 text-xs rounded-full
@@ -147,6 +170,10 @@
                         </div>
                     </div>
                 @endforeach
+                
+                <div id="empty-filter-state" class="bg-white rounded-lg shadow p-8 text-center hidden col-span-full">
+                    <p class="text-gray-500">Tidak ada kendaraan dalam kategori ini.</p>
+                </div>
             </div>
         @else
             <div class="bg-white rounded-lg shadow p-8 text-center">
@@ -155,3 +182,47 @@
         @endif
     </section>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const buttons = document.querySelectorAll('.category-filter-btn');
+        const cards = document.querySelectorAll('.vehicle-card-item');
+        const emptyState = document.getElementById('empty-filter-state');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                buttons.forEach(btn => {
+                    btn.classList.remove('active', 'bg-blue-600', 'text-white', 'border-blue-600');
+                    btn.classList.add('border-gray-200', 'text-gray-600');
+                });
+
+                this.classList.add('active', 'bg-blue-600', 'text-white', 'border-blue-600');
+                this.classList.remove('border-gray-200', 'text-gray-600');
+
+                const category = this.getAttribute('data-category');
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    if (category === 'all' || card.getAttribute('data-category') === category) {
+                        card.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                if (emptyState) {
+                    if (visibleCount === 0) {
+                        emptyState.classList.remove('hidden');
+                        emptyState.style.display = 'block';
+                    } else {
+                        emptyState.classList.add('hidden');
+                        emptyState.style.display = 'none';
+                    }
+                }
+            });
+        });
+    });
+</script>
+@endpush

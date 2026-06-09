@@ -22,13 +22,14 @@
 
         <x-auth.field :label="__('auth.login_email')" for="email">
             <x-auth.input id="email" type="email" name="email"
-                          value="{{ old('email') }}"
+                          value="{{ old('email', request()->cookie('remember_email')) }}"
                           :placeholder="__('auth.register_email_placeholder')"
                           required autofocus autocomplete="username" />
         </x-auth.field>
 
         <x-auth.field :label="__('auth.login_password')" for="password">
             <x-auth.password-input id="password"
+                                   value="{{ request()->cookie('remember_password') }}"
                                    placeholder="••••••••"
                                    required autocomplete="current-password" />
         </x-auth.field>
@@ -36,6 +37,7 @@
         <div class="mb-1 flex items-center justify-between text-[0.8125rem]">
             <label class="flex cursor-pointer items-center gap-2">
                 <input type="checkbox" name="remember"
+                       {{ request()->cookie('remember_checked') === 'checked' ? 'checked' : '' }}
                        class="h-4 w-4 cursor-pointer rounded border-[1.5px] border-gray-300 text-rn-primary accent-rn-primary focus:ring-0">
                 <span class="font-medium text-gray-700">{{ __('auth.login_remember') }}</span>
             </label>

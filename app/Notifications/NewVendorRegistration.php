@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Vendor;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class NewVendorRegistration extends Notification
@@ -24,7 +25,21 @@ class NewVendorRegistration extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['mail', 'database'];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('Pendaftaran Vendor Baru Menunggu Verifikasi')
+            ->greeting('Halo Admin Renmote!')
+            ->line("Vendor baru dengan nama toko **{$this->vendor->store_name}** telah mendaftar di platform.")
+            ->line("Silakan tinjau dokumen verifikasi dan informasi toko untuk menyetujui atau menolak pendaftaran ini.")
+            ->action('Tinjau Pendaftaran Vendor', route('admin.vendors.show', $this->vendor))
+            ->line('Terima kasih!');
     }
 
     /**

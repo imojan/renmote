@@ -524,10 +524,15 @@
 }
 
 .booking-alert {
-    border-radius: 12px;
-    padding: 10px 12px;
+    border-radius: 16px;
+    padding: 14px 16px;
     font-size: 13px;
+    font-weight: 500;
     margin-bottom: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.5;
 }
 
 .booking-alert ul {
@@ -539,20 +544,20 @@
 
 .booking-alert-error {
     border: 1px solid #fecaca;
-    background: #fef2f2;
-    color: #b91c1c;
+    background: rgba(254, 242, 242, 0.8);
+    color: rgba(185, 28, 28, 0.8);
 }
 
 .booking-alert-success {
     border: 1px solid #a7f3d0;
-    background: #ecfdf5;
-    color: #047857;
+    background: rgba(236, 253, 245, 0.8);
+    color: rgba(4, 120, 87, 0.8);
 }
 
 .booking-alert-info {
     border: 1px solid #bfdbfe;
-    background: #eff6ff;
-    color: #1e3a8a;
+    background: rgba(239, 246, 255, 0.8);
+    color: rgba(30, 58, 138, 0.8);
 }
 
 .booking-create-grid {
@@ -1832,10 +1837,15 @@
 }
 
 .account-alert {
-    border-radius: 12px;
-    padding: 10px 12px;
+    border-radius: 16px;
+    padding: 14px 16px;
     font-size: 13px;
+    font-weight: 500;
     margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.5;
 }
 
 .account-alert ul {
@@ -1845,14 +1855,14 @@
 
 .account-alert-success {
     border: 1px solid #a7f3d0;
-    background: #ecfdf5;
-    color: #047857;
+    background: rgba(236, 253, 245, 0.8);
+    color: rgba(4, 120, 87, 0.8);
 }
 
 .account-alert-error {
     border: 1px solid #fecaca;
-    background: #fef2f2;
-    color: #b91c1c;
+    background: rgba(254, 242, 242, 0.8);
+    color: rgba(185, 28, 28, 0.8);
 }
 
 .account-grid {

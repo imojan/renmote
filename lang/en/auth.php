@@ -61,4 +61,5 @@ return [
     'verify_resend' => 'Resend Verification Email',
     'verify_link_sent' => 'A new verification link has been sent to your email.',
     'verify_logout' => 'Log Out',
+    'password_same_as_current' => 'The new password cannot be the same as your current password.',
 ];

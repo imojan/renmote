@@ -61,4 +61,5 @@ return [
     'verify_resend' => 'Kirim Ulang Email Verifikasi',
     'verify_link_sent' => 'Link verifikasi baru telah dikirim ke email kamu.',
     'verify_logout' => 'Keluar',
+    'password_same_as_current' => 'Password baru tidak boleh sama dengan password Anda saat ini.',
 ];

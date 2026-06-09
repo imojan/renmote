@@ -83,6 +83,12 @@
                 </div>
 
                 <div id="deliveryAddressSection" class="booking-delivery-section {{ $selectedMethod === 'delivery' ? '' : 'hidden' }}">
+                    <!-- Delivery warning notice -->
+                    <div style="background-color: #eff6ff; border-left: 4px solid #0f4ea9; padding: 12px 16px; margin-bottom: 20px; border-radius: 6px; font-size: 13px; color: #1e3a8a; display: flex; align-items: flex-start; gap: 8px;">
+                        <span style="font-size: 16px; line-height: 1;">ℹ️</span>
+                        <span>Kemungkinan terdapat biaya pengiriman (ongkir) atau biaya pengantaran tambahan tergantung pada ketentuan masing-masing vendor. Biaya pengantaran akan diselesaikan langsung dengan vendor saat serah terima kendaraan.</span>
+                    </div>
+
                     @if($user->addresses->count() > 0)
                         <div class="booking-delivery-list">
                             @foreach($user->addresses as $address)

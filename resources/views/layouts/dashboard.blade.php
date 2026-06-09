@@ -7,6 +7,7 @@
 
     <title>{{ config('app.name', 'Renmote') }} - @yield('title', __('dashboard.topbar.title'))</title>
     <link rel="icon" type="image/png" href="{{ asset('images/renmote-icon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -230,30 +231,38 @@
     </div>
 
     @if(session('success'))
-        <div class="mb-4 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800" style="display: none;">
-            <i class="fa fa-circle-check mt-0.5"></i>
-            <span>{{ session('success') }}</span>
+        <div class="mb-4 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3.5 text-sm">
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+            </div>
+            <span class="pt-1 font-medium text-emerald-700/80">{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="mb-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" style="display: none;">
-            <i class="fa fa-circle-exclamation mt-0.5"></i>
-            <span>{{ session('error') }}</span>
+        <div class="mb-4 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50/80 px-4 py-3.5 text-sm">
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </div>
+            <span class="pt-1 font-medium text-red-700/80">{{ session('error') }}</span>
         </div>
     @endif
 
     @if(session('info'))
-        <div class="mb-4 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800" style="display: none;">
-            <i class="fa fa-circle-info mt-0.5"></i>
-            <span>{{ session('info') }}</span>
+        <div class="mb-4 flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50/80 px-4 py-3.5 text-sm">
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-white">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
+            </div>
+            <span class="pt-1 font-medium text-blue-700/80">{{ session('info') }}</span>
         </div>
     @endif
 
     @if(session('warning'))
-        <div class="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" style="display: none;">
-            <i class="fa fa-triangle-exclamation mt-0.5"></i>
-            <span>{{ session('warning') }}</span>
+        <div class="mb-4 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3.5 text-sm">
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-white">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+            </div>
+            <span class="pt-1 font-medium text-amber-700/80">{{ session('warning') }}</span>
         </div>
     @endif
 

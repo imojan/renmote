@@ -29,6 +29,9 @@ class User extends Authenticatable
         'birth_date',
         'profile_photo_path',
         'is_phone_verified',
+        'google_id',
+        'google_token',
+        'google_refresh_token',
     ];
 
     /**
@@ -110,5 +113,16 @@ class User extends Authenticatable
     public function sentMessages()
     {
         return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
     }
 }

@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Booking;
 use App\Models\Payment;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class BookingPaymentFailedNotification extends Notification
@@ -19,8 +20,25 @@ class BookingPaymentFailedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['mail', 'database'];
     }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $message = "Mohon maaf, pembayaran Anda untuk booking **#{$this->booking->id}** (Invoice: **{$this->payment->invoice_number}**) gagal atau telah kadaluarsa.";
+        if ($this->reason) {
+            $message .= " Alasan: **{$this->reason}**";
+        }
+
+        return (new MailMessage)
+            ->subject("Pembayaran Gagal - Invoice #{$this->payment->invoice_number}")
+            ->greeting("Halo {$notifiable->name},")
+            ->line($message)
+            ->line('Silakan lakukan pembayaran ulang atau hubungi tim bantuan kami jika Anda mengalami kendala.')
+            ->action('Ajukan Ulang Pembayaran', route('user.bookings.payment', $this->booking))
+            ->line('Terima kasih.');
+    }
+
 
     public function toArray(object $notifiable): array
     {

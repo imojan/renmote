@@ -42,6 +42,13 @@ class NewPasswordController extends Controller
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user) use ($request) {
+                // Pastikan password baru tidak sama dengan password saat ini
+                if (Hash::check($request->password, $user->password)) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'password' => [__('auth.password_same_as_current')],
+                    ]);
+                }
+
                 $user->forceFill([
                     'password' => Hash::make($request->password),
                     'remember_token' => Str::random(60),

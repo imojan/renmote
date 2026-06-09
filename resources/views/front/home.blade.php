@@ -143,15 +143,15 @@
     </div>
 </div>
 
-{{-- ===== MOTOR POPULER ===== --}}
+{{-- ===== MOTOR BARU DITAMBAHKAN ===== --}}
 <div class="section">
     <div class="section-header">
-        <h2 class="section-title">Motor Populer</h2>
+        <h2 class="section-title">Motor Baru Ditambahkan</h2>
         <a href="{{ route('search') }}" class="see-all">Lihat Semua <i class="fa fa-arrow-right"></i></a>
     </div>
     <div class="motor-grid">
-        @forelse($popularVehicles as $vehicle)
-        <div class="motor-card">
+        @forelse($newVehicles as $vehicle)
+        <a href="{{ route('vehicles.show', $vehicle) }}" class="motor-card" style="text-decoration: none; color: inherit; display: block;">
             <div class="motor-img">
                 @if($vehicle->image)
                     <img src="{{ Storage::url($vehicle->image) }}" alt="{{ $vehicle->name }}">
@@ -167,12 +167,26 @@
                     <strong>4.8</strong>
                     <span>({{ rand(50, 200) }})</span>
                 </div>
-                <div class="motor-type">{{ ucfirst(str_replace('_', ' ', $vehicle->category)) }} &bull; {{ $vehicle->year }}cc</div>
-                <div class="motor-actions-row">
-                    <a href="{{ route('search', ['keyword' => $vehicle->name]) }}" class="btn-lihat motor-lihat-btn motor-lihat-btn-full">Lihat Pilihan</a>
-                </div>
+                <div class="motor-type">{{ $vehicle->category_label }} &bull; {{ $vehicle->year }} &bull; {{ $vehicle->engine_cc ? $vehicle->engine_cc . 'cc' : '-' }}</div>
+                
+                @if($vehicle->vendor)
+                    <hr class="card-divider">
+                    <div class="card-vendor-info">
+                        <div class="vendor-avatar">
+                            @if($vehicle->vendor->profile_photo)
+                                <img src="{{ Storage::url($vehicle->vendor->profile_photo) }}" alt="{{ $vehicle->vendor->store_name }}">
+                            @else
+                                <span>{{ strtoupper(substr($vehicle->vendor->store_name, 0, 2)) }}</span>
+                            @endif
+                        </div>
+                        <div class="vendor-details">
+                            <div class="vendor-store-name">{{ $vehicle->vendor->store_name }}</div>
+                            <div class="vendor-location"><i class="fa fa-map-marker-alt" style="font-size: 8px; margin-right: 2px;"></i>{{ $vehicle->vendor->district->name ?? 'Malang' }}</div>
+                        </div>
+                    </div>
+                @endif
             </div>
-        </div>
+        </a>
         @empty
         @for($i = 0; $i < 5; $i++)
         <div class="motor-card">
@@ -187,8 +201,17 @@
                     <strong>4.8</strong>
                     <span>(120)</span>
                 </div>
-                <div class="motor-type">Skuter Premium &bull; 155cc</div>
-                <a href="#" class="btn-lihat">Lihat Pilihan</a>
+                <div class="motor-type">Skutik Premium &bull; 2023 &bull; 155cc</div>
+                <hr class="card-divider">
+                <div class="card-vendor-info">
+                    <div class="vendor-avatar">
+                        <span>RM</span>
+                    </div>
+                    <div class="vendor-details">
+                        <div class="vendor-store-name">Renmote Store</div>
+                        <div class="vendor-location"><i class="fa fa-map-marker-alt" style="font-size: 8px; margin-right: 2px;"></i>Klojen</div>
+                    </div>
+                </div>
             </div>
         </div>
         @endfor

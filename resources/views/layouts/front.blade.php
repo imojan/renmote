@@ -30,22 +30,36 @@
             <x-front.locale-switch />
             <a href="{{ route('register') }}"><i class="fa fa-users"></i> {{ __('nav.become_vendor') }}</a>
             @auth
-                @if(auth()->user()->role === 'user')
+                @php
+                    $userAvatarUrl = null;
+                    $user = auth()->user();
+                    if ($user->role === 'vendor') {
+                        $vendorRecord = $user->vendor;
+                        if ($vendorRecord && $vendorRecord->profile_photo) {
+                            $userAvatarUrl = \Illuminate\Support\Facades\Storage::url($vendorRecord->profile_photo);
+                        }
+                    }
+                    if (!$userAvatarUrl && $user->profile_photo_path) {
+                        $userAvatarUrl = \Illuminate\Support\Facades\Storage::url($user->profile_photo_path);
+                    }
+                @endphp
+
+                @if($user->role === 'user')
                     <div class="topbar-account" id="topbarAccount">
                         <button class="topbar-account-toggle" id="topbarAccountToggle" type="button">
-                            @if(auth()->user()->profile_photo_path)
+                            @if($userAvatarUrl)
                                 <img
-                                    src="{{ \Illuminate\Support\Facades\Storage::url(auth()->user()->profile_photo_path) }}"
-                                    alt="{{ auth()->user()->name }}"
+                                    src="{{ $userAvatarUrl }}"
+                                    alt="{{ $user->name }}"
                                     class="topbar-account-avatar"
                                 >
                             @else
                                 <i class="fa fa-user-circle topbar-account-icon"></i>
                             @endif
-                            <span>{{ auth()->user()->name }}</span>
+                            <span>{{ $user->name }}</span>
                             <i class="fa fa-chevron-down topbar-account-chevron"></i>
                         </button>
-
+ 
                         <div class="topbar-account-menu" id="topbarAccountMenu">
                             <a href="{{ route('user.account.index') }}" class="topbar-account-item">{{ __('nav.my_account') }}</a>
                             <a href="{{ route('user.bookings.index') }}" class="topbar-account-item">{{ __('nav.order_history') }}</a>
@@ -62,20 +76,28 @@
                     </div>
                 @else
                     @php
-                        $dashboardRoute = auth()->user()->role === 'admin'
+                        $dashboardRoute = $user->role === 'admin'
                             ? route('admin.dashboard')
                             : route('vendor.dashboard');
-                        $dashboardLabel = auth()->user()->role === 'admin'
+                        $dashboardLabel = $user->role === 'admin'
                             ? __('nav.admin_dashboard')
                             : __('nav.vendor_dashboard');
                     @endphp
                     <div class="topbar-account" id="topbarAccount">
                         <button class="topbar-account-toggle" id="topbarAccountToggle" type="button">
-                            <i class="fa fa-user-circle topbar-account-icon"></i>
-                            <span>{{ auth()->user()->name }}</span>
+                            @if($userAvatarUrl)
+                                <img
+                                    src="{{ $userAvatarUrl }}"
+                                    alt="{{ $user->name }}"
+                                    class="topbar-account-avatar"
+                                >
+                            @else
+                                <i class="fa fa-user-circle topbar-account-icon"></i>
+                            @endif
+                            <span>{{ $user->name }}</span>
                             <i class="fa fa-chevron-down topbar-account-chevron"></i>
                         </button>
-
+ 
                         <div class="topbar-account-menu" id="topbarAccountMenu">
                             <a href="{{ $dashboardRoute }}" class="topbar-account-item">{{ $dashboardLabel }}</a>
                             <a href="{{ route('notifications.index') }}" class="topbar-account-item">{{ __('nav.notifications') }}</a>
@@ -251,23 +273,45 @@
         <hr>
         <a href="{{ route('register') }}"><i class="fa fa-users"></i> {{ __('nav.become_vendor') }}</a>
         @auth
-            @if(auth()->user()->role === 'user')
+            @php
+                $userAvatarUrl = null;
+                $user = auth()->user();
+                if ($user->role === 'vendor') {
+                    $vendorRecord = $user->vendor;
+                    if ($vendorRecord && $vendorRecord->profile_photo) {
+                        $userAvatarUrl = \Illuminate\Support\Facades\Storage::url($vendorRecord->profile_photo);
+                    }
+                }
+                if (!$userAvatarUrl && $user->profile_photo_path) {
+                    $userAvatarUrl = \Illuminate\Support\Facades\Storage::url($user->profile_photo_path);
+                }
+            @endphp
+            @if($user->role === 'user')
                 <a href="{{ route('user.account.index') }}">
-                    @if(auth()->user()->profile_photo_path)
+                    @if($userAvatarUrl)
                         <img
-                            src="{{ \Illuminate\Support\Facades\Storage::url(auth()->user()->profile_photo_path) }}"
-                            alt="{{ auth()->user()->name }}"
+                            src="{{ $userAvatarUrl }}"
+                            alt="{{ $user->name }}"
                             class="mobile-user-avatar"
                         >
                     @else
                         <i class="fa fa-user-circle"></i>
                     @endif
-                    {{ auth()->user()->name }}
+                    {{ $user->name }}
                 </a>
                 <a href="{{ route('notifications.index') }}"><i class="fa fa-bell"></i> {{ __('nav.notifications') }}</a>
             @else
-                <a href="@if(auth()->user()->role === 'admin'){{ route('admin.dashboard') }}@else{{ route('vendor.dashboard') }}@endif">
-                    <i class="fa fa-user-circle"></i> {{ auth()->user()->name }}
+                <a href="@if($user->role === 'admin'){{ route('admin.dashboard') }}@else{{ route('vendor.dashboard') }}@endif">
+                    @if($userAvatarUrl)
+                        <img
+                            src="{{ $userAvatarUrl }}"
+                            alt="{{ $user->name }}"
+                            class="mobile-user-avatar"
+                        >
+                    @else
+                        <i class="fa fa-user-circle"></i>
+                    @endif
+                    {{ $user->name }}
                 </a>
                 <a href="{{ route('notifications.index') }}"><i class="fa fa-bell"></i> {{ __('nav.notifications') }}</a>
             @endif

@@ -31,6 +31,14 @@ class Vehicle extends Model
     ];
 
     /**
+     * Dapatkan label kategori dengan format kapital yang benar.
+     */
+    public function getCategoryLabelAttribute(): string
+    {
+        return self::CATEGORIES[$this->category] ?? ucfirst(str_replace('_', ' ', $this->category));
+    }
+
+    /**
      * Vehicle dimiliki oleh satu Vendor
      */
     public function vendor()
