@@ -8,7 +8,7 @@
          notifications: [],
          init() {
              this.fetchNotifications();
-             setInterval(() => this.fetchNotifications(), 10000); // Cek setiap 10 detik
+             setInterval(() => this.fetchNotifications(), 3000); // Cek setiap 3 detik
          },
          async fetchNotifications() {
              try {
