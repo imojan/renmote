@@ -232,6 +232,7 @@ Route::get('/vendor-documents/{document}/serve', [VendorRegistrationController::
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+    Route::get('/notifications/check-unread', [NotificationController::class, 'checkUnread'])->name('notifications.checkUnread');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');

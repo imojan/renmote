@@ -60,6 +60,29 @@ class NotificationController extends Controller
         return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
     }
 
+    public function checkUnread(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['unreadCount' => 0, 'notifications' => []]);
+        }
+
+        $notifications = $user->notifications()->latest()->limit(5)->get()->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'data' => $notification->data,
+                'created_at_human' => $notification->created_at->diffForHumans(),
+                'read_at' => $notification->read_at,
+                'url' => route('notifications.show', $notification->id),
+            ];
+        });
+
+        return response()->json([
+            'unreadCount' => $user->unreadNotifications()->count(),
+            'notifications' => $notifications,
+        ]);
+    }
+
     private function authorizeNotification(DatabaseNotification $notification, int $userId): void
     {
         abort_unless(
