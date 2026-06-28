@@ -28,6 +28,10 @@ class DocumentMediaController extends Controller
         $relativePath = ltrim($document->file_path, '/');
         $localDisk = Storage::disk('local');
 
+        if ($localDisk->getConfig()['driver'] === 'cloudinary') {
+            return redirect()->away($localDisk->url($relativePath));
+        }
+
         if ($localDisk->exists($relativePath)) {
             return response()->file($localDisk->path($relativePath));
         }
@@ -67,6 +71,10 @@ class DocumentMediaController extends Controller
 
         $relativePath = ltrim($document->file_path, '/');
         $publicDisk = Storage::disk('public');
+
+        if ($publicDisk->getConfig()['driver'] === 'cloudinary') {
+            return redirect()->away($publicDisk->url($relativePath));
+        }
 
         if ($publicDisk->exists($relativePath)) {
             return response()->file($publicDisk->path($relativePath));
@@ -112,6 +120,10 @@ class DocumentMediaController extends Controller
 
         $relativePath = ltrim($payment->proof_path, '/');
         $publicDisk = Storage::disk('public');
+
+        if ($publicDisk->getConfig()['driver'] === 'cloudinary') {
+            return redirect()->away($publicDisk->url($relativePath));
+        }
 
         if ($publicDisk->exists($relativePath)) {
             return response()->file($publicDisk->path($relativePath));

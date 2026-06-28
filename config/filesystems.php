@@ -30,7 +30,10 @@ return [
 
     'disks' => [
 
-        'local' => [
+        'local' => env('LOCAL_DISK_DRIVER', 'local') === 'cloudinary' ? [
+            'driver' => 'cloudinary',
+            'url' => env('CLOUDINARY_URL'),
+        ] : [
             'driver' => 'local',
             'root' => storage_path('app/private'),
             'serve' => true,
