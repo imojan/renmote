@@ -18,11 +18,11 @@ class DemoSeeder extends Seeder
     {
         // Create Districts
         $districts = [
-            ['name' => 'Jakarta Pusat'],
-            ['name' => 'Jakarta Selatan'],
-            ['name' => 'Jakarta Barat'],
-            ['name' => 'Bandung'],
-            ['name' => 'Yogyakarta'],
+            ['name' => 'Kecamatan Klojen'],
+            ['name' => 'Kecamatan Blimbing'],
+            ['name' => 'Kecamatan Kedungkandang'],
+            ['name' => 'Kecamatan Sukun'],
+            ['name' => 'Kecamatan Lowokwaru'],
         ];
 
         foreach ($districts as $district) {
@@ -45,15 +45,15 @@ class DemoSeeder extends Seeder
                 'store_name' => 'Budi Motor Rental',
                 'district_id' => 1,
                 'phone' => '081234567890',
-                'address' => 'Jl. Menteng Raya No. 10, Jakarta Pusat',
+                'address' => 'Jl. Besar Ijen No. 10, Klojen, Kota Malang',
             ],
             [
                 'name' => 'Jaya Motor',
                 'email' => 'jaya@motor.com',
-                'store_name' => 'Jaya Motor Yogyakarta',
+                'store_name' => 'Jaya Motor Malang',
                 'district_id' => 5,
                 'phone' => '082345678901',
-                'address' => 'Jl. Malioboro No. 50, Yogyakarta',
+                'address' => 'Jl. Soekarno Hatta No. 50, Lowokwaru, Kota Malang',
             ],
         ];
 
