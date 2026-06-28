@@ -38,8 +38,11 @@ return [
             'report' => false,
         ],
 
-        'public' => [
-            'driver' => env('PUBLIC_DISK_DRIVER', 'local'),
+        'public' => env('PUBLIC_DISK_DRIVER', 'local') === 'cloudinary' ? [
+            'driver' => 'cloudinary',
+            'url' => env('CLOUDINARY_URL'),
+        ] : [
+            'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
